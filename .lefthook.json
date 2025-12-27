@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json.schemastore.org/lefthook.json",
+  "pre-commit": {
+    "parallel": true,
+    "commands": {
+      "lint": {
+        "glob": "*.ts",
+        "run": "pnpm exec eslint --fix {staged_files}",
+        "stage_fixed": true
+      },
+      "format": {
+        "glob": "*.{md,json,yml,yaml,ts}",
+        "run": "pnpm exec prettier --write --experimental-cli {staged_files}",
+        "stage_fixed": true
+      }
+    }
+  },
+  "commit-msg": {
+    "commands": {
+      "commitlint": {
+        "run": "pnpm exec commitlint --edit {1}"
+      }
+    }
+  }
+}

@@ -1,0 +1,33 @@
+name: cd
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🏗 Setup Repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: 📦 Install
+        uses: ./.github/actions/install
+
+      - name: 🦺 Check
+        uses: ./.github/actions/check
+
+      - name: 🚀 Publish
+        uses: cycjimmy/semantic-release-action@v4
+        with:
+          semantic_version: latest
+          dry_run: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

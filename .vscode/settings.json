@@ -1,0 +1,9 @@
+{
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "eslint.useFlatConfig": true,
+  "eslint.validate": ["javascript", "typescript"],
+  "eslint.options": {
+    "flags": ["unstable_ts_config"]
+  }
+}
