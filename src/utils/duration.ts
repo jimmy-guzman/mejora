@@ -1,5 +1,24 @@
-import { ms } from "ms";
 import pc from "picocolors";
+
+function formatMs(ms: number) {
+  if (ms < 1000) return `${ms}ms`;
+
+  const seconds = ms / 1000;
+
+  if (ms < 60_000) {
+    return seconds % 1 === 0 ? `${seconds}s` : `${seconds.toFixed(1)}s`;
+  }
+
+  const minutes = ms / 60_000;
+
+  if (ms < 3_600_000) {
+    return minutes % 1 === 0 ? `${minutes}m` : `${minutes.toFixed(1)}m`;
+  }
+
+  const hours = ms / 3_600_000;
+
+  return hours % 1 === 0 ? `${hours}h` : `${hours.toFixed(1)}h`;
+}
 
 export function formatDuration(duration: number) {
   const rounded = Math.round(duration);
@@ -8,7 +27,7 @@ export function formatDuration(duration: number) {
     return pc.dim("<1ms");
   }
 
-  const formatted = ms(rounded, { long: false });
+  const formatted = formatMs(rounded);
 
   if (rounded < 100) {
     return pc.greenBright(formatted);
