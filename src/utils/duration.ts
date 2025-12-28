@@ -5,13 +5,13 @@ function formatMs(ms: number) {
 
   const seconds = ms / 1000;
 
-  if (ms < 60_000) {
+  if (seconds < 60) {
     return seconds % 1 === 0 ? `${seconds}s` : `${seconds.toFixed(1)}s`;
   }
 
   const minutes = ms / 60_000;
 
-  if (ms < 3_600_000) {
+  if (minutes < 60) {
     return minutes % 1 === 0 ? `${minutes}m` : `${minutes.toFixed(1)}m`;
   }
 

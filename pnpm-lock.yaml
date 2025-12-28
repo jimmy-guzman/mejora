@@ -11,9 +11,6 @@ importers:
       consola:
         specifier: ^3.4.2
         version: 3.4.2
-      gunshi:
-        specifier: 0.27.5
-        version: 0.27.5
       is-in-ci:
         specifier: ^2.0.0
         version: 2.0.0
@@ -24,9 +21,6 @@ importers:
       '@commitlint/config-conventional':
         specifier: 20.2.0
         version: 20.2.0
-      '@gunshi/docs':
-        specifier: 0.27.5
-        version: 0.27.5
       '@jimmy.codes/eslint-config':
         specifier: 6.29.0
         version: 6.29.0(@typescript-eslint/eslint-plugin@8.50.1(@typescript-eslint/parser@8.50.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.2(jiti@2.6.1))(prettier@3.7.4)(typescript@5.9.3)(vitest@4.0.16(@types/node@24.10.4)(jiti@2.6.1))
@@ -80,9 +74,6 @@ importers:
         version: 4.0.16(@types/node@24.10.4)(jiti@2.6.1)
 
 packages:
-
-  '@antfu/install-pkg@1.1.0':
-    resolution: {integrity: sha512-MGQsmw10ZyI+EJo45CdSER4zEb+p31LpDAFp2Z3gkSd1yqVZGi0Ebx++YTEMonJy4oChEMLsxZ64j8FH6sSqtQ==}
 
   '@astrojs/compiler@2.13.0':
     resolution: {integrity: sha512-mqVORhUJViA28fwHYaWmsXSzLO9osbdZ5ImUfxBarqsYdMlPbqAqGJCxsNzvppp1BEzc1mJNjOVvQqeDN8Vspw==}
@@ -527,10 +518,6 @@ packages:
   '@eslint/plugin-kit@0.4.1':
     resolution: {integrity: sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-
-  '@gunshi/docs@0.27.5':
-    resolution: {integrity: sha512-u2m4FtssSli8Z3xWxICG0nGQpycPaxEs3/zWkvqLNAPAiHQlWg/Sbr7/RIO3A6hmf2BXG0I2wKN75SHlL1PIkw==}
-    hasBin: true
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -1234,10 +1221,6 @@ packages:
 
   argparse@2.0.1:
     resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
-
-  args-tokens@0.23.0:
-    resolution: {integrity: sha512-VZETsQmpEGO7A9adjfIOTyZuxKzurUas9kh1Hm0WGhFq8dOyw50P6OjiTwKyURwnmDabw0DbFjI+BUucJfCtnQ==}
-    engines: {node: '>= 20'}
 
   aria-query@5.3.2:
     resolution: {integrity: sha512-COROpnaoap1E2F000S62r6A60uHZnmlvomhfyT2DlTcrY1OrBKn2UhH7qn5wTC9zMvD0AY7csdPSNwKP+7WiQw==}
@@ -2061,10 +2044,6 @@ packages:
 
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
-
-  gunshi@0.27.5:
-    resolution: {integrity: sha512-ExdnmI90hQ/eR1wnUc5rVom+K16F1hSpbYrplpt6rrJhXLprVGK9/E63bk7Rju27hAqc3WvpCa8PeY95R165fw==}
-    engines: {node: '>= 20'}
 
   has-bigints@1.1.0:
     resolution: {integrity: sha512-R3pbpkcIqv2Pm3dUwgjclDRVmWpTJW2DcMzcIhEXEx1oh/CEMObMm3KLmRJOdvhM7o4uQBnwr8pzRK2sJWIqfg==}
@@ -3335,11 +3314,6 @@ packages:
 
 snapshots:
 
-  '@antfu/install-pkg@1.1.0':
-    dependencies:
-      package-manager-detector: 1.6.0
-      tinyexec: 1.0.2
-
   '@astrojs/compiler@2.13.0': {}
 
   '@babel/code-frame@7.27.1':
@@ -3825,11 +3799,6 @@ snapshots:
     dependencies:
       '@eslint/core': 0.17.0
       levn: 0.4.1
-
-  '@gunshi/docs@0.27.5':
-    dependencies:
-      '@antfu/install-pkg': 1.1.0
-      tinyexec: 1.0.2
 
   '@humanfs/core@0.19.1': {}
 
@@ -4515,8 +4484,6 @@ snapshots:
   are-docs-informative@0.0.2: {}
 
   argparse@2.0.1: {}
-
-  args-tokens@0.23.0: {}
 
   aria-query@5.3.2: {}
 
@@ -5567,10 +5534,6 @@ snapshots:
   gopd@1.2.0: {}
 
   graceful-fs@4.2.11: {}
-
-  gunshi@0.27.5:
-    dependencies:
-      args-tokens: 0.23.0
 
   has-bigints@1.1.0: {}
 
