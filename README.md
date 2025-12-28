@@ -98,7 +98,6 @@ export default defineConfig({
         },
       },
     }),
-
     "typescript": typescriptCheck({
       overrides: {
         compilerOptions: {
@@ -115,7 +114,7 @@ The object key is the check identifier and is used in the baseline.
 
 ---
 
-## Supported checks (MVP)
+## Supported checks
 
 ### ESLint
 
@@ -222,6 +221,6 @@ Designed to work cleanly in CI and automation.
 
 ## Inspiration
 
-mejora is inspired by the ideas behind Betterer.
+mejora is inspired by the ideas behind [betterer](https://phenomnomnominal.github.io/betterer/).
 
 The core concept of preventing regressions through baselines comes from that work. mejora reimplements the idea with a smaller scope and a simpler, more opinionated design.

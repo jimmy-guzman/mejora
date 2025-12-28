@@ -5,5 +5,7 @@ export default {
     "gitzy",
     "@commitlint/config-conventional",
     "commitlint",
+    "@gunshi/docs",
+    "eslint",
   ],
 } satisfies KnipConfig;
