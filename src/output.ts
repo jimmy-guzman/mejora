@@ -1,7 +1,6 @@
-import pc from "picocolors";
-
 import type { CheckResult, RunResult } from "./types";
 
+import * as c from "./utils/colors";
 import { formatDuration } from "./utils/duration";
 
 export function formatJsonOutput(result: RunResult) {
@@ -34,13 +33,13 @@ function formatItemList(items: string[], maxItems = MAX_ITEMS_TO_DISPLAY) {
   const itemsToShow = items.slice(0, maxItems);
 
   for (const item of itemsToShow) {
-    lines.push(`     ${pc.dim(item)}`);
+    lines.push(`     ${c.dim(item)}`);
   }
 
   const remainingCount = items.length - maxItems;
 
   if (remainingCount > 0) {
-    lines.push(`     ${pc.dim(`... and ${remainingCount} more`)}`);
+    lines.push(`     ${c.dim(`... and ${remainingCount} more`)}`);
   }
 
   return lines;
@@ -49,8 +48,8 @@ function formatItemList(items: string[], maxItems = MAX_ITEMS_TO_DISPLAY) {
 function formatInitialBaseline(check: CheckResult, isFirst: boolean) {
   const prefix = isFirst ? "" : "\n";
   const lines: string[] = [
-    `${prefix}${pc.bold(check.checkId)}:`,
-    `  Initial baseline created with ${pc.cyan(check.snapshot.items.length.toString())} issue(s)`,
+    `${prefix}${c.bold(check.checkId)}:`,
+    `  Initial baseline created with ${c.cyan(check.snapshot.items.length.toString())} issue(s)`,
   ];
 
   if (check.snapshot.items.length > 0) {
@@ -58,7 +57,7 @@ function formatInitialBaseline(check: CheckResult, isFirst: boolean) {
   }
 
   if (check.duration !== undefined) {
-    lines.push(`  ${pc.dim("Completed in")} ${formatDuration(check.duration)}`);
+    lines.push(`  ${c.dim("Completed in")} ${formatDuration(check.duration)}`);
   }
 
   return lines;
@@ -70,7 +69,7 @@ function formatRegressions(check: CheckResult) {
   }
 
   const lines = [
-    `  ${pc.red(check.newItems.length.toString())} new issue(s) (regressions):`,
+    `  ${c.red(check.newItems.length.toString())} new issue(s) (regressions):`,
     ...formatItemList(check.newItems),
   ];
 
@@ -83,7 +82,7 @@ function formatImprovements(check: CheckResult) {
   }
 
   const lines = [
-    `  ${pc.greenBright(check.removedItems.length.toString())} issue(s) fixed (improvements):`,
+    `  ${c.greenBright(check.removedItems.length.toString())} issue(s) fixed (improvements):`,
     ...formatItemList(check.removedItems),
   ];
 
@@ -93,13 +92,13 @@ function formatImprovements(check: CheckResult) {
 function formatChangeBaseline(check: CheckResult, isFirst: boolean) {
   const prefix = isFirst ? "" : "\n";
   const lines = [
-    `${prefix}${pc.bold(check.checkId)}:`,
+    `${prefix}${c.bold(check.checkId)}:`,
     ...formatRegressions(check),
     ...formatImprovements(check),
   ];
 
   if (check.duration !== undefined) {
-    lines.push(`  ${pc.dim("Completed in")} ${formatDuration(check.duration)}`);
+    lines.push(`  ${c.dim("Completed in")} ${formatDuration(check.duration)}`);
   }
 
   return lines;
@@ -123,20 +122,20 @@ function formatSummary(result: RunResult) {
   const summaryLines: string[] = [];
 
   if (hasAnyInitial) {
-    summaryLines.push(pc.blue("Initial baseline created successfully."));
+    summaryLines.push(c.blue("Initial baseline created successfully."));
   } else if (result.hasRegression) {
-    summaryLines.push(`${pc.red("Regressions detected.")} Run failed.`);
+    summaryLines.push(`${c.red("Regressions detected.")} Run failed.`);
   } else if (result.hasImprovement) {
     summaryLines.push(
-      `${pc.greenBright("Improvements detected.")} Baseline updated.`,
+      `${c.greenBright("Improvements detected.")} Baseline updated.`,
     );
   } else {
-    summaryLines.push(pc.greenBright("All checks passed."));
+    summaryLines.push(c.greenBright("All checks passed."));
   }
 
   if (result.totalDuration !== undefined) {
     summaryLines.push(
-      `${pc.dim("Completed in")} ${formatDuration(result.totalDuration)}`,
+      `${c.dim("Completed in")} ${formatDuration(result.totalDuration)}`,
     );
   }
 

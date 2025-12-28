@@ -1,4 +1,4 @@
-import pc from "picocolors";
+import * as c from "./colors";
 
 function formatMs(ms: number) {
   if (ms < 1000) return `${ms}ms`;
@@ -24,18 +24,18 @@ export function formatDuration(duration: number) {
   const rounded = Math.round(duration);
 
   if (rounded < 1) {
-    return pc.dim("<1ms");
+    return c.dim("<1ms");
   }
 
   const formatted = formatMs(rounded);
 
   if (rounded < 100) {
-    return pc.greenBright(formatted);
+    return c.greenBright(formatted);
   }
 
   if (rounded < 1000) {
-    return pc.yellow(formatted);
+    return c.yellow(formatted);
   }
 
-  return pc.red(formatted);
+  return c.red(formatted);
 }
