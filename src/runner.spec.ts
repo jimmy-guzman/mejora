@@ -45,7 +45,7 @@ vi.mock("./comparison", () => ({
   compareSnapshots: vi.fn(),
 }));
 
-vi.mock("consola");
+vi.mock("./utils/logger");
 
 const { MejoraRunner } = await import("./runner");
 const { runEslintCheck } = await import("./checks/eslint");

@@ -1,11 +1,10 @@
-import { consola } from "consola";
-
 import type { CheckResult, CliOptions, Config } from "./types";
 
 import { BaselineManager } from "./baseline";
 import { runEslintCheck } from "./checks/eslint";
 import { runTypescriptCheck } from "./checks/typescript";
 import { compareSnapshots } from "./comparison";
+import { logger } from "./utils/logger";
 
 export class MejoraRunner {
   private baselineManager: BaselineManager;
@@ -108,7 +107,7 @@ export class MejoraRunner {
           });
         }
       } catch (error) {
-        consola.error(`Error running check "${checkId}":`, error);
+        logger.error(`Error running check "${checkId}":`, error);
 
         return {
           exitCode: 2,

@@ -1,11 +1,10 @@
 #!/usr/bin/env node
 import { parseArgs } from "node:util";
 
-import { consola } from "consola";
-
 import { loadConfig } from "./config";
 import { formatJsonOutput, formatTextOutput } from "./output";
 import { MejoraRunner } from "./runner";
+import { logger } from "./utils/logger";
 
 const { values } = parseArgs({
   allowPositionals: false,
@@ -34,7 +33,7 @@ const { values } = parseArgs({
 });
 
 if (values.help) {
-  consola.log(`
+  logger.log(`
 mejora - Prevent regressions by allowing only improvement
 
 Usage:
@@ -68,17 +67,17 @@ try {
   });
 
   if (values.json) {
-    consola.log(formatJsonOutput(result));
+    logger.log(formatJsonOutput(result));
   } else {
-    consola.log(formatTextOutput(result));
+    logger.log(formatTextOutput(result));
   }
 
   process.exit(result.exitCode);
 } catch (error) {
   if (error instanceof Error) {
-    consola.error(error.message);
+    logger.error(error.message);
   } else {
-    consola.error(error);
+    logger.error(error);
   }
   process.exit(2);
 }
