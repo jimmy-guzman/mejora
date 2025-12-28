@@ -106,4 +106,21 @@ describe("generateMarkdownReport", () => {
     expect(result).toContain("## eslint");
     expect(result).not.toContain("invalid item without path");
   });
+
+  it("should not add description separator when item has no description", () => {
+    const baseline = {
+      checks: {
+        eslint: {
+          items: ["/project/src/index.ts:10"],
+          type: "items" as const,
+        },
+      },
+      version: 1,
+    };
+    const result = generateMarkdownReport(baseline, "/project/.mejora");
+
+    expect(result).toContain("[/project/src/index.ts:10](../src/index.ts#L10)");
+    expect(result).not.toContain(" - \n");
+    expect(result).toMatch(/\[.*\]\(.*\)\n/);
+  });
 });

@@ -30,8 +30,9 @@ export function generateMarkdownReport(
         if (filePath) {
           const relativePath = relative(baselineDir, filePath);
           const linkPath = line ? `${relativePath}#L${line}` : relativePath;
+          const description = rest.length > 0 ? ` - ${rest.join(" - ")}` : "";
 
-          md += `- [${pathWithLocation}](${linkPath}) - ${rest.join(" - ")}\n`;
+          md += `- [${pathWithLocation}](${linkPath})${description}\n`;
         }
       }
     }
