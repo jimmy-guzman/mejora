@@ -1,6 +1,5 @@
 import type { MockInstance } from "vitest";
 
-// logger.test.ts
 import { logger } from "./logger";
 
 describe("logger", () => {
