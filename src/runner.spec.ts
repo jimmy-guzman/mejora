@@ -435,4 +435,87 @@ describe("MejoraRunner", () => {
 
     expect(result.exitCode).toBe(1);
   });
+
+  it("should throw error for invalid regex pattern in --only", async () => {
+    const config: Config = {
+      checks: {
+        "eslint-main": { files: ["src/**/*.js"], type: "eslint" },
+      },
+    };
+
+    const runner = new MejoraRunner();
+
+    await expect(runner.run(config, { only: "[invalid" })).rejects.toThrowError(
+      'Invalid regex pattern for --only: "[invalid"',
+    );
+  });
+
+  it("should throw error for invalid regex pattern in --skip", async () => {
+    const config: Config = {
+      checks: {
+        "eslint-main": { files: ["src/**/*.js"], type: "eslint" },
+      },
+    };
+
+    const runner = new MejoraRunner();
+
+    await expect(
+      runner.run(config, { skip: "(unclosed" }),
+    ).rejects.toThrowError('Invalid regex pattern for --skip: "(unclosed"');
+  });
+
+  it("should accept valid regex pattern in --only", async () => {
+    const config: Config = {
+      checks: {
+        "eslint-main": { files: ["src/**/*.js"], type: "eslint" },
+        "eslint-test": { files: ["test/**/*.js"], type: "eslint" },
+        "typescript-main": { tsconfig: "tsconfig.json", type: "typescript" },
+      },
+    };
+
+    vi.mocked(runEslintCheck).mockResolvedValue({ items: [], type: "items" });
+    vi.mocked(compareSnapshots).mockReturnValue({
+      hasImprovement: false,
+      hasRegression: false,
+      isInitial: true,
+      newItems: [],
+      removedItems: [],
+    });
+
+    const runner = new MejoraRunner();
+
+    await runner.run(config, { only: "^eslint-.*" });
+
+    expect(runEslintCheck).toHaveBeenCalledTimes(2);
+    expect(runTypescriptCheck).not.toHaveBeenCalled();
+  });
+
+  it("should accept valid regex pattern in --skip", async () => {
+    const config: Config = {
+      checks: {
+        "eslint-main": { files: ["src/**/*.js"], type: "eslint" },
+        "typescript-main": { tsconfig: "tsconfig.json", type: "typescript" },
+        "typescript-test": {
+          tsconfig: "tsconfig.test.json",
+          type: "typescript",
+        },
+      },
+    };
+
+    vi.mocked(runEslintCheck).mockResolvedValue({ items: [], type: "items" });
+    vi.mocked(compareSnapshots).mockReturnValue({
+      hasImprovement: false,
+      hasRegression: false,
+      isInitial: true,
+      newItems: [],
+      removedItems: [],
+    });
+
+    const runner = new MejoraRunner();
+
+    await runner.run(config, { skip: "typescript-.*" });
+
+    expect(runEslintCheck).toHaveBeenCalledOnce();
+    expect(runTypescriptCheck).not.toHaveBeenCalled();
+  });
 });

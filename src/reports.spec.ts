@@ -104,5 +104,6 @@ describe("generateMarkdownReport", () => {
 
     expect(result).toContain("valid.ts");
     expect(result).toContain("## eslint");
+    expect(result).not.toContain("invalid item without path");
   });
 });

@@ -43,6 +43,7 @@ export class BaselineManager {
     try {
       const content = await readFile(this.baselinePath, "utf8");
 
+      // TODO: consider using zod for validation and parsing
       return JSON.parse(content) as Baseline;
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === "ENOENT") {

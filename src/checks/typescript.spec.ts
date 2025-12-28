@@ -284,4 +284,18 @@ describe("runTypescriptCheck", () => {
       "\n",
     );
   });
+
+  it("should throw when tsconfig has read error with complex message", async () => {
+    mockFindConfigFile.mockReturnValue("/test/project/tsconfig.json");
+    mockReadConfigFile.mockReturnValue({
+      error: { messageText: { messageText: "Complex error", next: [] } },
+    });
+    mockFlattenDiagnosticMessageText.mockReturnValue("Flattened complex error");
+
+    await expect(
+      runTypescriptCheck({ tsconfig: "tsconfig.json" }),
+    ).rejects.toThrowError(
+      "Failed to read TypeScript config: Flattened complex error",
+    );
+  });
 });

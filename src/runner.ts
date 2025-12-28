@@ -18,7 +18,7 @@ export class MejoraRunner {
     let filtered = { ...checks };
 
     if (options.only) {
-      const pattern = new RegExp(options.only);
+      const pattern = MejoraRunner.resolveRegex(options.only, "--only");
 
       filtered = Object.fromEntries(
         Object.entries(filtered).filter(([key]) => pattern.test(key)),
@@ -26,7 +26,7 @@ export class MejoraRunner {
     }
 
     if (options.skip) {
-      const pattern = new RegExp(options.skip);
+      const pattern = MejoraRunner.resolveRegex(options.skip, "--skip");
 
       filtered = Object.fromEntries(
         Object.entries(filtered).filter(([key]) => !pattern.test(key)),
@@ -34,6 +34,14 @@ export class MejoraRunner {
     }
 
     return filtered;
+  }
+
+  private static resolveRegex(pattern: string, option: "--only" | "--skip") {
+    try {
+      return new RegExp(pattern);
+    } catch {
+      throw new Error(`Invalid regex pattern for ${option}: "${pattern}"`);
+    }
   }
 
   private static async runCheck(checkConfig: Config["checks"][string]) {

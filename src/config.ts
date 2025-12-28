@@ -39,5 +39,6 @@ export const loadConfig = async () => {
     throw new Error("No configuration file found.");
   }
 
+  // TODO: consider adding schema validation like zod in a future iteration
   return result.config as Config;
 };

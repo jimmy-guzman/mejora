@@ -45,13 +45,16 @@ export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
     throw new Error("TypeScript config file not found");
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- TODO: add types to tsconfig
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- TODO: add types to tsconfig or use zod to validate
   const { config: tsConfig, error } = readConfigFile(configPath, readFile);
 
-  if (typeof error?.messageText === "string") {
-    throw new TypeError(
-      `Failed to read TypeScript config: ${error.messageText}`,
-    );
+  if (error) {
+    const message =
+      typeof error.messageText === "string"
+        ? error.messageText
+        : flattenDiagnosticMessageText(error.messageText, "\n");
+
+    throw new TypeError(`Failed to read TypeScript config: ${message}`);
   }
 
   const parseResult = parseJsonConfigFileContent(
