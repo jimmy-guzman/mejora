@@ -149,7 +149,7 @@ function mergeBaselines(baselines: Baseline[]) {
   for (const checkId of checkIds) {
     merged.checks[checkId] = {
       items: mergeCheckItems(baselines, checkId),
-      // Consider preserving original entry type during merge.
+      // TODO: consider preserving original entry type during merge.
       type: "items",
     };
   }
