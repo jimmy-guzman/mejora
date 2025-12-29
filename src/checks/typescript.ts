@@ -2,6 +2,16 @@ import { relative, resolve } from "node:path";
 
 import type { TypeScriptCheckConfig } from "@/types";
 
+export async function validateTypescriptDeps() {
+  try {
+    await import("typescript");
+  } catch {
+    throw new Error(
+      `Typescript check requires typescript but it's not installed.`,
+    );
+  }
+}
+
 const createItem = ({
   character,
   code,

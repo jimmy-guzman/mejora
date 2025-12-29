@@ -1,13 +1,23 @@
 import type { BaselineManager as BaselineManagerType } from "./baseline";
 import type { Baseline, BaselineEntry, Config } from "./types";
 
-vi.mock("./checks/eslint", () => ({
-  runEslintCheck: vi.fn(),
-}));
+import { validateEslintDeps } from "./checks/eslint";
+import { validateTypescriptDeps } from "./checks/typescript";
+import { logger } from "./utils/logger";
 
-vi.mock("./checks/typescript", () => ({
-  runTypescriptCheck: vi.fn(),
-}));
+vi.mock("./checks/eslint", () => {
+  return {
+    runEslintCheck: vi.fn(),
+    validateEslintDeps: vi.fn(),
+  };
+});
+
+vi.mock("./checks/typescript", () => {
+  return {
+    runTypescriptCheck: vi.fn(),
+    validateTypescriptDeps: vi.fn(),
+  };
+});
 
 const mockLoad = vi.fn();
 const mockSave = vi.fn();
@@ -517,5 +527,69 @@ describe("MejoraRunner", () => {
 
     expect(runEslintCheck).toHaveBeenCalledOnce();
     expect(runTypescriptCheck).not.toHaveBeenCalled();
+  });
+
+  it("should throw when eslint dependencies are missing", async () => {
+    const config = {
+      checks: {
+        "my-eslint-check": {
+          files: ["*.js"],
+          type: "eslint" as const,
+        },
+      },
+    };
+
+    vi.mocked(validateEslintDeps).mockRejectedValue(
+      new Error("Eslint not installed"),
+    );
+
+    const runner = new MejoraRunner();
+
+    const logSpy = vi.spyOn(logger, "error");
+
+    await expect(runner.run(config)).resolves.toStrictEqual({
+      exitCode: 2,
+      hasImprovement: false,
+      hasRegression: true,
+      results: [],
+      totalDuration: expect.any(Number),
+    });
+
+    expect(logSpy).toHaveBeenCalledWith(
+      'Error running check "my-eslint-check":',
+      new Error("Eslint not installed"),
+    );
+  });
+
+  it("should throw when typescript dependencies are missing", async () => {
+    const config = {
+      checks: {
+        "my-typescript-check": {
+          files: ["*.ts"],
+          type: "typescript" as const,
+        },
+      },
+    };
+
+    vi.mocked(validateTypescriptDeps).mockRejectedValue(
+      new Error("Typescript not installed"),
+    );
+
+    const runner = new MejoraRunner();
+
+    const logSpy = vi.spyOn(logger, "error");
+
+    await expect(runner.run(config)).resolves.toStrictEqual({
+      exitCode: 2,
+      hasImprovement: false,
+      hasRegression: true,
+      results: [],
+      totalDuration: expect.any(Number),
+    });
+
+    expect(logSpy).toHaveBeenCalledWith(
+      'Error running check "my-typescript-check":',
+      new Error("Typescript not installed"),
+    );
   });
 });

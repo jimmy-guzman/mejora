@@ -299,3 +299,28 @@ describe("runTypescriptCheck", () => {
     );
   });
 });
+
+describe("validateTypescriptDeps", () => {
+  afterEach(() => {
+    vi.resetModules();
+  });
+
+  it("should not throw if eslint is installed", async () => {
+    const { validateTypescriptDeps } = await import("./typescript");
+
+    await expect(validateTypescriptDeps()).resolves.not.toThrowError();
+  });
+
+  it("should throw if typescript is not installed", async () => {
+    vi.doUnmock("typescript");
+    vi.doMock("typescript", () => {
+      throw new Error("Cannot find module 'typescript'");
+    });
+
+    const { validateTypescriptDeps } = await import("./typescript");
+
+    await expect(validateTypescriptDeps()).rejects.toThrowError(
+      "Typescript check requires typescript but it's not installed.",
+    );
+  });
+});

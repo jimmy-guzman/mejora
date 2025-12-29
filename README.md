@@ -121,6 +121,7 @@ The object key is the check identifier and is used in the baseline.
 - Snapshot type: items
 - Each lint message is treated as an item
 - Regressions are new lint messages
+- **`eslint` is required as a peer dependency when using the ESLint check**
 
 ### TypeScript
 
@@ -128,6 +129,7 @@ The object key is the check identifier and is used in the baseline.
 - Each compiler diagnostic is treated as an item
 - Regressions are new diagnostics
 - Uses the nearest `tsconfig.json` by default, or an explicit one if provided
+- **`typescript` is required as a peer dependency when using the TypeScript check**
 
 ---
 

@@ -1,8 +1,11 @@
 import type { CheckResult, CliOptions, Config } from "./types";
 
 import { BaselineManager } from "./baseline";
-import { runEslintCheck } from "./checks/eslint";
-import { runTypescriptCheck } from "./checks/typescript";
+import { runEslintCheck, validateEslintDeps } from "./checks/eslint";
+import {
+  runTypescriptCheck,
+  validateTypescriptDeps,
+} from "./checks/typescript";
 import { compareSnapshots } from "./comparison";
 import { logger } from "./utils/logger";
 
@@ -45,8 +48,12 @@ export class MejoraRunner {
 
   private static async runCheck(checkConfig: Config["checks"][string]) {
     if (checkConfig.type === "eslint") {
+      await validateEslintDeps();
+
       return runEslintCheck(checkConfig);
     }
+
+    await validateTypescriptDeps();
 
     return runTypescriptCheck(checkConfig);
   }

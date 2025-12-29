@@ -133,3 +133,28 @@ describe("runEslintCheck", () => {
     );
   });
 });
+
+describe("validateEslintDeps", () => {
+  afterEach(() => {
+    vi.resetModules();
+  });
+
+  it("should not throw if eslint is installed", async () => {
+    const { validateEslintDeps } = await import("./eslint");
+
+    await expect(validateEslintDeps()).resolves.not.toThrowError();
+  });
+
+  it("should throw if eslint is not installed", async () => {
+    vi.doUnmock("eslint");
+    vi.doMock("eslint", () => {
+      throw new Error("Cannot find module 'eslint'");
+    });
+
+    const { validateEslintDeps } = await import("./eslint");
+
+    await expect(validateEslintDeps()).rejects.toThrowError(
+      "Eslint check requires eslint but it's not installed.",
+    );
+  });
+});

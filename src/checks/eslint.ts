@@ -18,6 +18,14 @@ const createItem = ({
   ruleId: string;
 }) => `${relative(cwd, filePath)}:${line}:${column} - ${ruleId}` as const;
 
+export async function validateEslintDeps() {
+  try {
+    await import("eslint");
+  } catch {
+    throw new Error(`Eslint check requires eslint but it's not installed.`);
+  }
+}
+
 export async function runEslintCheck(config: ESLintCheckConfig) {
   const { ESLint } = await import("eslint");
   const cwd = process.cwd();
