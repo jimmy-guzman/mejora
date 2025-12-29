@@ -18,7 +18,7 @@ export const cyan = (text: string) => {
 };
 
 export const dim = (text: string) => {
-  return styleText("gray", text);
+  return styleText("dim", text);
 };
 
 export const green = (text: string) => {
@@ -26,7 +26,7 @@ export const green = (text: string) => {
 };
 
 export const greenBright = (text: string) => {
-  return styleText(["green", "bold"], text);
+  return styleText("greenBright", text);
 };
 
 export const red = (text: string) => {
