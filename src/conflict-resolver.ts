@@ -1,30 +1,92 @@
-import type { Baseline } from "./types";
+import type { Baseline, BaselineEntry } from "./types";
 
 import { BASELINE_VERSION } from "./constants";
 
-function parseConflictMarkers(content: string) {
-  const regex = /<<<<<<< .*\n([\s\S]*?)\n=======\n([\s\S]*?)\n>>>>>>> .*\n/;
-  const match = regex.exec(content);
+function removeCloseBraces(json: string, count: number) {
+  let result = json;
 
-  if (!match) {
-    throw new Error("Could not parse conflict markers in baseline");
+  for (let i = 0; i < count && result.includes("}"); i++) {
+    const lastBraceIndex = result.lastIndexOf("}");
+
+    result = result.slice(0, lastBraceIndex) + result.slice(lastBraceIndex + 1);
   }
 
-  const [, ours = "", theirs = ""] = match;
-
-  return { ours, theirs };
+  return result;
 }
 
-function extractBaseline(partialJson: string): Baseline {
-  try {
-    const trimmed = partialJson.trim();
+function addCloseBraces(json: string, count: number) {
+  const closingBraces = "  }".repeat(count);
 
-    const fullJson = `{
+  return `${json}\n${closingBraces}`;
+}
+
+function balanceBraces(json: string) {
+  let openCount = 0;
+  let closeCount = 0;
+
+  for (const char of json) {
+    if (char === "{") openCount++;
+    if (char === "}") closeCount++;
+  }
+
+  if (openCount === closeCount) {
+    return json;
+  }
+
+  const diff = Math.abs(openCount - closeCount);
+
+  if (closeCount > openCount) {
+    return removeCloseBraces(json, diff);
+  }
+
+  return addCloseBraces(json, diff);
+}
+
+function cleanJsonFragment(fragment: string) {
+  const trimmed = fragment.trim();
+  const withoutTrailingComma = trimmed.endsWith(",")
+    ? trimmed.slice(0, -1)
+    : trimmed;
+
+  return balanceBraces(withoutTrailingComma);
+}
+
+function wrapInBaselineStructure(fragment: string) {
+  return `{
   "version": ${BASELINE_VERSION},
-  ${trimmed}
+  ${fragment}
 }`;
+}
 
-    return JSON.parse(fullJson) as Baseline;
+function normalizeBaselineStructure(parsed: {
+  checks?: Record<string, BaselineEntry>;
+  version: number;
+}) {
+  if (parsed.checks) {
+    return parsed as Baseline;
+  }
+
+  const checks: Record<string, unknown> = {};
+
+  for (const [key, value] of Object.entries(parsed)) {
+    if (key !== "version") {
+      checks[key] = value;
+    }
+  }
+
+  return {
+    checks: checks as Baseline["checks"],
+    version: BASELINE_VERSION,
+  };
+}
+
+function parseJsonFragment(fragment: string) {
+  try {
+    const cleaned = cleanJsonFragment(fragment);
+    const wrapped = wrapInBaselineStructure(cleaned);
+    const parsed = JSON.parse(wrapped) as Baseline;
+
+    return normalizeBaselineStructure(parsed);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
 
@@ -35,28 +97,57 @@ function extractBaseline(partialJson: string): Baseline {
   }
 }
 
-function unionMerge(ours: Baseline, theirs: Baseline): Baseline {
+function extractConflictSections(content: string) {
+  const regex = /<<<<<<< .*\n([\s\S]*?)\n=======\n([\s\S]*?)\n>>>>>>> .*$/gm;
+  const matches = [...content.matchAll(regex)];
+
+  if (matches.length === 0) {
+    throw new Error("Could not parse conflict markers in baseline");
+  }
+
+  return matches.map(([, ours = "", theirs = ""]) => ({ ours, theirs }));
+}
+
+function collectAllCheckIds(baselines: Baseline[]) {
+  const checkIds = new Set<string>();
+
+  for (const baseline of baselines) {
+    for (const checkId of Object.keys(baseline.checks)) {
+      checkIds.add(checkId);
+    }
+  }
+
+  return checkIds;
+}
+
+function mergeCheckItems(baselines: Baseline[], checkId: string) {
+  const allItems = new Set<string>();
+
+  for (const baseline of baselines) {
+    const check = baseline.checks[checkId];
+
+    if (check?.items) {
+      for (const item of check.items) {
+        allItems.add(item);
+      }
+    }
+  }
+
+  return [...allItems].toSorted();
+}
+
+function mergeBaselines(baselines: Baseline[]) {
   const merged: Baseline = {
     checks: {},
     version: BASELINE_VERSION,
   };
 
-  const allCheckIds = new Set([
-    ...Object.keys(ours.checks),
-    ...Object.keys(theirs.checks),
-  ]);
+  const checkIds = collectAllCheckIds(baselines);
 
-  for (const checkId of allCheckIds) {
-    const ourItems = new Set(ours.checks[checkId]?.items);
-    const theirItems = new Set(theirs.checks[checkId]?.items);
-    const mergedItems = new Set([...ourItems, ...theirItems]);
-
-    const type =
-      ours.checks[checkId]?.type ?? theirs.checks[checkId]?.type ?? "items";
-
+  for (const checkId of checkIds) {
     merged.checks[checkId] = {
-      items: [...mergedItems].toSorted(),
-      type,
+      items: mergeCheckItems(baselines, checkId),
+      type: "items",
     };
   }
 
@@ -64,8 +155,10 @@ function unionMerge(ours: Baseline, theirs: Baseline): Baseline {
 }
 
 /**
- * Resolves a Git merge conflict in a baseline file by performing a union merge.
+ * Resolves Git merge conflicts in a baseline file by performing a union merge.
  * Takes the raw file content containing Git conflict markers and returns a merged baseline.
+ *
+ * Supports multiple conflict blocks in a single file, merging all sections together.
  *
  * @param content - File content containing Git conflict markers (<<<<<<< ======= >>>>>>>)
  *
@@ -73,10 +166,14 @@ function unionMerge(ours: Baseline, theirs: Baseline): Baseline {
  *
  * @throws {Error} If conflict markers cannot be parsed or baselines are invalid
  */
-export function resolveBaselineConflict(content: string): Baseline {
-  const sections = parseConflictMarkers(content);
-  const ours = extractBaseline(sections.ours);
-  const theirs = extractBaseline(sections.theirs);
+export function resolveBaselineConflict(content: string) {
+  const sections = extractConflictSections(content);
 
-  return unionMerge(ours, theirs);
+  const allBaselines: Baseline[] = [];
+
+  for (const { ours, theirs } of sections) {
+    allBaselines.push(parseJsonFragment(ours), parseJsonFragment(theirs));
+  }
+
+  return mergeBaselines(allBaselines);
 }

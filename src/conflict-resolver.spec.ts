@@ -1,4 +1,5 @@
 import { resolveBaselineConflict } from "./conflict-resolver";
+import { BASELINE_VERSION } from "./constants";
 
 describe("resolveBaselineConflict", () => {
   it("should merge conflicts with union of items", () => {
@@ -32,7 +33,7 @@ describe("resolveBaselineConflict", () => {
     ]);
   });
 
-  it("should handle conflicts with different checks on each side", () => {
+  it("should merge conflicts with different checks on each side", () => {
     const conflictContent = [
       "{",
       '  "version": 1,',
@@ -60,7 +61,7 @@ describe("resolveBaselineConflict", () => {
     expect(result.checks.typescript?.items).toStrictEqual(["error2"]);
   });
 
-  it("should handle conflicts with overlapping items", () => {
+  it("should merge conflicts with overlapping items", () => {
     const conflictContent = [
       "{",
       '  "version": 1,',
@@ -124,7 +125,7 @@ describe("resolveBaselineConflict", () => {
     ]);
   });
 
-  it("should handle multiple checks with conflicts", () => {
+  it("should merge multiple checks with conflicts", () => {
     const conflictContent = [
       "{",
       '  "version": 1,',
@@ -270,39 +271,12 @@ describe("resolveBaselineConflict", () => {
     );
   });
 
-  it("should handle empty checks on one side", () => {
+  it("should merge when one side has empty checks", () => {
     const conflictContent = [
       "{",
       '  "version": 1,',
       "<<<<<<< HEAD",
       '  "checks": {}',
-      "=======",
-      '  "checks": {',
-      '    "eslint": {',
-      '      "type": "items",',
-      '      "items": ["error1"]',
-      "    }",
-      "  }",
-      ">>>>>>> feature",
-      "}",
-    ].join("\n");
-
-    const result = resolveBaselineConflict(conflictContent);
-
-    expect(result.checks.eslint?.items).toStrictEqual(["error1"]);
-  });
-
-  it("should handle empty items arrays", () => {
-    const conflictContent = [
-      "{",
-      '  "version": 1,',
-      "<<<<<<< HEAD",
-      '  "checks": {',
-      '    "eslint": {',
-      '      "type": "items",',
-      '      "items": []',
-      "    }",
-      "  }",
       "=======",
       '  "checks": {',
       '    "eslint": {',
@@ -419,5 +393,232 @@ describe("resolveBaselineConflict", () => {
 
     expect(result.checks.eslint?.type).toBe("items");
     expect(result.checks.eslint?.items).toStrictEqual(["error1", "error2"]);
+  });
+
+  it("should merge multiple conflict blocks with different checks", () => {
+    const conflictContent = [
+      "{",
+      '  "version": 1,',
+      "<<<<<<< HEAD",
+      '  "checks": {',
+      '    "eslint": {',
+      '      "type": "items",',
+      '      "items": ["error1"]',
+      "    }",
+      "=======",
+      '  "checks": {',
+      '    "eslint": {',
+      '      "type": "items",',
+      '      "items": ["error2"]',
+      "    }",
+      ">>>>>>> feature",
+      ",",
+      "<<<<<<< HEAD",
+      '    "typescript": {',
+      '      "type": "items",',
+      '      "items": ["ts-error1"]',
+      "    }",
+      "  }",
+      "=======",
+      '    "typescript": {',
+      '      "type": "items",',
+      '      "items": ["ts-error2"]',
+      "    }",
+      "  }",
+      ">>>>>>> feature",
+      "}",
+    ].join("\n");
+
+    const result = resolveBaselineConflict(conflictContent);
+
+    expect(result.checks.eslint?.items).toStrictEqual(["error1", "error2"]);
+    expect(result.checks.typescript?.items).toStrictEqual([
+      "ts-error1",
+      "ts-error2",
+    ]);
+  });
+
+  it("should merge three conflict blocks", () => {
+    const conflictContent = [
+      "{",
+      '  "version": 1,',
+      "<<<<<<< HEAD",
+      '  "checks": {',
+      '    "eslint": {',
+      '      "type": "items",',
+      '      "items": ["error1"]',
+      "    }",
+      "=======",
+      '  "checks": {',
+      '    "eslint": {',
+      '      "type": "items",',
+      '      "items": ["error2"]',
+      "    }",
+      ">>>>>>> feature",
+      ",",
+      "<<<<<<< HEAD",
+      '    "typescript": {',
+      '      "type": "items",',
+      '      "items": ["ts-error1"]',
+      "    }",
+      "=======",
+      '    "typescript": {',
+      '      "type": "items",',
+      '      "items": ["ts-error2"]',
+      "    }",
+      ">>>>>>> feature",
+      ",",
+      "<<<<<<< HEAD",
+      '    "custom": {',
+      '      "type": "items",',
+      '      "items": ["custom-error1"]',
+      "    }",
+      "  }",
+      "=======",
+      '    "custom": {',
+      '      "type": "items",',
+      '      "items": ["custom-error2"]',
+      "    }",
+      "  }",
+      ">>>>>>> feature",
+      "}",
+    ].join("\n");
+
+    const result = resolveBaselineConflict(conflictContent);
+
+    expect(result.checks.eslint?.items).toStrictEqual(["error1", "error2"]);
+    expect(result.checks.typescript?.items).toStrictEqual([
+      "ts-error1",
+      "ts-error2",
+    ]);
+    expect(result.checks.custom?.items).toStrictEqual([
+      "custom-error1",
+      "custom-error2",
+    ]);
+  });
+
+  it("should merge multiple conflict blocks without outer JSON structure", () => {
+    const conflictContent = [
+      "<<<<<<< HEAD",
+      '  "checks": {',
+      '    "eslint": {',
+      '      "type": "items",',
+      '      "items": ["error1"]',
+      "    }",
+      "  }",
+      "=======",
+      '  "checks": {',
+      '    "eslint": {',
+      '      "type": "items",',
+      '      "items": ["error2"]',
+      "    }",
+      "  }",
+      ">>>>>>> feature",
+      ",",
+      "<<<<<<< HEAD",
+      '  "checks": {',
+      '    "typescript": {',
+      '      "type": "items",',
+      '      "items": ["ts-error1"]',
+      "    }",
+      "  }",
+      "=======",
+      '  "checks": {',
+      '    "typescript": {',
+      '      "type": "items",',
+      '      "items": ["ts-error2"]',
+      "    }",
+      "  }",
+      ">>>>>>> feature",
+    ].join("\n");
+
+    const result = resolveBaselineConflict(conflictContent);
+
+    expect(result.checks.eslint?.items).toStrictEqual(["error1", "error2"]);
+    expect(result.checks.typescript?.items).toStrictEqual([
+      "ts-error1",
+      "ts-error2",
+    ]);
+    expect(result.version).toBe(BASELINE_VERSION);
+  });
+
+  it("should merge when the same check appears in multiple conflict blocks", () => {
+    const conflictContent = [
+      "<<<<<<< HEAD",
+      '  "checks": {',
+      '    "eslint": {',
+      '      "type": "items",',
+      '      "items": ["a"]',
+      "    }",
+      "  }",
+      "=======",
+      '  "checks": {',
+      '    "eslint": {',
+      '      "type": "items",',
+      '      "items": ["b"]',
+      "    }",
+      "  }",
+      ">>>>>>> feature",
+      ",",
+      "<<<<<<< HEAD",
+      '  "checks": {',
+      '    "eslint": {',
+      '      "type": "items",',
+      '      "items": ["c"]',
+      "    }",
+      "  }",
+      "=======",
+      '  "checks": {',
+      '    "eslint": {',
+      '      "type": "items",',
+      '      "items": ["d"]',
+      "    }",
+      "  }",
+      ">>>>>>> feature",
+    ].join("\n");
+
+    const result = resolveBaselineConflict(conflictContent);
+
+    expect(result.checks.eslint?.items).toStrictEqual(["a", "b", "c", "d"]);
+    expect(result.version).toBe(BASELINE_VERSION);
+  });
+
+  it("should merge conflict blocks that are check entries inside checks", () => {
+    const conflictContent = [
+      "{",
+      '  "version": 1,',
+      '  "checks": {',
+      "<<<<<<< HEAD",
+      '    "eslint": { "type": "items", "items": ["a"] },',
+      "=======",
+      '    "eslint": { "type": "items", "items": ["b"] },',
+      ">>>>>>> feature",
+      "<<<<<<< HEAD",
+      '    "typescript": { "type": "items", "items": ["x"] }',
+      "=======",
+      '    "typescript": { "type": "items", "items": ["y"] }',
+      ">>>>>>> feature",
+      "  }",
+      "}",
+    ].join("\n");
+
+    const result = resolveBaselineConflict(conflictContent);
+
+    expect(result.checks.eslint?.items).toStrictEqual(["a", "b"]);
+    expect(result.checks.typescript?.items).toStrictEqual(["x", "y"]);
+  });
+
+  it("should throw error for fragments with no close braces", () => {
+    const conflictContent = [
+      "<<<<<<< HEAD",
+      '  "checks": { "eslint": { "items": ["a"',
+      "=======",
+      '  "checks": {}',
+      ">>>>>>> feature",
+    ].join("\n");
+
+    expect(() => resolveBaselineConflict(conflictContent)).toThrowError(
+      "Failed to parse baseline during conflict resolution: Expected ',' or ']' after array element in JSON at position 60 (line 4 column 3)",
+    );
   });
 });
