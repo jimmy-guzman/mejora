@@ -10,7 +10,7 @@ function parseConflictMarkers(content: string) {
     throw new Error("Could not parse conflict markers in baseline");
   }
 
-  const [_, ours = "", theirs = ""] = match;
+  const [, ours = "", theirs = ""] = match;
 
   return { ours, theirs };
 }
