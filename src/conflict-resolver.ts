@@ -1,6 +1,6 @@
 import type { Baseline } from "./types";
 
-const BASELINE_VERSION = 1;
+import { BASELINE_VERSION } from "./constants";
 
 function parseConflictMarkers(content: string) {
   const regex = /<<<<<<< .*\n([\s\S]*?)\n=======\n([\s\S]*?)\n>>>>>>> .*\n/;
