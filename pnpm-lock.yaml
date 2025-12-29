@@ -35,9 +35,6 @@ importers:
       gitzy:
         specifier: 6.5.7
         version: 6.5.7
-      is-ci:
-        specifier: 4.1.0
-        version: 4.1.0
       is-in-ci:
         specifier: 2.0.0
         version: 2.0.0
@@ -2143,10 +2140,6 @@ packages:
   is-callable@1.2.7:
     resolution: {integrity: sha512-1BC0BVFhS/p0qtw6enp8e+8OD0UrK0oFLztSjNzhcKA3WDuJxxAPXzPuPtKkjEY9UUoEWlX/8fgKeu2S8i9JTA==}
     engines: {node: '>= 0.4'}
-
-  is-ci@4.1.0:
-    resolution: {integrity: sha512-Ab9bQDQ11lWootZUI5qxgN2ZXwxNI5hTwnsvOc1wyxQ7zQ8OkEDw79mI0+9jI3x432NfwbVRru+3noJfXF6lSQ==}
-    hasBin: true
 
   is-data-view@1.0.2:
     resolution: {integrity: sha512-RKtWF8pGmS87i2D6gqQu/l7EYRlVdfzemCJN/P3UOs//x1QE7mfhvzHIApBTRf7axvT6DMGwSwBXYCT0nfB9xw==}
@@ -5618,10 +5611,6 @@ snapshots:
       semver: 7.7.3
 
   is-callable@1.2.7: {}
-
-  is-ci@4.1.0:
-    dependencies:
-      ci-info: 4.3.1
 
   is-data-view@1.0.2:
     dependencies:

@@ -32,7 +32,7 @@
     "lint": "eslint --cache --cache-location node_modules/.cache/eslint .",
     "lint:fix": "pnpm lint --fix",
     "prepack": "pnpm build && clean-pkg-json",
-    "prepare": "is-ci || lefthook install",
+    "prepare": "is-in-ci || lefthook install",
     "test": "vitest",
     "typecheck": "tsc"
   },
@@ -47,7 +47,6 @@
     "commitlint": "20.2.0",
     "eslint": "9.39.2",
     "gitzy": "6.5.7",
-    "is-ci": "4.1.0",
     "is-in-ci": "2.0.0",
     "jiti": "2.6.1",
     "knip": "5.78.0",
