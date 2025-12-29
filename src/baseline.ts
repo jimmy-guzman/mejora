@@ -8,6 +8,7 @@ import type { Baseline, BaselineEntry } from "./types";
 import { resolveBaselineConflict } from "./conflict-resolver";
 import { BASELINE_VERSION, DEFAULT_BASELINE_PATH } from "./constants";
 import { generateMarkdownReport } from "./reports";
+import { areEntriesEqual } from "./utils/baseline";
 import { logger } from "./utils/logger";
 
 export class BaselineManager {
@@ -36,12 +37,7 @@ export class BaselineManager {
     const current = baseline ?? BaselineManager.create({});
     const existingEntry = current.checks[checkId];
 
-    const isEntryIdentical =
-      existingEntry &&
-      existingEntry.items?.length === entry.items?.length &&
-      existingEntry.items?.every((item, i) => item === entry.items?.[i]);
-
-    if (isEntryIdentical) {
+    if (areEntriesEqual(entry, existingEntry)) {
       return current;
     }
 

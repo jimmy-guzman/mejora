@@ -29,6 +29,7 @@ function balanceBraces(json: string) {
     if (char === "}") closeCount++;
   }
 
+  // Only fixes brace imbalance; other errors are handled by JSON.parse().
   if (openCount === closeCount) {
     return json;
   }
@@ -98,6 +99,7 @@ function parseJsonFragment(fragment: string) {
 }
 
 function extractConflictSections(content: string) {
+  // Assumes standard Git conflict markers; nonstandard or corrupted cases are ignored.
   const regex = /<<<<<<< .*\n([\s\S]*?)\n=======\n([\s\S]*?)\n>>>>>>> .*$/gm;
   const matches = [...content.matchAll(regex)];
 

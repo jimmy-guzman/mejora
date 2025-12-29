@@ -224,7 +224,7 @@ describe("BaselineManager", () => {
       });
     });
 
-    it("should return new reference when items order differs", () => {
+    it("should return same reference when items order differs", () => {
       const baseline = {
         checks: {
           eslint: { items: ["error1", "error2"], type: "items" as const },
@@ -243,7 +243,7 @@ describe("BaselineManager", () => {
         reorderedEntry,
       );
 
-      expect(updated).not.toBe(baseline);
+      expect(updated).toBe(baseline);
     });
 
     it("should return new reference when adding new check", () => {

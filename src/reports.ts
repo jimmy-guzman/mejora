@@ -28,6 +28,7 @@ export function generateMarkdownReport(
         const line = parts?.[1];
 
         if (filePath) {
+          // Assumes absolute file paths.
           const relativePath = relative(baselineDir, filePath);
           const linkPath = line ? `${relativePath}#L${line}` : relativePath;
           const description = rest.length > 0 ? ` - ${rest.join(" - ")}` : "";

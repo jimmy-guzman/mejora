@@ -20,6 +20,7 @@ const createItem = ({
   ruleId: string;
 }) => `${relative(cwd, filePath)}:${line}:${column} - ${ruleId}` as const;
 
+// TODO: what about version
 export async function validateEslintDeps() {
   try {
     await import("eslint");
