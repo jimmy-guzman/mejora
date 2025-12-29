@@ -81,9 +81,18 @@ export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
 
   const diagnostics = getPreEmitDiagnostics(program);
 
+  const workspaceDiagnostics = diagnostics.filter((diagnostic) => {
+    if (!diagnostic.file) return true;
+
+    const filePath = resolve(diagnostic.file.fileName);
+    const workspaceRoot = resolve(cwd);
+
+    return filePath.startsWith(workspaceRoot);
+  });
+
   const items: string[] = [];
 
-  for (const diagnostic of diagnostics) {
+  for (const diagnostic of workspaceDiagnostics) {
     if (diagnostic.file && diagnostic.start !== undefined) {
       const { character, line } = diagnostic.file.getLineAndCharacterOfPosition(
         diagnostic.start,
