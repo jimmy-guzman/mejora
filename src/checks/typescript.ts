@@ -1,4 +1,4 @@
-import { relative, resolve } from "node:path";
+import { relative, resolve, sep } from "node:path";
 
 import type { TypeScriptCheckConfig } from "@/types";
 
@@ -87,7 +87,9 @@ export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
     const filePath = resolve(diagnostic.file.fileName);
     const workspaceRoot = resolve(cwd);
 
-    return filePath.startsWith(workspaceRoot);
+    return (
+      filePath === workspaceRoot || filePath.startsWith(workspaceRoot + sep)
+    );
   });
 
   const items: string[] = [];
