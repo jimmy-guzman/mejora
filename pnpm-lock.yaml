@@ -38,9 +38,6 @@ importers:
       is-in-ci:
         specifier: 2.0.0
         version: 2.0.0
-      jiti:
-        specifier: 2.6.1
-        version: 2.6.1
       knip:
         specifier: 5.78.0
         version: 5.78.0(@types/node@24.10.4)(typescript@5.9.3)
@@ -4194,8 +4191,8 @@ snapshots:
 
   '@typescript-eslint/project-service@8.39.0(typescript@5.9.3)':
     dependencies:
-      '@typescript-eslint/tsconfig-utils': 8.39.0(typescript@5.9.3)
-      '@typescript-eslint/types': 8.39.0
+      '@typescript-eslint/tsconfig-utils': 8.50.1(typescript@5.9.3)
+      '@typescript-eslint/types': 8.50.1
       debug: 4.4.3
       typescript: 5.9.3
     transitivePeerDependencies:
