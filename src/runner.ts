@@ -124,7 +124,7 @@ export class MejoraRunner {
 
         spinner?.succeed(`${checkId} complete`);
       } catch (error) {
-        spinner?.stop();
+        spinner?.fail(`${checkId} failed`);
 
         logger.error(`Error running check "${checkId}":`, error);
 
