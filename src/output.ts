@@ -4,12 +4,20 @@ import * as c from "./utils/colors";
 import { formatDuration } from "./utils/duration";
 
 function categorizeResults(results: CheckResult[]) {
-  const improvements = results.filter((r) => r.hasImprovement && !r.isInitial);
-  const regressions = results.filter((r) => r.hasRegression);
-  const unchanged = results.filter((r) => {
-    return !r.hasImprovement && !r.hasRegression && !r.isInitial;
-  });
-  const initial = results.filter((r) => r.isInitial);
+  const improvements: CheckResult[] = [];
+  const regressions: CheckResult[] = [];
+  const unchanged: CheckResult[] = [];
+  const initial: CheckResult[] = [];
+
+  for (const r of results) {
+    if (r.isInitial) {
+      initial.push(r);
+    } else {
+      if (r.hasImprovement) improvements.push(r);
+      if (r.hasRegression) regressions.push(r);
+      if (!r.hasImprovement && !r.hasRegression) unchanged.push(r);
+    }
+  }
 
   return { improvements, initial, regressions, unchanged };
 }
