@@ -6,8 +6,6 @@ Prevent regressions by allowing only improvement.
 
 If results improve or stay the same, the run passes.
 
----
-
 ## What problem it solves
 
 Most tools ask: _“Is this perfect?”_
@@ -19,8 +17,6 @@ This makes it practical for:
 - incremental cleanup
 - CI enforcement without blocking progress
 
----
-
 ## How it works
 
 1. Each check produces a snapshot, a list of items
@@ -28,9 +24,7 @@ This makes it practical for:
 3. New items cause failure
 4. Removed items are treated as improvement
 
-Baselines are explicit and committed to the repo.
-
----
+Baselines are explicit and should be committed to the repo.
 
 ## Installation
 
@@ -40,8 +34,6 @@ pnpm add -D mejora
 
 > [!NOTE]
 > `mejora` requires Node.js 22.18.0 or later.
-
----
 
 ## Usage
 
@@ -74,8 +66,6 @@ Skip checks:
 ```bash
 pnpm mejora --skip typescript
 ```
-
----
 
 ## Configuration
 
@@ -115,8 +105,6 @@ export default defineConfig({
 Each entry in `checks` is an explicit check.
 The object key is the check identifier and is used in the baseline.
 
----
-
 ## Supported checks
 
 ### ESLint
@@ -138,8 +126,6 @@ The object key is the check identifier and is used in the baseline.
 > [!NOTE]
 > `typescript` (^5.0.0) is required as a peer dependency when using the TypeScript check
 
----
-
 ## Snapshot type
 
 ### Items
@@ -150,8 +136,6 @@ The object key is the check identifier and is used in the baseline.
 
 Fails if new items appear.
 Order does not matter.
-
----
 
 ## Baseline
 
@@ -177,8 +161,6 @@ Example:
 
 The baseline represents the last accepted state.
 
----
-
 ## Improvements and baseline updates
 
 When a run produces fewer items than the baseline, the run passes and the baseline is updated automatically to reflect the improvement.
@@ -186,8 +168,6 @@ When a run produces fewer items than the baseline, the run passes and the baseli
 This includes items that no longer exist in the codebase.
 
 Improvements are reported separately from regressions so progress is visible.
-
----
 
 ## CI behavior
 
@@ -197,17 +177,9 @@ Instead, it compares the committed baseline to the expected results from the cur
 
 If there is any difference between the committed baseline and the expected results, the run fails.
 
-This ensures the baseline always reflects the real state of the codebase.
-
----
-
 ## Force mode
 
 `mejora --force` updates the baseline even when regressions are present.
-
-This is an explicit action and should be used sparingly.
-
----
 
 ## Exit codes
 
@@ -215,18 +187,12 @@ This is an explicit action and should be used sparingly.
 - `1` regression detected or baseline out of sync
 - `2` configuration or runtime error
 
----
-
 ## Output
 
 - Default output is plain text
 - No prompts
 - No interactive behavior
 - `--json` produces structured, deterministic output
-
-Designed to work cleanly in CI and automation.
-
----
 
 ## Merge Conflicts
 
@@ -248,10 +214,6 @@ $ git add .mejora/
 $ git commit -m "Merge feature branch"
 ```
 
----
-
 ## Inspiration
 
-mejora is inspired by the ideas behind [betterer](https://phenomnomnominal.github.io/betterer/).
-
-The core concept of preventing regressions through baselines comes from that work. mejora reimplements the idea with a smaller scope and a simpler, more opinionated design.
+`mejora` is inspired by [betterer](https://phenomnomnominal.github.io/betterer/).
