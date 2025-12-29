@@ -3,7 +3,30 @@ import type { CheckResult, RunResult } from "./types";
 import * as c from "./utils/colors";
 import { formatDuration } from "./utils/duration";
 
+function categorizeResults(results: CheckResult[]) {
+  const improvements: CheckResult[] = [];
+  const regressions: CheckResult[] = [];
+  const unchanged: CheckResult[] = [];
+  const initial: CheckResult[] = [];
+
+  for (const r of results) {
+    if (r.isInitial) {
+      initial.push(r);
+    } else {
+      if (r.hasImprovement) improvements.push(r);
+      if (r.hasRegression) regressions.push(r);
+      if (!r.hasImprovement && !r.hasRegression) unchanged.push(r);
+    }
+  }
+
+  return { improvements, initial, regressions, unchanged };
+}
+
 export function formatJsonOutput(result: RunResult) {
+  const { improvements, initial, regressions, unchanged } = categorizeResults(
+    result.results,
+  );
+
   const output = {
     checks: result.results.map((check) => {
       return {
@@ -20,6 +43,17 @@ export function formatJsonOutput(result: RunResult) {
     exitCode: result.exitCode,
     hasImprovement: result.hasImprovement,
     hasRegression: result.hasRegression,
+    summary: {
+      checksRun: result.results.length,
+      improvementChecks: improvements.map((r) => r.checkId),
+      improvements: improvements.length,
+      initial: initial.length,
+      initialChecks: initial.map((r) => r.checkId),
+      regressionChecks: regressions.map((r) => r.checkId),
+      regressions: regressions.length,
+      unchanged: unchanged.length,
+      unchangedChecks: unchanged.map((r) => r.checkId),
+    },
     totalDuration: result.totalDuration,
   };
 
@@ -118,19 +152,59 @@ function formatCheckResult(check: CheckResult, isFirst: boolean) {
 
 function formatSummary(result: RunResult) {
   const hasAnyInitial = result.results.some((r) => r.isInitial);
+  const { improvements, initial, regressions, unchanged } = categorizeResults(
+    result.results,
+  );
 
-  const summaryLines: string[] = [];
+  const summaryLines: string[] = [
+    c.bold("Summary"),
+    `  Checks run: ${result.results.length}`,
+  ];
+
+  if (improvements.length > 0) {
+    const names = improvements.map((r) => r.checkId).join(", ");
+
+    summaryLines.push(`  Improvements: ${improvements.length} (${names})`);
+  } else {
+    summaryLines.push(`  Improvements: 0`);
+  }
+
+  if (regressions.length > 0) {
+    const names = regressions.map((r) => r.checkId).join(", ");
+
+    summaryLines.push(`  Regressions: ${regressions.length} (${names})`);
+  } else {
+    summaryLines.push(`  Regressions: 0`);
+  }
+
+  if (unchanged.length > 0) {
+    const names = unchanged.map((r) => r.checkId).join(", ");
+
+    summaryLines.push(`  Unchanged: ${unchanged.length} (${names})`);
+  } else {
+    summaryLines.push(`  Unchanged: 0`);
+  }
+
+  if (initial.length > 0) {
+    const names = initial.map((r) => r.checkId).join(", ");
+
+    summaryLines.push(`  Initial: ${initial.length} (${names})`);
+  } else {
+    summaryLines.push(`  Initial: 0`);
+  }
+
+  summaryLines.push("");
 
   if (hasAnyInitial) {
-    summaryLines.push(c.blue("Initial baseline created successfully."));
+    summaryLines.push(c.blue("✓ Initial baseline created successfully"));
   } else if (result.hasRegression) {
-    summaryLines.push(`${c.red("Regressions detected.")} Run failed.`);
+    summaryLines.push(`${c.red("✗ Regressions detected")} - Run failed`);
   } else if (result.hasImprovement) {
     summaryLines.push(
-      `${c.greenBright("Improvements detected.")} Baseline updated.`,
+      `${c.greenBright("✓ Improvements detected")} - Baseline updated`,
     );
   } else {
-    summaryLines.push(c.greenBright("All checks passed."));
+    summaryLines.push(c.greenBright("✓ All checks passed"));
   }
 
   if (result.totalDuration !== undefined) {
