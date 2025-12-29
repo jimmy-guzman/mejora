@@ -79,11 +79,11 @@ Create one of:
 Example:
 
 ```ts
-import { defineConfig, eslintCheck, typescriptCheck } from "mejora";
+import { defineConfig, eslint, typescript } from "mejora";
 
 export default defineConfig({
   checks: {
-    "eslint > no-nested-ternary": eslintCheck({
+    "eslint > no-nested-ternary": eslint({
       files: ["src/**/*.{ts,tsx,js,jsx}"],
       overrides: {
         rules: {
@@ -91,7 +91,7 @@ export default defineConfig({
         },
       },
     }),
-    "typescript": typescriptCheck({
+    "typescript": typescript({
       overrides: {
         compilerOptions: {
           noImplicitAny: true,
