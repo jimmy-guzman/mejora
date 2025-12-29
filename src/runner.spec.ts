@@ -1,5 +1,5 @@
 import type { BaselineManager as BaselineManagerType } from "./baseline";
-import type { Baseline, BaselineEntry, Config } from "./types";
+import type { Baseline, BaselineEntry } from "./types";
 
 import { validateEslintDeps } from "./checks/eslint";
 import { validateTypescriptDeps } from "./checks/typescript";
@@ -70,9 +70,9 @@ describe("MejoraRunner", () => {
   });
 
   it("should run eslint checks", async () => {
-    const config: Config = {
+    const config = {
       checks: {
-        "my-check": { files: ["*.js"], type: "eslint" },
+        "my-check": { files: ["*.js"], type: "eslint" as const },
       },
     };
 
@@ -93,9 +93,9 @@ describe("MejoraRunner", () => {
   });
 
   it("should run typescript checks", async () => {
-    const config: Config = {
+    const config = {
       checks: {
-        "my-check": { tsconfig: "tsconfig.json", type: "typescript" },
+        "my-check": { tsconfig: "tsconfig.json", type: "typescript" as const },
       },
     };
 
@@ -119,8 +119,8 @@ describe("MejoraRunner", () => {
   });
 
   it("should return exit code 0 when no regressions", async () => {
-    const config: Config = {
-      checks: { check1: { files: ["*.js"], type: "eslint" } },
+    const config = {
+      checks: { check1: { files: ["*.js"], type: "eslint" as const } },
     };
 
     vi.mocked(runEslintCheck).mockResolvedValue({ items: [], type: "items" });
@@ -140,8 +140,8 @@ describe("MejoraRunner", () => {
   });
 
   it("should return exit code 1 when regressions found", async () => {
-    const config: Config = {
-      checks: { check1: { files: ["*.js"], type: "eslint" } },
+    const config = {
+      checks: { check1: { files: ["*.js"], type: "eslint" as const } },
     };
 
     vi.mocked(runEslintCheck).mockResolvedValue({
@@ -164,8 +164,8 @@ describe("MejoraRunner", () => {
   });
 
   it("should allow regressions with --force", async () => {
-    const config: Config = {
-      checks: { check1: { files: ["*.js"], type: "eslint" } },
+    const config = {
+      checks: { check1: { files: ["*.js"], type: "eslint" as const } },
     };
 
     vi.mocked(runEslintCheck).mockResolvedValue({
@@ -187,11 +187,14 @@ describe("MejoraRunner", () => {
   });
 
   it("should filter checks with --only", async () => {
-    const config: Config = {
+    const config = {
       checks: {
-        "eslint-main": { files: ["src/**/*.js"], type: "eslint" },
-        "eslint-test": { files: ["test/**/*.js"], type: "eslint" },
-        "typescript-main": { tsconfig: "tsconfig.json", type: "typescript" },
+        "eslint-main": { files: ["src/**/*.js"], type: "eslint" as const },
+        "eslint-test": { files: ["test/**/*.js"], type: "eslint" as const },
+        "typescript-main": {
+          tsconfig: "tsconfig.json",
+          type: "typescript" as const,
+        },
       },
     };
 
@@ -213,10 +216,13 @@ describe("MejoraRunner", () => {
   });
 
   it("should filter checks with --skip", async () => {
-    const config: Config = {
+    const config = {
       checks: {
-        "eslint-main": { files: ["src/**/*.js"], type: "eslint" },
-        "typescript-main": { tsconfig: "tsconfig.json", type: "typescript" },
+        "eslint-main": { files: ["src/**/*.js"], type: "eslint" as const },
+        "typescript-main": {
+          tsconfig: "tsconfig.json",
+          type: "typescript" as const,
+        },
       },
     };
 
@@ -241,8 +247,8 @@ describe("MejoraRunner", () => {
   });
 
   it("should return exit code 2 on check error", async () => {
-    const config: Config = {
-      checks: { check1: { files: ["*.js"], type: "eslint" } },
+    const config = {
+      checks: { check1: { files: ["*.js"], type: "eslint" as const } },
     };
 
     vi.mocked(runEslintCheck).mockRejectedValue(new Error("Check failed"));
@@ -254,8 +260,8 @@ describe("MejoraRunner", () => {
   });
 
   it("should include results for each check", async () => {
-    const config: Config = {
-      checks: { check1: { files: ["*.js"], type: "eslint" } },
+    const config = {
+      checks: { check1: { files: ["*.js"], type: "eslint" as const } },
     };
     const snapshot = {
       items: ["file.js:1:1 - error" as const],
@@ -280,8 +286,8 @@ describe("MejoraRunner", () => {
   });
 
   it("should detect and report improvements", async () => {
-    const config: Config = {
-      checks: { check1: { files: ["*.js"], type: "eslint" } },
+    const config = {
+      checks: { check1: { files: ["*.js"], type: "eslint" as const } },
     };
     const existingBaseline = {
       checks: {
@@ -327,8 +333,8 @@ describe("MejoraRunner", () => {
   });
 
   it("should save baseline on initial run", async () => {
-    const config: Config = {
-      checks: { check1: { files: ["*.js"], type: "eslint" } },
+    const config = {
+      checks: { check1: { files: ["*.js"], type: "eslint" as const } },
     };
 
     mockLoad.mockResolvedValue(null);
@@ -363,8 +369,8 @@ describe("MejoraRunner", () => {
   });
 
   it("should save baseline when improvement detected", async () => {
-    const config: Config = {
-      checks: { check1: { files: ["*.js"], type: "eslint" } },
+    const config = {
+      checks: { check1: { files: ["*.js"], type: "eslint" as const } },
     };
     const existingBaseline = {
       checks: {
@@ -408,8 +414,8 @@ describe("MejoraRunner", () => {
   });
 
   it("should save baseline on initial run even with regressions", async () => {
-    const config: Config = {
-      checks: { check1: { files: ["*.js"], type: "eslint" } },
+    const config = {
+      checks: { check1: { files: ["*.js"], type: "eslint" as const } },
     };
 
     mockLoad.mockResolvedValue(null);
@@ -447,9 +453,9 @@ describe("MejoraRunner", () => {
   });
 
   it("should throw error for invalid regex pattern in --only", async () => {
-    const config: Config = {
+    const config = {
       checks: {
-        "eslint-main": { files: ["src/**/*.js"], type: "eslint" },
+        "eslint-main": { files: ["src/**/*.js"], type: "eslint" as const },
       },
     };
 
@@ -461,9 +467,9 @@ describe("MejoraRunner", () => {
   });
 
   it("should throw error for invalid regex pattern in --skip", async () => {
-    const config: Config = {
+    const config = {
       checks: {
-        "eslint-main": { files: ["src/**/*.js"], type: "eslint" },
+        "eslint-main": { files: ["src/**/*.js"], type: "eslint" as const },
       },
     };
 
@@ -475,11 +481,14 @@ describe("MejoraRunner", () => {
   });
 
   it("should accept valid regex pattern in --only", async () => {
-    const config: Config = {
+    const config = {
       checks: {
-        "eslint-main": { files: ["src/**/*.js"], type: "eslint" },
-        "eslint-test": { files: ["test/**/*.js"], type: "eslint" },
-        "typescript-main": { tsconfig: "tsconfig.json", type: "typescript" },
+        "eslint-main": { files: ["src/**/*.js"], type: "eslint" as const },
+        "eslint-test": { files: ["test/**/*.js"], type: "eslint" as const },
+        "typescript-main": {
+          tsconfig: "tsconfig.json",
+          type: "typescript" as const,
+        },
       },
     };
 
@@ -501,13 +510,16 @@ describe("MejoraRunner", () => {
   });
 
   it("should accept valid regex pattern in --skip", async () => {
-    const config: Config = {
+    const config = {
       checks: {
-        "eslint-main": { files: ["src/**/*.js"], type: "eslint" },
-        "typescript-main": { tsconfig: "tsconfig.json", type: "typescript" },
+        "eslint-main": { files: ["src/**/*.js"], type: "eslint" as const },
+        "typescript-main": {
+          tsconfig: "tsconfig.json",
+          type: "typescript" as const,
+        },
         "typescript-test": {
           tsconfig: "tsconfig.test.json",
-          type: "typescript",
+          type: "typescript" as const,
         },
       },
     };
@@ -591,5 +603,42 @@ describe("MejoraRunner", () => {
       'Error running check "my-typescript-check":',
       new Error("TypeScript not installed"),
     );
+  });
+
+  it("should not save baseline when no changes detected", async () => {
+    const existingBaseline = {
+      checks: {
+        check1: {
+          items: ["file.js:1:1 - error"],
+          type: "items" as const,
+        },
+      },
+      version: 1,
+    };
+
+    mockLoad.mockResolvedValue(existingBaseline);
+
+    vi.mocked(runEslintCheck).mockResolvedValue({
+      items: ["file.js:1:1 - error"],
+      type: "items",
+    });
+
+    vi.mocked(compareSnapshots).mockReturnValue({
+      hasImprovement: false,
+      hasRegression: false,
+      isInitial: false,
+      newItems: [],
+      removedItems: [],
+    });
+
+    const config = {
+      checks: { check1: { files: ["*.js"], type: "eslint" as const } },
+    };
+
+    const runner = new MejoraRunner();
+
+    await runner.run(config);
+
+    expect(mockSave).not.toHaveBeenCalled();
   });
 });

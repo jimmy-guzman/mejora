@@ -34,6 +34,16 @@ export class BaselineManager {
     entry: BaselineEntry,
   ) {
     const current = baseline ?? BaselineManager.create({});
+    const existingEntry = current.checks[checkId];
+
+    const isEntryIdentical =
+      existingEntry &&
+      existingEntry.items?.length === entry.items?.length &&
+      existingEntry.items?.every((item, i) => item === entry.items?.[i]);
+
+    if (isEntryIdentical) {
+      return current;
+    }
 
     return {
       ...current,

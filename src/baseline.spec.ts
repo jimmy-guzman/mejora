@@ -1,7 +1,5 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 
-import type { Baseline, BaselineEntry } from "./types";
-
 import { BaselineManager } from "./baseline";
 import { logger } from "./utils/logger";
 
@@ -62,7 +60,7 @@ describe("BaselineManager", () => {
 
   describe("static getEntry", () => {
     it("should return entry when baseline exists and has the check", () => {
-      const baseline: Baseline = {
+      const baseline = {
         checks: {
           eslint: { items: ["error1"], type: "items" as const },
         },
@@ -75,7 +73,7 @@ describe("BaselineManager", () => {
     });
 
     it("should return undefined when baseline exists but check does not", () => {
-      const baseline: Baseline = {
+      const baseline = {
         checks: {
           eslint: { items: ["error1"], type: "items" as const },
         },
@@ -96,14 +94,14 @@ describe("BaselineManager", () => {
 
   describe("static update", () => {
     it("should add new entry to existing baseline", () => {
-      const baseline: Baseline = {
+      const baseline = {
         checks: {
           eslint: { items: ["error1"], type: "items" as const },
         },
         version: 1,
       };
 
-      const newEntry: BaselineEntry = {
+      const newEntry = {
         items: ["error2"],
         type: "items" as const,
       };
@@ -120,14 +118,14 @@ describe("BaselineManager", () => {
     });
 
     it("should update existing entry in baseline", () => {
-      const baseline: Baseline = {
+      const baseline = {
         checks: {
           eslint: { items: ["error1"], type: "items" as const },
         },
         version: 1,
       };
 
-      const updatedEntry: BaselineEntry = {
+      const updatedEntry = {
         items: ["error2", "error3"],
         type: "items" as const,
       };
@@ -143,7 +141,7 @@ describe("BaselineManager", () => {
     });
 
     it("should create new baseline when baseline is null", () => {
-      const entry: BaselineEntry = {
+      const entry = {
         items: ["error1"],
         type: "items" as const,
       };
@@ -159,14 +157,14 @@ describe("BaselineManager", () => {
     });
 
     it("should not mutate the original baseline", () => {
-      const baseline: Baseline = {
+      const baseline = {
         checks: {
           eslint: { items: ["error1"], type: "items" as const },
         },
         version: 1,
       };
 
-      const newEntry: BaselineEntry = {
+      const newEntry = {
         items: ["error2"],
         type: "items" as const,
       };
@@ -177,11 +175,99 @@ describe("BaselineManager", () => {
         eslint: { items: ["error1"], type: "items" },
       });
     });
+
+    it("should return same reference when entry is identical", () => {
+      const baseline = {
+        checks: {
+          eslint: { items: ["error1", "error2"], type: "items" as const },
+        },
+        version: 1,
+      };
+
+      const identicalEntry = {
+        items: ["error1", "error2"],
+        type: "items" as const,
+      };
+
+      const updated = BaselineManager.update(
+        baseline,
+        "eslint",
+        identicalEntry,
+      );
+
+      expect(updated).toBe(baseline);
+    });
+
+    it("should return new reference when items differ", () => {
+      const baseline = {
+        checks: {
+          eslint: { items: ["error1"], type: "items" as const },
+        },
+        version: 1,
+      };
+
+      const differentEntry = {
+        items: ["error2"],
+        type: "items" as const,
+      };
+
+      const updated = BaselineManager.update(
+        baseline,
+        "eslint",
+        differentEntry,
+      );
+
+      expect(updated).not.toBe(baseline);
+      expect(updated.checks.eslint).toStrictEqual({
+        items: ["error2"],
+        type: "items",
+      });
+    });
+
+    it("should return new reference when items order differs", () => {
+      const baseline = {
+        checks: {
+          eslint: { items: ["error1", "error2"], type: "items" as const },
+        },
+        version: 1,
+      };
+
+      const reorderedEntry = {
+        items: ["error2", "error1"],
+        type: "items" as const,
+      };
+
+      const updated = BaselineManager.update(
+        baseline,
+        "eslint",
+        reorderedEntry,
+      );
+
+      expect(updated).not.toBe(baseline);
+    });
+
+    it("should return new reference when adding new check", () => {
+      const baseline = {
+        checks: {
+          eslint: { items: ["error1"], type: "items" as const },
+        },
+        version: 1,
+      };
+
+      const newEntry = {
+        items: ["error2"],
+        type: "items" as const,
+      };
+
+      const updated = BaselineManager.update(baseline, "typescript", newEntry);
+
+      expect(updated).not.toBe(baseline);
+    });
   });
 
   describe("load", () => {
     it("should load and parse baseline file", async () => {
-      const baseline: Baseline = {
+      const baseline = {
         checks: {
           eslint: { items: ["error1"], type: "items" as const },
         },
@@ -224,7 +310,7 @@ describe("BaselineManager", () => {
     });
 
     it("should use custom baseline path", async () => {
-      const baseline: Baseline = {
+      const baseline = {
         checks: {},
         version: 1,
       };
@@ -442,7 +528,7 @@ describe("BaselineManager", () => {
     });
 
     it("should save both JSON and markdown files", async () => {
-      const baseline: Baseline = {
+      const baseline = {
         checks: {
           eslint: { items: ["error1"], type: "items" as const },
         },
@@ -467,7 +553,7 @@ describe("BaselineManager", () => {
     });
 
     it("should save with force parameter true", async () => {
-      const baseline: Baseline = {
+      const baseline = {
         checks: {
           eslint: { items: ["error1"], type: "items" as const },
         },
@@ -483,7 +569,7 @@ describe("BaselineManager", () => {
     });
 
     it("should save with force parameter false in non-CI environment", async () => {
-      const baseline: Baseline = {
+      const baseline = {
         checks: {
           eslint: { items: ["error1"], type: "items" as const },
         },
@@ -499,7 +585,7 @@ describe("BaselineManager", () => {
     });
 
     it("should use custom baseline path for save", async () => {
-      const baseline: Baseline = {
+      const baseline = {
         checks: {},
         version: 1,
       };
@@ -524,7 +610,7 @@ describe("BaselineManager", () => {
     });
 
     it("should format JSON with 2 space indentation and trailing newline", async () => {
-      const baseline: Baseline = {
+      const baseline = {
         checks: {
           eslint: { items: ["error1", "error2"], type: "items" as const },
         },
@@ -547,7 +633,7 @@ describe("BaselineManager", () => {
     });
 
     it("should handle nested directory creation", async () => {
-      const baseline: Baseline = {
+      const baseline = {
         checks: {},
         version: 1,
       };
@@ -565,7 +651,7 @@ describe("BaselineManager", () => {
   describe("constructor", () => {
     it("should use default baseline path when not provided", async () => {
       const manager = new BaselineManager();
-      const baseline: Baseline = {
+      const baseline = {
         checks: {},
         version: 1,
       };
@@ -582,7 +668,7 @@ describe("BaselineManager", () => {
     it("should use custom baseline path when provided", async () => {
       const customPath = "my-custom/baseline.json";
       const manager = new BaselineManager(customPath);
-      const baseline: Baseline = {
+      const baseline = {
         checks: {},
         version: 1,
       };
@@ -609,7 +695,7 @@ describe("BaselineManager", () => {
 
       const { BaselineManager: CIBaselineManager } = await import("./baseline");
 
-      const baseline: Baseline = {
+      const baseline = {
         checks: {
           eslint: { items: ["error1"], type: "items" as const },
         },
@@ -633,7 +719,7 @@ describe("BaselineManager", () => {
 
       const { BaselineManager: CIBaselineManager } = await import("./baseline");
 
-      const baseline: Baseline = {
+      const baseline = {
         checks: {
           eslint: { items: ["error1"], type: "items" as const },
         },
