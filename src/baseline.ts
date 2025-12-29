@@ -55,7 +55,7 @@ export class BaselineManager {
 
         const resolved = resolveBaselineConflict(content);
 
-        await this.save(resolved);
+        await this.save(resolved, true);
 
         logger.success("Baseline conflict resolved");
 

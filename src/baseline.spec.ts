@@ -22,7 +22,7 @@ describe("BaselineManager", () => {
     vi.clearAllMocks();
   });
 
-  describe("static createBaseline", () => {
+  describe("static create", () => {
     it("should create a baseline with version 1", () => {
       const checks = {
         eslint: { items: ["error1"], type: "items" as const },
@@ -94,7 +94,7 @@ describe("BaselineManager", () => {
     });
   });
 
-  describe("static updateBaseline", () => {
+  describe("static update", () => {
     it("should add new entry to existing baseline", () => {
       const baseline: Baseline = {
         checks: {
