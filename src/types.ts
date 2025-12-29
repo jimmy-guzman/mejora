@@ -160,7 +160,10 @@ export interface Config {
 export interface CheckResult {
   baseline: BaselineEntry | undefined;
   checkId: string;
-  duration?: number; // milliseconds
+  /**
+   * Duration of the check run in milliseconds.
+   */
+  duration?: number;
   hasImprovement: boolean;
   hasRegression: boolean;
   isInitial: boolean;
@@ -174,7 +177,10 @@ export interface RunResult {
   hasImprovement: boolean;
   hasRegression: boolean;
   results: CheckResult[];
-  totalDuration?: number; // milliseconds
+  /**
+   * Total duration of the run in milliseconds.
+   */
+  totalDuration?: number;
 }
 
 export interface CliOptions {

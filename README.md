@@ -221,6 +221,28 @@ Designed to work cleanly in CI and automation.
 
 ---
 
+## Merge Conflicts
+
+mejora automatically resolves conflicts in both `baseline.json` and `baseline.md`:
+
+```bash
+# After merging branches with baseline changes
+$ git status
+  both modified:   .mejora/baseline.json
+  both modified:   .mejora/baseline.md
+
+# Just run mejora - both files are auto-resolved
+$ mejora
+Merge conflict detected in baseline, auto-resolving...
+✓ Baseline conflict resolved
+
+# Commit the resolved files
+$ git add .mejora/
+$ git commit -m "Merge feature branch"
+```
+
+---
+
 ## Inspiration
 
 mejora is inspired by the ideas behind [betterer](https://phenomnomnominal.github.io/betterer/).

@@ -63,6 +63,7 @@ describe("logger", () => {
       logger.error("error message");
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining(" ERROR "),
         expect.stringContaining("error message"),
       );
     });
@@ -73,16 +74,40 @@ describe("logger", () => {
       logger.error(error);
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining(" ERROR "),
         expect.stringContaining("test error"),
       );
     });
 
     it("should handle multiple arguments", () => {
       logger.error("prefix", { code: 500 });
-      const call = consoleErrorSpy.mock.calls[0]?.[0] as string;
 
-      expect(call).toContain("prefix");
-      expect(call).toContain("code");
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining(" ERROR "),
+        "prefix { code: 500 }",
+      );
+    });
+  });
+
+  describe("success", () => {
+    it("should log success message in green with check mark", () => {
+      logger.success("operation successful");
+
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        expect.stringContaining("✔"),
+        "operation successful",
+      );
+    });
+  });
+
+  describe("start", () => {
+    it("should log start message in cyan with spinner", () => {
+      logger.start("operation started");
+
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        expect.stringContaining("◐"),
+        "operation started",
+      );
     });
   });
 });

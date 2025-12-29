@@ -3,12 +3,15 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import type { Baseline, BaselineEntry } from "./types";
 
 import { BaselineManager } from "./baseline";
+import { logger } from "./utils/logger";
 
 vi.mock("node:fs/promises");
 
 vi.mock("is-in-ci", () => ({
   default: false,
 }));
+
+vi.mock("./utils/logger");
 
 const mockReadFile = vi.mocked(readFile);
 const mockWriteFile = vi.mocked(writeFile);
@@ -237,6 +240,199 @@ describe("BaselineManager", () => {
         "utf8",
       );
     });
+
+    it("should auto-resolve merge conflicts", async () => {
+      const conflictContent = [
+        "{",
+        '  "version": 1,',
+        "<<<<<<< HEAD",
+        '  "checks": {',
+        '    "eslint": {',
+        '      "type": "items",',
+        '      "items": ["error1", "error2"]',
+        "    }",
+        "  }",
+        "=======",
+        '  "checks": {',
+        '    "eslint": {',
+        '      "type": "items",',
+        '      "items": ["error2", "error3"]',
+        "    }",
+        "  }",
+        ">>>>>>> feature",
+        "}",
+      ].join("\n");
+
+      mockReadFile.mockResolvedValue(conflictContent);
+      mockMkdir.mockResolvedValue(undefined);
+      mockWriteFile.mockResolvedValue();
+
+      const manager = new BaselineManager(".mejora/baseline.json");
+      const result = await manager.load();
+
+      expect(result?.checks.eslint?.items).toStrictEqual([
+        "error1",
+        "error2",
+        "error3",
+      ]);
+      expect(logger.start).toHaveBeenCalledWith(
+        "Merge conflict detected in baseline, auto-resolving...",
+      );
+      expect(logger.success).toHaveBeenCalledWith("Baseline conflict resolved");
+      expect(mockWriteFile).toHaveBeenCalledWith(
+        ".mejora/baseline.json",
+        expect.stringContaining('"error1"'),
+        "utf8",
+      );
+    });
+
+    it("should handle conflicts with different checks on each side", async () => {
+      const conflictContent = [
+        "{",
+        '  "version": 1,',
+        "<<<<<<< HEAD",
+        '  "checks": {',
+        '    "eslint": {',
+        '      "type": "items",',
+        '      "items": ["error1"]',
+        "    }",
+        "  }",
+        "=======",
+        '  "checks": {',
+        '    "typescript": {',
+        '      "type": "items",',
+        '      "items": ["error2"]',
+        "    }",
+        "  }",
+        ">>>>>>> feature",
+        "}",
+      ].join("\n");
+
+      mockReadFile.mockResolvedValue(conflictContent);
+      mockMkdir.mockResolvedValue(undefined);
+      mockWriteFile.mockResolvedValue();
+
+      const manager = new BaselineManager(".mejora/baseline.json");
+      const result = await manager.load();
+
+      expect(result?.checks.eslint?.items).toStrictEqual(["error1"]);
+      expect(result?.checks.typescript?.items).toStrictEqual(["error2"]);
+    });
+
+    it("should handle conflicts with overlapping items", async () => {
+      const conflictContent = [
+        "{",
+        '  "version": 1,',
+        "<<<<<<< HEAD",
+        '  "checks": {',
+        '    "eslint": {',
+        '      "type": "items",',
+        '      "items": ["error1", "error2", "error3"]',
+        "    }",
+        "  }",
+        "=======",
+        '  "checks": {',
+        '    "eslint": {',
+        '      "type": "items",',
+        '      "items": ["error2", "error3", "error4"]',
+        "    }",
+        "  }",
+        ">>>>>>> feature",
+        "}",
+      ].join("\n");
+
+      mockReadFile.mockResolvedValue(conflictContent);
+      mockMkdir.mockResolvedValue(undefined);
+      mockWriteFile.mockResolvedValue();
+
+      const manager = new BaselineManager(".mejora/baseline.json");
+      const result = await manager.load();
+
+      expect(result?.checks.eslint?.items).toStrictEqual([
+        "error1",
+        "error2",
+        "error3",
+        "error4",
+      ]);
+    });
+
+    it("should sort merged items", async () => {
+      const conflictContent = [
+        "{",
+        '  "version": 1,',
+        "<<<<<<< HEAD",
+        '  "checks": {',
+        '    "eslint": {',
+        '      "type": "items",',
+        '      "items": ["z-error", "a-error"]',
+        "    }",
+        "  }",
+        "=======",
+        '  "checks": {',
+        '    "eslint": {',
+        '      "type": "items",',
+        '      "items": ["m-error", "b-error"]',
+        "    }",
+        "  }",
+        ">>>>>>> feature",
+        "}",
+      ].join("\n");
+
+      mockReadFile.mockResolvedValue(conflictContent);
+      mockMkdir.mockResolvedValue(undefined);
+      mockWriteFile.mockResolvedValue();
+
+      const manager = new BaselineManager(".mejora/baseline.json");
+      const result = await manager.load();
+
+      expect(result?.checks.eslint?.items).toStrictEqual([
+        "a-error",
+        "b-error",
+        "m-error",
+        "z-error",
+      ]);
+    });
+
+    it("should throw error for malformed conflict markers", async () => {
+      const conflictContent = [
+        "{",
+        '  "version": 1,',
+        "<<<<<<< HEAD",
+        '  "checks": {}',
+        "  // Missing =======",
+        ">>>>>>> feature",
+        "}",
+      ].join("\n");
+
+      mockReadFile.mockResolvedValue(conflictContent);
+
+      const manager = new BaselineManager(".mejora/baseline.json");
+
+      await expect(manager.load()).rejects.toThrowError(
+        "Could not parse conflict markers in baseline",
+      );
+    });
+
+    it("should throw error for invalid JSON in conflict sections", async () => {
+      const conflictContent = [
+        "{",
+        '  "version": 1,',
+        "<<<<<<< HEAD",
+        '  "checks": { invalid json }',
+        "=======",
+        '  "checks": {}',
+        ">>>>>>> feature",
+        "}",
+      ].join("\n");
+
+      mockReadFile.mockResolvedValue(conflictContent);
+
+      const manager = new BaselineManager(".mejora/baseline.json");
+
+      await expect(manager.load()).rejects.toThrowError(
+        "Failed to parse baseline during conflict resolution",
+      );
+    });
   });
 
   describe("save", () => {
@@ -263,7 +459,6 @@ describe("BaselineManager", () => {
         `${JSON.stringify(baseline, null, 2)}\n`,
         "utf8",
       );
-      // Should also write the markdown file
       expect(mockWriteFile).toHaveBeenCalledWith(
         ".mejora/baseline.md",
         expect.any(String),
@@ -283,7 +478,6 @@ describe("BaselineManager", () => {
 
       await manager.save(baseline, true);
 
-      // Should still save when force is true
       expect(mockMkdir).toHaveBeenCalledWith(".mejora", { recursive: true });
       expect(mockWriteFile).toHaveBeenCalledTimes(2);
     });
@@ -300,7 +494,6 @@ describe("BaselineManager", () => {
 
       await manager.save(baseline, false);
 
-      // Should save when force is false in non-CI environment (isInCi is mocked as false)
       expect(mockMkdir).toHaveBeenCalledWith(".mejora", { recursive: true });
       expect(mockWriteFile).toHaveBeenCalledTimes(2);
     });
@@ -412,8 +605,8 @@ describe("BaselineManager", () => {
         default: true,
       }));
 
-      // Need to re-import BaselineManager to pick up the new mock
       vi.resetModules();
+
       const { BaselineManager: CIBaselineManager } = await import("./baseline");
 
       const baseline: Baseline = {
@@ -427,19 +620,17 @@ describe("BaselineManager", () => {
 
       await manager.save(baseline, false);
 
-      // Should not write any files when in CI without force
       expect(mockWriteFile).not.toHaveBeenCalled();
       expect(mockMkdir).not.toHaveBeenCalled();
     });
 
     it("should save when in CI with force flag", async () => {
-      // Re-mock is-in-ci to return true
       vi.doMock("is-in-ci", () => ({
         default: true,
       }));
 
-      // Need to re-import BaselineManager to pick up the new mock
       vi.resetModules();
+
       const { BaselineManager: CIBaselineManager } = await import("./baseline");
 
       const baseline: Baseline = {
@@ -453,7 +644,6 @@ describe("BaselineManager", () => {
 
       await manager.save(baseline, true);
 
-      // Should write files when force is true, even in CI
       expect(mockMkdir).toHaveBeenCalledWith(".mejora", { recursive: true });
       expect(mockWriteFile).toHaveBeenCalledTimes(2);
     });

@@ -3,7 +3,7 @@ import { inspect } from "node:util";
 import * as c from "./colors";
 
 function formatError(error: Error) {
-  const lines = [c.red(error.message)];
+  const lines = [error.message];
 
   if (error.stack) {
     const stack = error.stack
@@ -30,12 +30,20 @@ function format(...args: unknown[]) {
 }
 
 export const logger = {
-  error(...args: unknown[]) {
+  error: (...args: unknown[]) => {
     // eslint-disable-next-line no-console -- logger utility
-    console.error(format(...args));
+    console.error(c.bgRed(c.black(" ERROR ")), format(...args));
   },
-  log(...args: unknown[]) {
+  log: (...args: unknown[]) => {
     // eslint-disable-next-line no-console -- logger utility
     console.log(format(...args));
+  },
+  start: (...args: unknown[]) => {
+    // eslint-disable-next-line no-console -- logger utility
+    console.log(c.cyan("◐"), format(...args));
+  },
+  success: (...args: unknown[]) => {
+    // eslint-disable-next-line no-console -- logger utility
+    console.log(c.green("✔"), format(...args));
   },
 };

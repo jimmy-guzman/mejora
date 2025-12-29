@@ -227,8 +227,8 @@ describe("runTypescriptCheck", () => {
     const mockFile = {
       fileName: "/test/project/test.ts",
       getLineAndCharacterOfPosition: vi.fn().mockReturnValue({
-        character: 19, // 0-based
-        line: 9, // 0-based
+        character: 19,
+        line: 9,
       }),
     };
 
@@ -246,7 +246,6 @@ describe("runTypescriptCheck", () => {
 
     const result = await runTypescriptCheck({ tsconfig: "tsconfig.json" });
 
-    // Should be 10:20 (1-based)
     expect(result.items[0]).toMatch(/:10:20 -/);
   });
 
@@ -305,7 +304,7 @@ describe("validateTypescriptDeps", () => {
     vi.resetModules();
   });
 
-  it("should not throw if eslint is installed", async () => {
+  it("should not throw if typescript is installed", async () => {
     const { validateTypescriptDeps } = await import("./typescript");
 
     await expect(validateTypescriptDeps()).resolves.not.toThrowError();
