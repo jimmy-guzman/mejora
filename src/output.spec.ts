@@ -1,6 +1,6 @@
 import { formatJsonOutput, formatTextOutput } from "./output";
 
-function stripAnsi(str: string): string {
+function stripAnsi(str: string) {
   // eslint-disable-next-line no-control-regex -- this regex is to remove ANSI escape codes
   return str.replaceAll(/\u001B\[\d+m/g, "");
 }
@@ -87,8 +87,7 @@ describe("formatJsonOutput", () => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- this is to check the output structure
     expect(parsed.checks[0].removedItems).toStrictEqual(["error1"]);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- this is to check the output structure
-    expect(parsed.checks[0].totalIssues).toBe(1);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- this is to check the output structure
+    expect(parsed.checks[0].totalIssues).toBe(1); // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- this is to check the output structure
     expect(parsed.summary).toMatchObject({
       checksRun: 1,
       improvementChecks: ["eslint"],
@@ -370,6 +369,7 @@ describe("formatTextOutput", () => {
     expect(output).toContain("error2");
     expect(output).toContain("Summary");
     expect(output).toContain("Regressions: 1 (eslint)");
+    expect(output).toContain("Initial: 0");
     expect(output).toContain("✗ Regressions detected - Run failed");
   });
 
@@ -400,6 +400,7 @@ describe("formatTextOutput", () => {
     expect(output).toContain("error2");
     expect(output).toContain("Summary");
     expect(output).toContain("Improvements: 1 (eslint)");
+    expect(output).toContain("Initial: 0");
     expect(output).toContain("✓ Improvements detected - Baseline updated");
   });
 
@@ -431,6 +432,7 @@ describe("formatTextOutput", () => {
     expect(output).toContain("Summary");
     expect(output).toContain("Improvements: 1 (eslint)");
     expect(output).toContain("Regressions: 1 (eslint)");
+    expect(output).toContain("Initial: 0");
     expect(output).toContain("✗ Regressions detected - Run failed");
   });
 
@@ -487,6 +489,7 @@ describe("formatTextOutput", () => {
     expect(output).toContain("Summary");
     expect(output).toContain("Checks run: 1");
     expect(output).toContain("Unchanged: 1 (eslint)");
+    expect(output).toContain("Initial: 0");
     expect(output).toContain("✓ All checks passed");
     expect(output).not.toMatch(/^\n/);
     expect(output).not.toContain("\n\n\n");
@@ -517,6 +520,7 @@ describe("formatTextOutput", () => {
 
     expect(output).toContain("Summary");
     expect(output).toContain("✓ All checks passed");
+    expect(output).toContain("Initial: 0");
     expect(output).toContain("Completed in");
   });
 
@@ -544,6 +548,7 @@ describe("formatTextOutput", () => {
     expect(output).not.toContain("eslint:");
     expect(output).toContain("Summary");
     expect(output).toContain("Unchanged: 1 (eslint)");
+    expect(output).toContain("Initial: 0");
     expect(output).toContain("✓ All checks passed");
   });
 
@@ -636,6 +641,7 @@ describe("formatTextOutput", () => {
     expect(output).toContain("Checks run: 2");
     expect(output).toContain("Improvements: 1 (typescript)");
     expect(output).toContain("Regressions: 1 (eslint)");
+    expect(output).toContain("Initial: 0");
   });
 
   it("should not have leading newline for first check", () => {

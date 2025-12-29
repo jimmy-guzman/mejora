@@ -3,15 +3,21 @@ import type { CheckResult, RunResult } from "./types";
 import * as c from "./utils/colors";
 import { formatDuration } from "./utils/duration";
 
-export function formatJsonOutput(result: RunResult) {
-  const improvements = result.results.filter((r) => {
-    return r.hasImprovement && !r.isInitial;
-  });
-  const regressions = result.results.filter((r) => r.hasRegression);
-  const unchanged = result.results.filter((r) => {
+function categorizeResults(results: CheckResult[]) {
+  const improvements = results.filter((r) => r.hasImprovement && !r.isInitial);
+  const regressions = results.filter((r) => r.hasRegression);
+  const unchanged = results.filter((r) => {
     return !r.hasImprovement && !r.hasRegression && !r.isInitial;
   });
-  const initial = result.results.filter((r) => r.isInitial);
+  const initial = results.filter((r) => r.isInitial);
+
+  return { improvements, initial, regressions, unchanged };
+}
+
+export function formatJsonOutput(result: RunResult) {
+  const { improvements, initial, regressions, unchanged } = categorizeResults(
+    result.results,
+  );
 
   const output = {
     checks: result.results.map((check) => {
@@ -138,15 +144,9 @@ function formatCheckResult(check: CheckResult, isFirst: boolean) {
 
 function formatSummary(result: RunResult) {
   const hasAnyInitial = result.results.some((r) => r.isInitial);
-
-  const improvements = result.results.filter((r) => {
-    return r.hasImprovement && !r.isInitial;
-  });
-  const regressions = result.results.filter((r) => r.hasRegression);
-  const unchanged = result.results.filter((r) => {
-    return !r.hasImprovement && !r.hasRegression && !r.isInitial;
-  });
-  const initial = result.results.filter((r) => r.isInitial);
+  const { improvements, initial, regressions, unchanged } = categorizeResults(
+    result.results,
+  );
 
   const summaryLines: string[] = [
     c.bold("Summary"),
@@ -181,6 +181,8 @@ function formatSummary(result: RunResult) {
     const names = initial.map((r) => r.checkId).join(", ");
 
     summaryLines.push(`  Initial: ${initial.length} (${names})`);
+  } else {
+    summaryLines.push(`  Initial: 0`);
   }
 
   summaryLines.push("");
