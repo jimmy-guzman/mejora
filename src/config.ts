@@ -4,7 +4,7 @@ import { lilconfig } from "lilconfig";
 
 import type { Config } from "./types";
 
-const loadTs = async (filepath: string) => {
+const loader = async (filepath: string) => {
   const url = pathToFileURL(filepath).href;
   const imported: unknown = await import(url);
 
@@ -22,8 +22,10 @@ export const defineConfig = (config: Config) => {
 export const loadConfig = async () => {
   const explorer = lilconfig("mejora", {
     loaders: {
-      ".mts": loadTs,
-      ".ts": loadTs,
+      ".js": loader,
+      ".mjs": loader,
+      ".mts": loader,
+      ".ts": loader,
     },
     searchPlaces: [
       "mejora.config.ts",
