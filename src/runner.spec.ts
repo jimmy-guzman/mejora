@@ -641,4 +641,100 @@ describe("MejoraRunner", () => {
 
     expect(mockSave).not.toHaveBeenCalled();
   });
+
+  describe("spinner", () => {
+    it("should not show spinner when json option is true", async () => {
+      const config = {
+        checks: { check1: { files: ["*.js"], type: "eslint" as const } },
+      };
+
+      vi.mocked(runEslintCheck).mockResolvedValue({ items: [], type: "items" });
+      vi.mocked(compareSnapshots).mockReturnValue({
+        hasImprovement: false,
+        hasRegression: false,
+        isInitial: true,
+        newItems: [],
+        removedItems: [],
+      });
+
+      const runner = new MejoraRunner();
+
+      const stdoutSpy = vi.spyOn(process.stdout, "write");
+
+      await runner.run(config, { json: true });
+
+      expect(stdoutSpy).not.toHaveBeenCalled();
+
+      stdoutSpy.mockRestore();
+    });
+
+    it("should show spinner when json option is false", async () => {
+      const config = {
+        checks: { check1: { files: ["*.js"], type: "eslint" as const } },
+      };
+
+      vi.mocked(runEslintCheck).mockResolvedValue({ items: [], type: "items" });
+      vi.mocked(compareSnapshots).mockReturnValue({
+        hasImprovement: false,
+        hasRegression: false,
+        isInitial: true,
+        newItems: [],
+        removedItems: [],
+      });
+
+      const runner = new MejoraRunner();
+
+      const stdoutSpy = vi.spyOn(process.stdout, "write").mockReturnValue(true);
+
+      await runner.run(config, { json: false });
+
+      expect(stdoutSpy.mock.calls.length).toBeGreaterThan(0);
+
+      stdoutSpy.mockRestore();
+    });
+
+    it("should show spinner by default when no options provided", async () => {
+      const config = {
+        checks: { check1: { files: ["*.js"], type: "eslint" as const } },
+      };
+
+      vi.mocked(runEslintCheck).mockResolvedValue({ items: [], type: "items" });
+      vi.mocked(compareSnapshots).mockReturnValue({
+        hasImprovement: false,
+        hasRegression: false,
+        isInitial: true,
+        newItems: [],
+        removedItems: [],
+      });
+
+      const runner = new MejoraRunner();
+
+      const stdoutSpy = vi.spyOn(process.stdout, "write").mockReturnValue(true);
+
+      await runner.run(config);
+
+      expect(stdoutSpy.mock.calls.length).toBeGreaterThan(0);
+
+      stdoutSpy.mockRestore();
+    });
+
+    it("should stop spinner on check error", async () => {
+      const config = {
+        checks: { check1: { files: ["*.js"], type: "eslint" as const } },
+      };
+
+      vi.mocked(runEslintCheck).mockRejectedValue(new Error("Check failed"));
+
+      const runner = new MejoraRunner();
+
+      const stdoutSpy = vi.spyOn(process.stdout, "write").mockReturnValue(true);
+
+      const result = await runner.run(config);
+
+      expect(result.exitCode).toBe(2);
+      expect(stdoutSpy.mock.calls.length).toBeGreaterThan(0);
+
+      stdoutSpy.mockRestore();
+    });
+  });
 });

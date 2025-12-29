@@ -1,3 +1,5 @@
+import { Spinner } from "picospinner";
+
 import type { CheckResult, CliOptions, Config } from "./types";
 
 import { BaselineManager } from "./baseline";
@@ -71,7 +73,13 @@ export class MejoraRunner {
     const checksToRun = MejoraRunner.filterChecks(config.checks, options);
 
     for (const [checkId, checkConfig] of Object.entries(checksToRun)) {
+      const spinner = options.json
+        ? null
+        : new Spinner(`Running ${checkId}...`);
+
       try {
+        spinner?.start();
+
         const checkStartTime = performance.now();
         const snapshot = await MejoraRunner.runCheck(checkConfig);
         const checkDuration = performance.now() - checkStartTime;
@@ -113,7 +121,11 @@ export class MejoraRunner {
             type: snapshot.type,
           });
         }
+
+        spinner?.succeed(`${checkId} complete`);
       } catch (error) {
+        spinner?.stop();
+
         logger.error(`Error running check "${checkId}":`, error);
 
         return {
