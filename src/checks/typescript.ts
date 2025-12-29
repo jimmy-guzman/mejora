@@ -1,4 +1,4 @@
-import { relative, resolve } from "node:path";
+import { relative, resolve, sep } from "node:path";
 
 import type { TypeScriptCheckConfig } from "@/types";
 
@@ -81,9 +81,20 @@ export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
 
   const diagnostics = getPreEmitDiagnostics(program);
 
+  const workspaceDiagnostics = diagnostics.filter((diagnostic) => {
+    if (!diagnostic.file) return true;
+
+    const filePath = resolve(diagnostic.file.fileName);
+    const workspaceRoot = resolve(cwd);
+
+    return (
+      filePath === workspaceRoot || filePath.startsWith(workspaceRoot + sep)
+    );
+  });
+
   const items: string[] = [];
 
-  for (const diagnostic of diagnostics) {
+  for (const diagnostic of workspaceDiagnostics) {
     if (diagnostic.file && diagnostic.start !== undefined) {
       const { character, line } = diagnostic.file.getLineAndCharacterOfPosition(
         diagnostic.start,

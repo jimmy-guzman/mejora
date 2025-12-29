@@ -297,6 +297,104 @@ describe("runTypescriptCheck", () => {
       "Failed to read TypeScript config: Flattened complex error",
     );
   });
+
+  it("should filter out diagnostics from files outside workspace", async () => {
+    const mockFileInside = {
+      fileName: "/test/project/src/file.ts",
+      getLineAndCharacterOfPosition: vi.fn().mockReturnValue({
+        character: 0,
+        line: 0,
+      }),
+    };
+
+    const mockFileOutside = {
+      fileName: "/test/libs/mocks/src/file.ts",
+      getLineAndCharacterOfPosition: vi.fn().mockReturnValue({
+        character: 0,
+        line: 0,
+      }),
+    };
+
+    mockFindConfigFile.mockReturnValue("/test/project/tsconfig.json");
+    mockReadConfigFile.mockReturnValue({ config: {} });
+    mockParseJsonConfigFileContent.mockReturnValue({
+      fileNames: [],
+      options: {},
+    });
+    mockCreateProgram.mockReturnValue({});
+    mockGetPreEmitDiagnostics.mockReturnValue([
+      {
+        code: 2304,
+        file: mockFileInside,
+        messageText: "error inside",
+        start: 0,
+      },
+      {
+        code: 2322,
+        file: mockFileOutside,
+        messageText: "error outside",
+        start: 0,
+      },
+    ]);
+    mockFlattenDiagnosticMessageText
+      .mockReturnValueOnce("error inside")
+      .mockReturnValueOnce("error outside");
+
+    const result = await runTypescriptCheck({ tsconfig: "tsconfig.json" });
+
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0]).toMatch(/^src\/file\.ts:/);
+    expect(result.items[0]).toContain("error inside");
+  });
+
+  it("should not include files from sibling directories with similar names", async () => {
+    const mockFileInside = {
+      fileName: "/test/project/src/file.ts",
+      getLineAndCharacterOfPosition: vi.fn().mockReturnValue({
+        character: 0,
+        line: 0,
+      }),
+    };
+
+    const mockFileSibling = {
+      fileName: "/test/project-other/src/file.ts",
+      getLineAndCharacterOfPosition: vi.fn().mockReturnValue({
+        character: 0,
+        line: 0,
+      }),
+    };
+
+    mockFindConfigFile.mockReturnValue("/test/project/tsconfig.json");
+    mockReadConfigFile.mockReturnValue({ config: {} });
+    mockParseJsonConfigFileContent.mockReturnValue({
+      fileNames: [],
+      options: {},
+    });
+    mockCreateProgram.mockReturnValue({});
+    mockGetPreEmitDiagnostics.mockReturnValue([
+      {
+        code: 2304,
+        file: mockFileInside,
+        messageText: "error inside",
+        start: 0,
+      },
+      {
+        code: 2322,
+        file: mockFileSibling,
+        messageText: "error in sibling",
+        start: 0,
+      },
+    ]);
+
+    mockFlattenDiagnosticMessageText.mockReset();
+    mockFlattenDiagnosticMessageText.mockReturnValue("error inside");
+
+    const result = await runTypescriptCheck({ tsconfig: "tsconfig.json" });
+
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0]).toMatch(/^src\/file\.ts:/);
+    expect(result.items[0]).toContain("error inside");
+  });
 });
 
 describe("validateTypescriptDeps", () => {
