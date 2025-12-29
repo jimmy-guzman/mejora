@@ -10,7 +10,11 @@ import { generateMarkdownReport } from "./reports";
 const DEFAULT_BASELINE_PATH = ".mejora/baseline.json";
 
 export class BaselineManager {
-  constructor(private baselinePath: string = DEFAULT_BASELINE_PATH) {}
+  private baselinePath: string;
+
+  constructor(baselinePath: string = DEFAULT_BASELINE_PATH) {
+    this.baselinePath = baselinePath;
+  }
 
   static create(checks: Record<string, BaselineEntry>) {
     return {

@@ -178,8 +178,8 @@ export interface RunResult {
 }
 
 export interface CliOptions {
-  force?: boolean;
-  json?: boolean;
-  only?: string;
-  skip?: string;
+  force?: boolean | undefined;
+  json?: boolean | undefined;
+  only?: string | undefined;
+  skip?: string | undefined;
 }
