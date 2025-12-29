@@ -5,22 +5,22 @@ import isInCi from "is-in-ci";
 
 import type { Baseline, BaselineEntry } from "./types";
 
+import { resolveBaselineConflict } from "./conflict-resolver";
+import { BASELINE_VERSION, DEFAULT_BASELINE_PATH } from "./constants";
 import { generateMarkdownReport } from "./reports";
 import { logger } from "./utils/logger";
-
-const DEFAULT_BASELINE_PATH = ".mejora/baseline.json";
 
 export class BaselineManager {
   private baselinePath: string;
 
-  constructor(baselinePath: string = DEFAULT_BASELINE_PATH) {
+  constructor(baselinePath = DEFAULT_BASELINE_PATH) {
     this.baselinePath = baselinePath;
   }
 
   static create(checks: Record<string, BaselineEntry>) {
     return {
       checks,
-      version: 1,
+      version: BASELINE_VERSION,
     };
   }
 
@@ -44,74 +44,6 @@ export class BaselineManager {
     };
   }
 
-  private static extractBaseline(partialJson: string): Baseline {
-    try {
-      const trimmed = partialJson.trim();
-
-      const fullJson = `{
-  "version": 1,
-  ${trimmed}
-}`;
-
-      return JSON.parse(fullJson) as Baseline;
-    } catch (error) {
-      throw new Error(
-        `Failed to parse baseline during conflict resolution: ${error instanceof Error ? error.message : "Unknown error"}`,
-        { cause: error },
-      );
-    }
-  }
-
-  private static parseConflictMarkers(content: string) {
-    const regex = /<<<<<<< .*\n([\s\S]*?)\n=======\n([\s\S]*?)\n>>>>>>> .*\n/;
-    const match = regex.exec(content);
-
-    if (!match) {
-      throw new Error("Could not parse conflict markers in baseline");
-    }
-
-    const [_, ours = "", theirs = ""] = match;
-
-    return { ours, theirs };
-  }
-
-  private static resolveConflict(content: string): Baseline {
-    const sections = BaselineManager.parseConflictMarkers(content);
-    const ours = BaselineManager.extractBaseline(sections.ours);
-    const theirs = BaselineManager.extractBaseline(sections.theirs);
-
-    return BaselineManager.unionMerge(ours, theirs);
-  }
-
-  private static unionMerge(ours: Baseline, theirs: Baseline): Baseline {
-    const merged: Baseline = {
-      checks: {},
-      version: 1,
-    };
-
-    const allCheckIds = new Set([
-      ...Object.keys(ours.checks),
-      ...Object.keys(theirs.checks),
-    ]);
-
-    for (const checkId of allCheckIds) {
-      const ourItems = new Set(ours.checks[checkId]?.items);
-      const theirItems = new Set(theirs.checks[checkId]?.items);
-
-      const mergedItems = new Set([...ourItems, ...theirItems]);
-
-      const type =
-        ours.checks[checkId]?.type ?? theirs.checks[checkId]?.type ?? "items";
-
-      merged.checks[checkId] = {
-        items: [...mergedItems].toSorted(),
-        type,
-      };
-    }
-
-    return merged;
-  }
-
   async load() {
     try {
       const content = await readFile(this.baselinePath, "utf8");
@@ -121,7 +53,7 @@ export class BaselineManager {
       if (hasMergeConflict) {
         logger.start("Merge conflict detected in baseline, auto-resolving...");
 
-        const resolved = BaselineManager.resolveConflict(content);
+        const resolved = resolveBaselineConflict(content);
 
         await this.save(resolved);
 
