@@ -60,7 +60,7 @@
     "vitest": "4.0.16"
   },
   "peerDependencies": {
-    "eslint": "^9.0.0",
+    "eslint": "^9.34.0",
     "typescript": "^5.0.0"
   },
   "peerDependenciesMeta": {
