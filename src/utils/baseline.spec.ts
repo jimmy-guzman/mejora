@@ -100,4 +100,17 @@ describe("areEntriesEqual()", () => {
 
     expect(areEntriesEqual(entry, existing)).toBe(false);
   });
+
+  it("should return false when duplicate distributions differ", () => {
+    const entry = {
+      items: ["error1", "error1", "error2"],
+      type: "items" as const,
+    };
+    const existing = {
+      items: ["error1", "error2", "error2"],
+      type: "items" as const,
+    };
+
+    expect(areEntriesEqual(entry, existing)).toBe(false);
+  });
 });

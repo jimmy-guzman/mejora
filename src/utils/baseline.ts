@@ -15,9 +15,8 @@ export const areEntriesEqual = (
     return false;
   }
 
-  if (new Set(entryItems).size !== new Set(existingItems).size) {
-    return false;
-  }
+  const sortedEntry = entryItems.toSorted();
+  const sortedExisting = existingItems.toSorted();
 
-  return existingItems.every((item) => entryItems.includes(item));
+  return sortedEntry.every((item, i) => item === sortedExisting[i]);
 };

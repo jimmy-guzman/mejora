@@ -23,10 +23,12 @@ export function generateMarkdownReport(
       for (const item of items) {
         const [pathWithLocation, ...rest] = item.split(" - ");
 
+        // TODO: Path parsing may break on Windows drive-letter paths.
         const parts = pathWithLocation?.split(":");
         const filePath = parts?.[0];
         const line = parts?.[1];
 
+        // TODO: Items without a parsable path are silently dropped.
         if (filePath) {
           // Assumes absolute file paths.
           const relativePath = relative(baselineDir, filePath);
