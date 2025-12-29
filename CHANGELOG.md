@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/jimmy-guzman/mejora/compare/v1.2.0...v1.3.0) (2025-12-29)
+
+
+### Features
+
+* ✨ add detailed summary with check counts ([#9](https://github.com/jimmy-guzman/mejora/issues/9)) ([86eb389](https://github.com/jimmy-guzman/mejora/commit/86eb38948d32e2ac830558c68f75ef3f84532d1c)), closes [#6](https://github.com/jimmy-guzman/mejora/issues/6)
+
 # [1.2.0](https://github.com/jimmy-guzman/mejora/compare/v1.1.0...v1.2.0) (2025-12-29)
 
 
