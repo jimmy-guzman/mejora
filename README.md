@@ -38,6 +38,9 @@ Baselines are explicit and committed to the repo.
 pnpm add -D mejora
 ```
 
+> [!NOTE]
+> `mejora` requires Node.js 22.18.0 or later.
+
 ---
 
 ## Usage
@@ -121,7 +124,9 @@ The object key is the check identifier and is used in the baseline.
 - Snapshot type: items
 - Each lint message is treated as an item
 - Regressions are new lint messages
-- **`eslint` (^9.34.0) is required as a peer dependency when using the ESLint check**
+
+> [!NOTE]
+> `eslint` (^9.34.0) is required as a peer dependency when using the ESLint check
 
 ### TypeScript
 
@@ -129,7 +134,9 @@ The object key is the check identifier and is used in the baseline.
 - Each compiler diagnostic is treated as an item
 - Regressions are new diagnostics
 - Uses the nearest `tsconfig.json` by default, or an explicit one if provided
-- **`typescript` (^5.0.0) is required as a peer dependency when using the TypeScript check**
+
+> [!NOTE]
+> `typescript` (^5.0.0) is required as a peer dependency when using the TypeScript check
 
 ---
 
