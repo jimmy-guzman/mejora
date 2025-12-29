@@ -319,7 +319,7 @@ describe("validateTypescriptDeps", () => {
     const { validateTypescriptDeps } = await import("./typescript");
 
     await expect(validateTypescriptDeps()).rejects.toThrowError(
-      "Typescript check requires typescript but it's not installed.",
+      "TypeScript check requires typescript but it's not installed.",
     );
   });
 });

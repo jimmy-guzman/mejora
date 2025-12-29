@@ -7,7 +7,7 @@ export async function validateTypescriptDeps() {
     await import("typescript");
   } catch {
     throw new Error(
-      `Typescript check requires typescript but it's not installed.`,
+      `TypeScript check requires typescript but it's not installed.`,
     );
   }
 }
@@ -56,7 +56,7 @@ export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- TODO: add types to tsconfig or use zod to validate
-  const { config: tsConfig, error } = readConfigFile(configPath, readFile);
+  const { config: TSConfig, error } = readConfigFile(configPath, readFile);
 
   if (error) {
     const message =
@@ -68,7 +68,7 @@ export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
   }
 
   const parseResult = parseJsonConfigFileContent(
-    tsConfig,
+    TSConfig,
     sys,
     process.cwd(),
     config.overrides?.compilerOptions,

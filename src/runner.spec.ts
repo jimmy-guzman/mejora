@@ -540,7 +540,7 @@ describe("MejoraRunner", () => {
     };
 
     vi.mocked(validateEslintDeps).mockRejectedValue(
-      new Error("Eslint not installed"),
+      new Error("ESLint not installed"),
     );
 
     const runner = new MejoraRunner();
@@ -557,7 +557,7 @@ describe("MejoraRunner", () => {
 
     expect(logSpy).toHaveBeenCalledWith(
       'Error running check "my-eslint-check":',
-      new Error("Eslint not installed"),
+      new Error("ESLint not installed"),
     );
   });
 
@@ -572,7 +572,7 @@ describe("MejoraRunner", () => {
     };
 
     vi.mocked(validateTypescriptDeps).mockRejectedValue(
-      new Error("Typescript not installed"),
+      new Error("TypeScript not installed"),
     );
 
     const runner = new MejoraRunner();
@@ -589,7 +589,7 @@ describe("MejoraRunner", () => {
 
     expect(logSpy).toHaveBeenCalledWith(
       'Error running check "my-typescript-check":',
-      new Error("Typescript not installed"),
+      new Error("TypeScript not installed"),
     );
   });
 });

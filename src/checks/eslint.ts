@@ -22,7 +22,7 @@ export async function validateEslintDeps() {
   try {
     await import("eslint");
   } catch {
-    throw new Error(`Eslint check requires eslint but it's not installed.`);
+    throw new Error(`ESLint check requires eslint but it's not installed.`);
   }
 }
 

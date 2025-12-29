@@ -154,7 +154,7 @@ describe("validateEslintDeps", () => {
     const { validateEslintDeps } = await import("./eslint");
 
     await expect(validateEslintDeps()).rejects.toThrowError(
-      "Eslint check requires eslint but it's not installed.",
+      "ESLint check requires eslint but it's not installed.",
     );
   });
 });
