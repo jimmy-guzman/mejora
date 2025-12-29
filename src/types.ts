@@ -1,0 +1,191 @@
+import type { Linter } from "eslint";
+import type { CompilerOptions } from "typescript";
+
+export interface ItemsSnapshot {
+  items: string[];
+  type: "items";
+}
+
+export type Snapshot = ItemsSnapshot;
+
+export interface BaselineEntry {
+  items?: string[];
+  type: Snapshot["type"];
+}
+
+export interface Baseline {
+  checks: Record<string, BaselineEntry>;
+  version: number;
+}
+
+/**
+ * Configuration for an ESLint check.
+ *
+ * @example
+ * ```ts
+ * eslintCheck({
+ *   files: ["src/**\/*.{ts,tsx}"],
+ *   overrides: {
+ *     rules: {
+ *       "no-nested-ternary": "error",
+ *     },
+ *   },
+ * })
+ * ```
+ */
+export interface ESLintCheckConfig {
+  /**
+   * Glob patterns for files to lint.
+   *
+   * Passed directly to ESLint's `lintFiles()` method.
+   *
+   * @example ["src/**\/*.ts", "src/**\/*.tsx"]
+   */
+  files: string[];
+
+  /**
+   * ESLint configuration to merge with the base config.
+   *
+   * This is passed to ESLint's `overrideConfig` option and merged with
+   * your existing ESLint configuration.
+   *
+   * Can be a single config object or an array of config objects.
+   *
+   * @example
+   * ```ts
+   * {
+   *   rules: {
+   *     "no-console": "error",
+   *   },
+   * }
+   * ```
+   */
+  overrides?: Linter.Config | Linter.Config[];
+}
+
+/**
+ * Configuration for a TypeScript diagnostics check.
+ *
+ * @example
+ * ```ts
+ * typescriptCheck({
+ *   overrides: {
+ *     compilerOptions: {
+ *       noImplicitAny: true,
+ *     },
+ *   },
+ * })
+ * ```
+ */
+export interface TypeScriptCheckConfig {
+  /**
+   * Compiler options to merge with the base tsconfig.
+   *
+   * These options are merged with (not replacing) the compiler options
+   * from your tsconfig file.
+   */
+  overrides?: {
+    compilerOptions?: CompilerOptions;
+  };
+
+  /**
+   * Path to a TypeScript config file.
+   *
+   * If not provided, mejora will search for the nearest `tsconfig.json`
+   * starting from the current working directory.
+   *
+   * @example "tsconfig.strict.json"
+   */
+  tsconfig?: string;
+}
+
+export type CheckConfig =
+  | (ESLintCheckConfig & {
+      type: "eslint";
+    })
+  | (TypeScriptCheckConfig & {
+      type: "typescript";
+    });
+
+/**
+ * mejora configuration.
+ *
+ * Define checks to run and track for regressions.
+ *
+ * @example
+ * ```ts
+ * import { defineConfig, eslintCheck, typescriptCheck } from "mejora";
+ *
+ * export default defineConfig({
+ *   checks: {
+ *     "eslint > no-nested-ternary": eslintCheck({
+ *       files: ["src/**\/*.{ts,tsx}"],
+ *       overrides: {
+ *         rules: {
+ *           "no-nested-ternary": "error",
+ *         },
+ *       },
+ *     }),
+ *     "typescript": typescriptCheck({
+ *       overrides: {
+ *         compilerOptions: {
+ *           noImplicitAny: true,
+ *         },
+ *       },
+ *     }),
+ *   },
+ * });
+ * ```
+ */
+export interface Config {
+  /**
+   * Check definitions.
+   *
+   * Each key is a check identifier used in the baseline and output.
+   * The identifier can contain any characters.
+   *
+   * Use `eslintCheck()` and `typescriptCheck()` helpers to create check configs.
+   *
+   * @example
+   * ```ts
+   * {
+   *   "eslint > no-console": eslintCheck({ ... }),
+   *   "typescript": typescriptCheck({ ... }),
+   * }
+   * ```
+   */
+  checks: Record<string, CheckConfig>;
+}
+
+export interface CheckResult {
+  baseline: BaselineEntry | undefined;
+  checkId: string;
+  /**
+   * Duration of the check run in milliseconds.
+   */
+  duration?: number;
+  hasImprovement: boolean;
+  hasRegression: boolean;
+  isInitial: boolean;
+  newItems: string[];
+  removedItems: string[];
+  snapshot: Snapshot;
+}
+
+export interface RunResult {
+  exitCode: number;
+  hasImprovement: boolean;
+  hasRegression: boolean;
+  results: CheckResult[];
+  /**
+   * Total duration of the run in milliseconds.
+   */
+  totalDuration?: number;
+}
+
+export interface CliOptions {
+  force?: boolean | undefined;
+  json?: boolean | undefined;
+  only?: string | undefined;
+  skip?: string | undefined;
+}

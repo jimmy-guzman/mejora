@@ -11,12 +11,20 @@
     "strict": true,
     "noUncheckedIndexedAccess": true,
 
+    "erasableSyntaxOnly": true,
+    "exactOptionalPropertyTypes": true,
+
     "moduleResolution": "Bundler",
     "module": "ESNext",
     "noEmit": true,
 
     "lib": ["ESNext"],
 
-    "types": ["vitest/globals"]
+    "types": ["vitest/globals"],
+
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
   }
 }

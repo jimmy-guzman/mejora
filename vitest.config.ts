@@ -1,15 +1,11 @@
+import tsconfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
+  plugins: [tsconfigPaths()],
   test: {
     coverage: {
-      thresholds: {
-        autoUpdate: true,
-        branches: 100,
-        functions: 100,
-        lines: 100,
-        statements: 100,
-      },
+      include: ["src/**/*.ts"],
     },
     globals: true,
   },

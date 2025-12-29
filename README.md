@@ -38,6 +38,9 @@ Baselines are explicit and committed to the repo.
 pnpm add -D mejora
 ```
 
+> [!NOTE]
+> `mejora` requires Node.js 22.18.0 or later.
+
 ---
 
 ## Usage
@@ -98,7 +101,6 @@ export default defineConfig({
         },
       },
     }),
-
     "typescript": typescriptCheck({
       overrides: {
         compilerOptions: {
@@ -115,7 +117,7 @@ The object key is the check identifier and is used in the baseline.
 
 ---
 
-## Supported checks (MVP)
+## Supported checks
 
 ### ESLint
 
@@ -123,12 +125,18 @@ The object key is the check identifier and is used in the baseline.
 - Each lint message is treated as an item
 - Regressions are new lint messages
 
+> [!NOTE]
+> `eslint` (^9.34.0) is required as a peer dependency when using the ESLint check
+
 ### TypeScript
 
 - Snapshot type: items
 - Each compiler diagnostic is treated as an item
 - Regressions are new diagnostics
 - Uses the nearest `tsconfig.json` by default, or an explicit one if provided
+
+> [!NOTE]
+> `typescript` (^5.0.0) is required as a peer dependency when using the TypeScript check
 
 ---
 
@@ -220,8 +228,30 @@ Designed to work cleanly in CI and automation.
 
 ---
 
+## Merge Conflicts
+
+mejora automatically resolves conflicts in both `baseline.json` and `baseline.md`:
+
+```bash
+# After merging branches with baseline changes
+$ git status
+  both modified:   .mejora/baseline.json
+  both modified:   .mejora/baseline.md
+
+# Just run mejora - both files are auto-resolved
+$ mejora
+Merge conflict detected in baseline, auto-resolving...
+✓ Baseline conflict resolved
+
+# Commit the resolved files
+$ git add .mejora/
+$ git commit -m "Merge feature branch"
+```
+
+---
+
 ## Inspiration
 
-mejora is inspired by the ideas behind Betterer.
+mejora is inspired by the ideas behind [betterer](https://phenomnomnominal.github.io/betterer/).
 
 The core concept of preventing regressions through baselines comes from that work. mejora reimplements the idea with a smaller scope and a simpler, more opinionated design.
