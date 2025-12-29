@@ -2,6 +2,8 @@ import { relative } from "node:path";
 
 import type { ESLintCheckConfig } from "@/types";
 
+import { makeCacheKey } from "@/utils/cache";
+
 type Item = `${string}:${number}:${number} - ${string}`;
 
 const createItem = ({
@@ -29,10 +31,10 @@ export async function validateEslintDeps() {
 export async function runEslintCheck(config: ESLintCheckConfig) {
   const { ESLint } = await import("eslint");
   const cwd = process.cwd();
-  const cacheKey = Buffer.from(JSON.stringify(config)).toString("base64");
+
   const eslint = new ESLint({
     cache: true,
-    cacheLocation: `node_modules/.cache/mejora/eslint/${cacheKey}`,
+    cacheLocation: `node_modules/.cache/mejora/eslint/${makeCacheKey(config)}`,
     concurrency: "auto",
     overrideConfig: config.overrides,
   });
