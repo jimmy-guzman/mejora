@@ -1,4 +1,4 @@
-import * as c from "./colors";
+import { dim } from "./colors";
 
 function formatMs(ms: number) {
   if (ms < 1000) return `${ms}ms`;
@@ -24,18 +24,8 @@ export function formatDuration(duration: number) {
   const rounded = Math.round(duration);
 
   if (rounded < 1) {
-    return c.dim("<1ms");
+    return dim("<1ms");
   }
 
-  const formatted = formatMs(rounded);
-
-  if (rounded < 100) {
-    return c.green(formatted);
-  }
-
-  if (rounded < 1000) {
-    return c.yellow(formatted);
-  }
-
-  return c.red(formatted);
+  return dim(formatMs(rounded));
 }
