@@ -48,23 +48,13 @@ describe("formatDuration", () => {
     expect(formatDuration(50.5)).toContain("51");
   });
 
-  it("should apply dim color for sub-millisecond durations", () => {
+  it("should apply dim color to all durations", () => {
     // eslint-disable-next-line no-control-regex -- testing for color codes
-    expect(formatDuration(0)).toMatch(/\u001B\[2m/);
-  });
+    const dimCode = /\u001B\[2m/;
 
-  it("should apply bright green color for fast durations (<100ms)", () => {
-    // eslint-disable-next-line no-control-regex -- testing for color codes
-    expect(formatDuration(50)).toMatch(/\u001B\[32m/);
-  });
-
-  it("should apply yellow color for medium durations (100-999ms)", () => {
-    // eslint-disable-next-line no-control-regex -- testing for color codes
-    expect(formatDuration(500)).toMatch(/\u001B\[33m/);
-  });
-
-  it("should apply red color for slow durations (1000ms+)", () => {
-    // eslint-disable-next-line no-control-regex -- testing for color codes
-    expect(formatDuration(5000)).toMatch(/\u001B\[31m/);
+    expect(formatDuration(0)).toMatch(dimCode);
+    expect(formatDuration(50)).toMatch(dimCode);
+    expect(formatDuration(500)).toMatch(dimCode);
+    expect(formatDuration(5000)).toMatch(dimCode);
   });
 });
