@@ -43,7 +43,6 @@ describe("generateMarkdownReport", () => {
 
       ## eslint (1 issue)
 
-
       ### [src/index.ts](../src/index.ts) (1)
 
       - [Line 10](../src/index.ts#L10) - 'foo' is never used
@@ -69,7 +68,6 @@ describe("generateMarkdownReport", () => {
       "# Mejora Baseline
 
       ## typescript (1 issue)
-
 
       ### [src/types.ts](../src/types.ts) (1)
 
@@ -101,14 +99,11 @@ describe("generateMarkdownReport", () => {
 
       ## eslint (1 issue)
 
-
       ### [src/a.ts](../src/a.ts) (1)
 
       - [Line 1](../src/a.ts#L1) - error a
 
-
       ## typescript (1 issue)
-
 
       ### [src/b.ts](../src/b.ts) (1)
 
@@ -153,11 +148,9 @@ describe("generateMarkdownReport", () => {
 
       ## eslint (2 issues)
 
-
       ### [src/valid.ts](../src/valid.ts) (1)
 
       - [Line 10](../src/valid.ts#L10) - valid error
-
 
       ### Other Issues (1)
 
@@ -183,7 +176,6 @@ describe("generateMarkdownReport", () => {
       "# Mejora Baseline
 
       ## eslint (1 issue)
-
 
       ### [src/index.ts](../src/index.ts) (1)
 
@@ -215,12 +207,10 @@ describe("generateMarkdownReport", () => {
 
       ## eslint (3 issues)
 
-
       ### [src/index.ts](../src/index.ts) (2)
 
       - [Line 10](../src/index.ts#L10) - error 1
       - [Line 20](../src/index.ts#L20) - error 2
-
 
       ### [src/utils.ts](../src/utils.ts) (1)
 
@@ -253,7 +243,6 @@ describe("generateMarkdownReport", () => {
 
       ## eslint (1 issue)
 
-
       ### [C](../C) (1)
 
       - [Line \project\src\index.ts](../C#L\project\src\index.ts) - 'foo' is never used
@@ -284,7 +273,6 @@ describe("generateMarkdownReport", () => {
       "# Mejora Baseline
 
       ## typescript (1 issue)
-
 
       ### [D](../D) (1)
 
@@ -320,7 +308,6 @@ describe("generateMarkdownReport", () => {
       "# Mejora Baseline
 
       ## eslint (3 issues)
-
 
       ### [C](../C) (3)
 
@@ -372,17 +359,16 @@ describe("generateMarkdownReport", () => {
     const result = generateMarkdownReport(baseline, "/project/.mejora");
 
     expect(result).toMatchInlineSnapshot(`
-    "# Mejora Baseline
+      "# Mejora Baseline
 
-    ## typescript (1 issue)
+      ## typescript (1 issue)
 
+      ### [src/form.tsx](../src/form.tsx) (1)
 
-    ### [src/form.tsx](../src/form.tsx) (1)
+      - [Line 71](../src/form.tsx#L71) - TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'string | FormikErrors&lt;ItemGroupUploadFormikRow&gt;'.
 
-    - [Line 71](../src/form.tsx#L71) - TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'string | FormikErrors&lt;ItemGroupUploadFormikRow&gt;'.
-
-    "
-  `);
+      "
+    `);
 
     expect(result).not.toMatch(/ - .*<[^&]/);
     expect(result).toContain("&lt;");
@@ -409,7 +395,6 @@ describe("generateMarkdownReport", () => {
 
       ## typescript (1 issue)
 
-
       ### [src/test.ts](../src/test.ts) (1)
 
       - [Line 125](../src/test.ts#L125) - The types returned by '&#91;Symbol.iterator&#93;().next(...)' are incompatible.
@@ -420,5 +405,50 @@ describe("generateMarkdownReport", () => {
     expect(result).not.toMatch(/ - .*\[(?!Line \d+\])/);
     expect(result).toContain("&#91;");
     expect(result).toContain("&#93;");
+  });
+
+  it("should not have multiple consecutive blank lines", () => {
+    const baseline = {
+      checks: {
+        eslint: {
+          items: [
+            "/project/src/a.ts:1 - error a",
+            "/project/src/b.ts:2 - error b",
+          ],
+          type: "items" as const,
+        },
+        typescript: {
+          items: ["/project/src/c.ts:3 - error c"],
+          type: "items" as const,
+        },
+      },
+      version: 1,
+    };
+
+    const result = generateMarkdownReport(baseline, "/project/.mejora");
+
+    expect(result).not.toContain("\n\n\n");
+
+    expect(result).toMatchInlineSnapshot(`
+      "# Mejora Baseline
+
+      ## eslint (2 issues)
+
+      ### [src/a.ts](../src/a.ts) (1)
+
+      - [Line 1](../src/a.ts#L1) - error a
+
+      ### [src/b.ts](../src/b.ts) (1)
+
+      - [Line 2](../src/b.ts#L2) - error b
+
+      ## typescript (1 issue)
+
+      ### [src/c.ts](../src/c.ts) (1)
+
+      - [Line 3](../src/c.ts#L3) - error c
+
+      "
+    `);
   });
 });
