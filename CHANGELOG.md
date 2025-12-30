@@ -1,3 +1,12 @@
+## [1.5.2](https://github.com/jimmy-guzman/mejora/compare/v1.5.1...v1.5.2) (2025-12-30)
+
+
+### Bug Fixes
+
+* 🐛 more robust windows parse in md report ([24debb2](https://github.com/jimmy-guzman/mejora/commit/24debb27e0261b2b219218c892614b0a3f66c864))
+* 🐛 should escape square brackets in markdown ([b8f0d2c](https://github.com/jimmy-guzman/mejora/commit/b8f0d2ce681595fea812cda96ba1ec9f4ee5c6e2))
+* 🐛 should not have multiple consecutive blank lines (md) ([6ce3fac](https://github.com/jimmy-guzman/mejora/commit/6ce3facafc441f1ac78fe213dc06ffd4aa5ab161))
+
 ## [1.5.1](https://github.com/jimmy-guzman/mejora/compare/v1.5.0...v1.5.1) (2025-12-30)
 
 
