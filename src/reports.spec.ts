@@ -451,4 +451,30 @@ describe("generateMarkdownReport", () => {
       "
     `);
   });
+
+  it("should place unparsable items last even when mixed with valid files", () => {
+    const baseline = {
+      checks: {
+        eslint: {
+          items: [
+            " - unparsable item",
+            "/project/src/zebra.ts:10 - last alphabetically",
+            " - another unparsable",
+            "/project/src/aardvark.ts:5 - first alphabetically",
+          ],
+          type: "items" as const,
+        },
+      },
+      version: 1,
+    };
+
+    const result = generateMarkdownReport(baseline, "/project/.mejora");
+
+    const aardvarkIndex = result.indexOf("src/aardvark.ts");
+    const zebraIndex = result.indexOf("src/zebra.ts");
+    const unparsableIndex = result.indexOf("Other Issues");
+
+    expect(aardvarkIndex).toBeLessThan(zebraIndex);
+    expect(zebraIndex).toBeLessThan(unparsableIndex);
+  });
 });
