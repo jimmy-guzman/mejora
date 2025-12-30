@@ -30,7 +30,7 @@ export function formatDuration(duration: number) {
   const formatted = formatMs(rounded);
 
   if (rounded < 100) {
-    return c.greenBright(formatted);
+    return c.green(formatted);
   }
 
   if (rounded < 1000) {

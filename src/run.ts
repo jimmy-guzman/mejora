@@ -69,6 +69,7 @@ try {
   if (values.json) {
     logger.log(formatJsonOutput(result));
   } else {
+    logger.log("");
     logger.log(formatTextOutput(result));
   }
 

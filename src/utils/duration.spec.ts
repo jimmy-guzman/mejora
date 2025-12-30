@@ -55,7 +55,7 @@ describe("formatDuration", () => {
 
   it("should apply bright green color for fast durations (<100ms)", () => {
     // eslint-disable-next-line no-control-regex -- testing for color codes
-    expect(formatDuration(50)).toMatch(/\u001B\[92m/);
+    expect(formatDuration(50)).toMatch(/\u001B\[32m/);
   });
 
   it("should apply yellow color for medium durations (100-999ms)", () => {
