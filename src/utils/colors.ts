@@ -25,10 +25,6 @@ export const green = (text: string) => {
   return styleText("green", text);
 };
 
-export const greenBright = (text: string) => {
-  return styleText("greenBright", text);
-};
-
 export const red = (text: string) => {
   return styleText("red", text);
 };
