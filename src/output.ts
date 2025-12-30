@@ -27,6 +27,14 @@ export function formatJsonOutput(result: RunResult) {
     result.results,
   );
 
+  const totalIssues = result.results.reduce((sum, r) => {
+    return sum + r.snapshot.items.length;
+  }, 0);
+  const avgDuration =
+    result.totalDuration === undefined
+      ? undefined
+      : result.totalDuration / result.results.length;
+
   const output = {
     checks: result.results.map((check) => {
       return {
@@ -44,6 +52,7 @@ export function formatJsonOutput(result: RunResult) {
     hasImprovement: result.hasImprovement,
     hasRegression: result.hasRegression,
     summary: {
+      avgDuration,
       checksRun: result.results.length,
       improvementChecks: improvements.map((r) => r.checkId),
       improvements: improvements.length,
@@ -51,6 +60,7 @@ export function formatJsonOutput(result: RunResult) {
       initialChecks: initial.map((r) => r.checkId),
       regressionChecks: regressions.map((r) => r.checkId),
       regressions: regressions.length,
+      totalIssues,
       unchanged: unchanged.length,
       unchangedChecks: unchanged.map((r) => r.checkId),
     },
@@ -91,7 +101,12 @@ function formatInitialBaseline(check: CheckResult, isFirst: boolean) {
   }
 
   if (check.duration !== undefined) {
-    lines.push(`  ${c.dim("Completed in")} ${formatDuration(check.duration)}`);
+    const durationStr = formatDuration(check.duration);
+    const issuesStr = `${check.snapshot.items.length} issue${check.snapshot.items.length === 1 ? "" : "s"}`;
+
+    lines.push(
+      `  ${c.dim("Completed in")} ${durationStr} ${c.dim("·")} ${issuesStr}`,
+    );
   }
 
   return lines;
@@ -132,7 +147,28 @@ function formatChangeBaseline(check: CheckResult, isFirst: boolean) {
   ];
 
   if (check.duration !== undefined) {
-    lines.push(`  ${c.dim("Completed in")} ${formatDuration(check.duration)}`);
+    const durationStr = formatDuration(check.duration);
+    const issuesStr = `${check.snapshot.items.length} issue${check.snapshot.items.length === 1 ? "" : "s"}`;
+
+    lines.push(
+      `  ${c.dim("Completed in")} ${durationStr} ${c.dim("·")} ${issuesStr}`,
+    );
+  }
+
+  return lines;
+}
+
+function formatUnchanged(check: CheckResult, isFirst: boolean) {
+  const prefix = isFirst ? "" : "\n";
+  const lines = [`${prefix}${c.bold(check.checkId)}:`];
+
+  if (check.duration !== undefined) {
+    const durationStr = formatDuration(check.duration);
+    const issuesStr = `${check.snapshot.items.length} issue${check.snapshot.items.length === 1 ? "" : "s"}`;
+
+    lines.push(
+      `  ${c.dim("Completed in")} ${durationStr} ${c.dim("·")} ${issuesStr}`,
+    );
   }
 
   return lines;
@@ -147,7 +183,7 @@ function formatCheckResult(check: CheckResult, isFirst: boolean) {
     return formatChangeBaseline(check, isFirst);
   }
 
-  return [];
+  return formatUnchanged(check, isFirst);
 }
 
 function formatSummary(result: RunResult) {
@@ -159,6 +195,7 @@ function formatSummary(result: RunResult) {
   const summaryLines: string[] = [
     c.bold("Summary"),
     `  Checks run: ${result.results.length}`,
+    "",
   ];
 
   if (improvements.length > 0) {
@@ -195,6 +232,22 @@ function formatSummary(result: RunResult) {
 
   summaryLines.push("");
 
+  const totalIssues = result.results.reduce((sum, r) => {
+    return sum + r.snapshot.items.length;
+  }, 0);
+
+  summaryLines.push(`  Total issues: ${totalIssues}`);
+
+  if (result.totalDuration !== undefined) {
+    const avgDuration = result.totalDuration / result.results.length;
+
+    summaryLines.push(
+      `  Duration: ${formatDuration(result.totalDuration)} (avg ${formatDuration(avgDuration)} per check)`,
+    );
+  }
+
+  summaryLines.push("");
+
   if (hasAnyInitial) {
     summaryLines.push(c.blue("✓ Initial baseline created successfully"));
   } else if (result.hasRegression) {
@@ -205,12 +258,6 @@ function formatSummary(result: RunResult) {
     );
   } else {
     summaryLines.push(c.greenBright("✓ All checks passed"));
-  }
-
-  if (result.totalDuration !== undefined) {
-    summaryLines.push(
-      `${c.dim("Completed in")} ${formatDuration(result.totalDuration)}`,
-    );
   }
 
   return summaryLines.join("\n");
