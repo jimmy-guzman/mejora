@@ -197,7 +197,6 @@ function formatSummary(result: RunResult) {
   } = categorizeResults(result.results);
 
   const summaryLines = [
-    "Summary",
     `  ${dim("Improvements")}  ${totalImprovements > 0 ? green(totalImprovements) : totalImprovements}`,
     `   ${dim("Regressions")}  ${totalRegressions > 0 ? red(totalRegressions) : totalRegressions}`,
     `     ${dim("Unchanged")}  ${totalUnchanged}`,
