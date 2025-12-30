@@ -355,4 +355,37 @@ describe("generateMarkdownReport", () => {
     expect(result).toContain("unix error");
     expect(result).toContain("windows error");
   });
+
+  it("should escape HTML-like syntax in error messages", () => {
+    const baseline = {
+      checks: {
+        typescript: {
+          items: [
+            "/project/src/form.tsx:71 - TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'string | FormikErrors<ItemGroupUploadFormikRow>'.",
+          ],
+          type: "items" as const,
+        },
+      },
+      version: 1,
+    };
+
+    const result = generateMarkdownReport(baseline, "/project/.mejora");
+
+    expect(result).toMatchInlineSnapshot(`
+    "# Mejora Baseline
+
+    ## typescript (1 issue)
+
+
+    ### [src/form.tsx](../src/form.tsx) (1)
+
+    - [Line 71](../src/form.tsx#L71) - TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'string | FormikErrors&lt;ItemGroupUploadFormikRow&gt;'.
+
+    "
+  `);
+
+    expect(result).not.toMatch(/ - .*<[^&]/);
+    expect(result).toContain("&lt;");
+    expect(result).toContain("&gt;");
+  });
 });

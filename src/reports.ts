@@ -14,13 +14,17 @@ function parsePathWithLocation(pathWithLocation: string | undefined) {
   return { filePath, line };
 }
 
+function escapeHtml(text: string) {
+  return text.replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+}
+
 function generateItemLine(item: string, href: string, displayPath: string) {
   const [pathWithLocation, ...rest] = item.split(" - ");
   const { line } = parsePathWithLocation(pathWithLocation);
-
   const linkPath = line ? `${href}#L${line}` : href;
   const lineDisplay = line ? `Line ${line}` : displayPath;
-  const description = rest.length > 0 ? ` - ${rest.join(" - ")}` : "";
+  const description =
+    rest.length > 0 ? ` - ${escapeHtml(rest.join(" - "))}` : "";
 
   return `- [${lineDisplay}](${linkPath})${description}\n`;
 }
