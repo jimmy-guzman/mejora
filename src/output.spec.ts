@@ -299,7 +299,7 @@ describe("formatTextOutput", () => {
               Checks  1
               Issues  3
 
-      ✓ Initial baseline created successfully"
+      ✔ Initial baseline created successfully"
     `);
   });
 
@@ -339,7 +339,7 @@ describe("formatTextOutput", () => {
               Checks  1
               Issues  0
 
-      ✓ Initial baseline created successfully"
+      ✔ Initial baseline created successfully"
     `);
   });
 
@@ -388,7 +388,7 @@ describe("formatTextOutput", () => {
               Checks  1
               Issues  15
 
-      ✓ Initial baseline created successfully"
+      ✔ Initial baseline created successfully"
     `);
   });
 
@@ -470,7 +470,7 @@ describe("formatTextOutput", () => {
               Checks  1
               Issues  0
 
-      ✓ Improvements detected - Baseline updated"
+      ✔ Improvements detected - Baseline updated"
     `);
   });
 
@@ -548,7 +548,7 @@ describe("formatTextOutput", () => {
               Checks  1
               Issues  1
 
-      ✓ All checks passed"
+      ✔ All checks passed"
     `);
   });
 
@@ -583,7 +583,7 @@ describe("formatTextOutput", () => {
               Checks  1
               Issues  1
 
-      ✓ All checks passed"
+      ✔ All checks passed"
     `);
   });
 
@@ -632,7 +632,7 @@ describe("formatTextOutput", () => {
               Checks  2
               Issues  1
 
-      ✓ All checks passed"
+      ✔ All checks passed"
     `);
   });
 
@@ -655,7 +655,7 @@ describe("formatTextOutput", () => {
               Checks  0
               Issues  0
 
-      ✓ All checks passed"
+      ✔ All checks passed"
     `);
   });
 
@@ -693,7 +693,7 @@ describe("formatTextOutput", () => {
               Issues  0
             Duration  1.5s (avg 1.5s)
 
-      ✓ All checks passed"
+      ✔ All checks passed"
     `);
   });
 
@@ -791,7 +791,7 @@ describe("formatTextOutput", () => {
               Checks  1
               Issues  0
 
-      ✓ Improvements detected - Baseline updated"
+      ✔ Improvements detected - Baseline updated"
     `);
   });
 

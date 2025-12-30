@@ -175,7 +175,7 @@ $ git status
 # Just run mejora - both files are auto-resolved
 $ mejora
 Merge conflict detected in baseline, auto-resolving...
-✓ Baseline conflict resolved
+✔ Baseline conflict resolved
 
 # Commit the resolved files
 $ git add .mejora/
