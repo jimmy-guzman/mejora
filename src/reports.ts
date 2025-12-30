@@ -59,8 +59,7 @@ function generateFileSection(
 ) {
   const displayPath = relative(cwd, filePath);
   const href = relative(baselineDir, filePath);
-
-  let section = `### [${displayPath}](${href}) (${fileItems.length})\n`;
+  let section = `\n### [${displayPath}](${href}) (${fileItems.length})\n\n`;
 
   for (const item of fileItems) {
     section += generateItemLine(item, href, displayPath);
@@ -78,7 +77,7 @@ function generateCheckSection(
   baselineDir: string,
 ) {
   const issueCount = items.length;
-  let section = `## ${checkId} (${issueCount} ${plural(issueCount, "issue")})\n\n`;
+  let section = `\n## ${checkId} (${issueCount} ${plural(issueCount, "issue")})\n\n`;
 
   if (items.length === 0) {
     section += "No issues\n";
@@ -90,7 +89,6 @@ function generateCheckSection(
   const unparsableItems = itemsByFile.get("__unparsable__");
 
   itemsByFile.delete("__unparsable__");
-
   const sortedEntries = [...itemsByFile.entries()].toSorted(([a], [b]) => {
     return a.localeCompare(b);
   });
@@ -100,13 +98,11 @@ function generateCheckSection(
   }
 
   if (unparsableItems && unparsableItems.length > 0) {
-    section += `### Other Issues (${unparsableItems.length})\n`;
+    section += `\n### Other Issues (${unparsableItems.length})\n\n`;
 
     for (const item of unparsableItems) {
       section += `- ${item}\n`;
     }
-
-    section += "\n";
   }
 
   return section;
@@ -118,17 +114,10 @@ export function generateMarkdownReport(
 ) {
   const cwd = process.cwd();
   const entries = Object.entries(baseline.checks);
+  let markdown = "# Mejora Baseline\n";
 
-  let markdown = "# Mejora Baseline\n\n";
-
-  for (const [index, [checkId, { items = [] }]] of entries.entries()) {
-    const isLast = index === entries.length - 1;
-
+  for (const [checkId, { items = [] }] of entries) {
     markdown += generateCheckSection(checkId, items, cwd, baselineDir);
-
-    if (!isLast) {
-      markdown += "\n";
-    }
   }
 
   return markdown;
