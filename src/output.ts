@@ -171,11 +171,11 @@ function formatUnchanged(check: CheckResult, isFirst: boolean) {
 
   if (check.duration !== undefined) {
     return [
-      `${prefix}${check.checkId} (${count}) ${dim(duration(check.duration))}`,
+      `${prefix}${check.checkId} (${bold(count)}) ${dim(duration(check.duration))}`,
     ];
   }
 
-  return [`${prefix}${check.checkId} (${count})`];
+  return [`${prefix}${check.checkId} (${bold(count)})`];
 }
 
 function formatCheckResult(check: CheckResult, isFirst: boolean) {
