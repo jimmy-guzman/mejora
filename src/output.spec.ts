@@ -284,7 +284,7 @@ describe("formatTextOutput", () => {
 
     expect(output).toMatchInlineSnapshot(`
       "eslint:
-        Initial baseline created with 3 issue(s)
+        Initial baseline created with 3 issues
            error1
            error2
            error3
@@ -328,7 +328,7 @@ describe("formatTextOutput", () => {
 
     expect(output).toMatchInlineSnapshot(`
       "eslint:
-        Initial baseline created with 0 issue(s)
+        Initial baseline created with 0 issues
           Issues  0
 
       Summary
@@ -366,7 +366,7 @@ describe("formatTextOutput", () => {
 
     expect(output).toMatchInlineSnapshot(`
       "eslint:
-        Initial baseline created with 15 issue(s)
+        Initial baseline created with 15 issues
            error0
            error1
            error2
@@ -415,7 +415,7 @@ describe("formatTextOutput", () => {
 
     expect(output).toMatchInlineSnapshot(`
       "eslint:
-        2 new issue(s) (regressions):
+        2 new issues (regressions):
            error1
            error2
         Duration  1.5s
@@ -456,7 +456,7 @@ describe("formatTextOutput", () => {
 
     expect(output).toMatchInlineSnapshot(`
       "eslint:
-        2 issue(s) fixed (improvements):
+        2 issues fixed (improvements):
            error1
            error2
         Duration  1.2s
@@ -497,9 +497,9 @@ describe("formatTextOutput", () => {
 
     expect(output).toMatchInlineSnapshot(`
       "eslint:
-        1 new issue(s) (regressions):
+        1 new issue (regression):
            error3
-        1 issue(s) fixed (improvements):
+        1 issue fixed (improvement):
            error1
         Duration  1.8s
           Issues  2
@@ -538,7 +538,7 @@ describe("formatTextOutput", () => {
     const output = stripAnsi(formatTextOutput(result));
 
     expect(output).toMatchInlineSnapshot(`
-      "eslint (1 issue) 1.5s
+      "eslint (1) 1.5s
 
       Summary
         Improvements  0
@@ -573,7 +573,7 @@ describe("formatTextOutput", () => {
     const output = stripAnsi(formatTextOutput(result));
 
     expect(output).toMatchInlineSnapshot(`
-      "eslint (1 issue)
+      "eslint (1)
 
       Summary
         Improvements  0
@@ -620,9 +620,9 @@ describe("formatTextOutput", () => {
     const output = stripAnsi(formatTextOutput(result));
 
     expect(output).toMatchInlineSnapshot(`
-      "eslint (0 issues) 1s
+      "eslint (0) 1s
 
-      typescript (1 issue) 1.5s
+      typescript (1) 1.5s
 
       Summary
         Improvements  0
@@ -682,7 +682,7 @@ describe("formatTextOutput", () => {
     const output = stripAnsi(formatTextOutput(result));
 
     expect(output).toMatchInlineSnapshot(`
-      "eslint (0 issues) 1.5s
+      "eslint (0) 1.5s
 
       Summary
         Improvements  0
@@ -720,7 +720,7 @@ describe("formatTextOutput", () => {
 
     expect(output).toMatchInlineSnapshot(`
       "eslint:
-        15 new issue(s) (regressions):
+        15 new issues (regressions):
            error0
            error1
            error2
@@ -769,7 +769,7 @@ describe("formatTextOutput", () => {
 
     expect(output).toMatchInlineSnapshot(`
       "eslint:
-        12 issue(s) fixed (improvements):
+        12 issues fixed (improvements):
            error0
            error1
            error2
@@ -830,13 +830,13 @@ describe("formatTextOutput", () => {
 
     expect(output).toMatchInlineSnapshot(`
       "eslint:
-        1 new issue(s) (regressions):
+        1 new issue (regression):
            error1
         Duration  1s
           Issues  1
 
       typescript:
-        1 issue(s) fixed (improvements):
+        1 issue fixed (improvement):
            error2
         Duration  1.5s
           Issues  0
@@ -921,7 +921,7 @@ describe("formatTextOutput", () => {
     };
     const output = stripAnsi(formatTextOutput(result));
 
-    expect(output).toMatch(/^eslint \(0 issues\)/);
+    expect(output).toMatch(/^eslint \(0\)/);
   });
 
   it("should format multiple initial baselines with newline between them", () => {

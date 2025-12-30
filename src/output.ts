@@ -1,7 +1,8 @@
 import type { CheckResult, RunResult } from "./types";
 
-import { blue, cyan, dim, green, red } from "./utils/colors";
-import { formatDuration } from "./utils/duration";
+import { blue, bold, dim, green, red } from "./utils/colors";
+import { duration } from "./utils/duration";
+import { plural } from "./utils/text";
 
 function computeTotalIssues(results: CheckResult[]): number {
   return results.reduce((sum, r) => sum + r.snapshot.items.length, 0);
@@ -93,9 +94,10 @@ function formatItemList(items: string[], maxItems = MAX_ITEMS_TO_DISPLAY) {
 
 function formatInitialBaseline(check: CheckResult, isFirst: boolean) {
   const prefix = isFirst ? "" : "\n";
+  const count = check.snapshot.items.length;
   const lines: string[] = [
     `${prefix}${check.checkId}:`,
-    `  Initial baseline created with ${cyan(check.snapshot.items.length.toString())} issue(s)`,
+    `  Initial baseline created with ${blue(count)} ${plural(count, "issue")}`,
   ];
 
   if (check.snapshot.items.length > 0) {
@@ -103,12 +105,12 @@ function formatInitialBaseline(check: CheckResult, isFirst: boolean) {
   }
 
   if (check.duration !== undefined) {
-    lines.push(`  Duration  ${formatDuration(check.duration)}`);
+    lines.push(`  ${dim("Duration")}  ${duration(check.duration)}`);
   }
 
   const issues = `${check.snapshot.items.length}`;
 
-  lines.push(`    Issues  ${issues}`);
+  lines.push(`    ${dim("Issues")}  ${bold(issues)}`);
 
   return lines;
 }
@@ -118,8 +120,9 @@ function formatRegressions(check: CheckResult) {
     return [];
   }
 
+  const count = check.newItems.length;
   const lines = [
-    `  ${red(check.newItems.length.toString())} new issue(s) (regressions):`,
+    `  ${red(count)} new ${plural(count, "issue")} (${plural(count, "regression")}):`,
     ...formatItemList(check.newItems),
   ];
 
@@ -131,8 +134,9 @@ function formatImprovements(check: CheckResult) {
     return [];
   }
 
+  const count = check.removedItems.length;
   const lines = [
-    `  ${green(check.removedItems.length.toString())} issue(s) fixed (improvements):`,
+    `  ${green(count)} ${plural(count, "issue")} fixed (${plural(count, "improvement")}):`,
     ...formatItemList(check.removedItems),
   ];
 
@@ -148,27 +152,27 @@ function formatChangeBaseline(check: CheckResult, isFirst: boolean) {
   ];
 
   if (check.duration !== undefined) {
-    lines.push(`  Duration  ${formatDuration(check.duration)}`);
+    lines.push(`  ${dim("Duration")}  ${duration(check.duration)}`);
   }
 
   const issues = `${check.snapshot.items.length}`;
 
-  lines.push(`    Issues  ${issues}`);
+  lines.push(`    ${dim("Issues")}  ${bold(issues)}`);
 
   return lines;
 }
 
 function formatUnchanged(check: CheckResult, isFirst: boolean) {
   const prefix = isFirst ? "" : "\n";
-  const issues = `${check.snapshot.items.length} issue${check.snapshot.items.length === 1 ? "" : "s"}`;
+  const count = check.snapshot.items.length;
 
   if (check.duration !== undefined) {
-    const duration = formatDuration(check.duration);
-
-    return [`${prefix}${check.checkId} (${issues}) ${duration}`];
+    return [
+      `${prefix}${check.checkId} (${count}) ${dim(duration(check.duration))}`,
+    ];
   }
 
-  return [`${prefix}${check.checkId} (${issues})`];
+  return [`${prefix}${check.checkId} (${count})`];
 }
 
 function formatCheckResult(check: CheckResult, isFirst: boolean) {
@@ -185,28 +189,31 @@ function formatCheckResult(check: CheckResult, isFirst: boolean) {
 
 function formatSummary(result: RunResult) {
   const hasAnyInitial = result.results.some((r) => r.isInitial);
-  const { improvements, initial, regressions, unchanged } = categorizeResults(
-    result.results,
-  );
+  const {
+    improvements: { length: totalImprovements },
+    initial: { length: totalInitial },
+    regressions: { length: totalRegressions },
+    unchanged: { length: totalUnchanged },
+  } = categorizeResults(result.results);
 
   const summaryLines = [
     "Summary",
-    `  Improvements  ${improvements.length}`,
-    `   Regressions  ${regressions.length}`,
-    `     Unchanged  ${unchanged.length}`,
-    `       Initial  ${initial.length}`,
-    `        Checks  ${result.results.length}`,
+    `  ${dim("Improvements")}  ${totalImprovements > 0 ? green(totalImprovements) : totalImprovements}`,
+    `   ${dim("Regressions")}  ${totalRegressions > 0 ? red(totalRegressions) : totalRegressions}`,
+    `     ${dim("Unchanged")}  ${totalUnchanged}`,
+    `       ${dim("Initial")}  ${totalInitial > 0 ? blue(totalInitial) : totalInitial}`,
+    `        ${dim("Checks")}  ${result.results.length}`,
   ];
 
   const totalIssues = computeTotalIssues(result.results);
 
-  summaryLines.push(`        Issues  ${totalIssues}`);
+  summaryLines.push(`        ${dim("Issues")}  ${bold(totalIssues)}`);
 
   if (result.totalDuration !== undefined && result.results.length > 0) {
     const avgDuration = result.totalDuration / result.results.length;
 
     summaryLines.push(
-      `      Duration  ${formatDuration(result.totalDuration)} (avg ${formatDuration(avgDuration)})`,
+      `      ${dim("Duration")}  ${duration(result.totalDuration)} (avg ${duration(avgDuration)})`,
     );
   }
 
