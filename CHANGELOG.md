@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/jimmy-guzman/mejora/compare/v1.4.0...v1.4.1) (2025-12-30)
+
+
+### Bug Fixes
+
+* 🐛 just dim all duration to avoid misleading colors ([#16](https://github.com/jimmy-guzman/mejora/issues/16)) ([048a47f](https://github.com/jimmy-guzman/mejora/commit/048a47f8334d296b7ea374614b39f689b43ddf3f))
+
 # [1.4.0](https://github.com/jimmy-guzman/mejora/compare/v1.3.1...v1.4.0) (2025-12-30)
 
 
