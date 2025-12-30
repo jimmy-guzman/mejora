@@ -89,6 +89,7 @@ function generateCheckSection(
   const unparsableItems = itemsByFile.get("__unparsable__");
 
   itemsByFile.delete("__unparsable__");
+
   const sortedEntries = [...itemsByFile.entries()].toSorted(([a], [b]) => {
     return a.localeCompare(b);
   });
@@ -103,6 +104,8 @@ function generateCheckSection(
     for (const item of unparsableItems) {
       section += `- ${item}\n`;
     }
+
+    section += "\n";
   }
 
   return section;

@@ -162,6 +162,7 @@ describe("generateMarkdownReport", () => {
       ### Other Issues (1)
 
       -  - invalid item without path
+
       "
     `);
   });
