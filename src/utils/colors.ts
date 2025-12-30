@@ -1,42 +1,28 @@
 import { styleText } from "node:util";
 
-/**
- * Simple color abstraction over Node.js's styleText
- * Provides a picocolors-like API for the colors we actually use
- */
-
-export const blue = (text: string) => {
-  return styleText("blue", text);
+const createColor = (format: Parameters<typeof styleText>[0]) => {
+  return (value: number | string) => {
+    return styleText(
+      format,
+      typeof value === "number" ? value.toString() : value,
+    );
+  };
 };
 
-export const bold = (text: string) => {
-  return styleText("bold", text);
-};
+export const blue = createColor("blue");
 
-export const cyan = (text: string) => {
-  return styleText("cyan", text);
-};
+export const bold = createColor("bold");
 
-export const dim = (text: string) => {
-  return styleText("dim", text);
-};
+export const cyan = createColor("cyan");
 
-export const green = (text: string) => {
-  return styleText("green", text);
-};
+export const dim = createColor("dim");
 
-export const red = (text: string) => {
-  return styleText("red", text);
-};
+export const green = createColor("green");
 
-export const bgRed = (text: string) => {
-  return styleText("bgRed", text);
-};
+export const red = createColor("red");
 
-export const yellow = (text: string) => {
-  return styleText("yellow", text);
-};
+export const bgRed = createColor("bgRed");
 
-export const black = (text: string) => {
-  return styleText("black", text);
-};
+export const yellow = createColor("yellow");
+
+export const black = createColor("black");

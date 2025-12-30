@@ -20,7 +20,7 @@ function formatMs(ms: number) {
   return hours % 1 === 0 ? `${hours}h` : `${hours.toFixed(1)}h`;
 }
 
-export function formatDuration(duration: number) {
+export function duration(duration: number) {
   const rounded = Math.round(duration);
 
   if (rounded < 1) {
