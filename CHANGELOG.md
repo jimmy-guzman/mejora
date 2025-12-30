@@ -1,3 +1,14 @@
+## [1.4.3](https://github.com/jimmy-guzman/mejora/compare/v1.4.2...v1.4.3) (2025-12-30)
+
+
+### Bug Fixes
+
+* 🐛 bold issues in unchanged output for consistency ([3e13599](https://github.com/jimmy-guzman/mejora/commit/3e13599fa57ad2534eee2001ba8c3c8255a48c3b)), closes [#18](https://github.com/jimmy-guzman/mejora/issues/18)
+* 🐛 drop "Summary" label for clearer output ([5040722](https://github.com/jimmy-guzman/mejora/commit/50407229103a71dbb92ad2b5e62e2a38d216dcd6)), closes [#21](https://github.com/jimmy-guzman/mejora/issues/21)
+* 🐛 line break before duration/values ([9e6cf9d](https://github.com/jimmy-guzman/mejora/commit/9e6cf9d31d19c84d97ba9142113e10703a87c54d)), closes [#19](https://github.com/jimmy-guzman/mejora/issues/19)
+* 🐛 undim duration values in output ([0515ebb](https://github.com/jimmy-guzman/mejora/commit/0515ebba3436f6fe65f20b579d8aefd3b9363434)), closes [#20](https://github.com/jimmy-guzman/mejora/issues/20)
+* 🐛 use `✔` instead of `✓` for consistency ([c3ed1b3](https://github.com/jimmy-guzman/mejora/commit/c3ed1b371ecc07bb97cee7ed7dd0101b48d6bf2e)), closes [#22](https://github.com/jimmy-guzman/mejora/issues/22)
+
 ## [1.4.2](https://github.com/jimmy-guzman/mejora/compare/v1.4.1...v1.4.2) (2025-12-30)
 
 
