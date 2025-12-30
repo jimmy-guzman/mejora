@@ -137,7 +137,7 @@ The object key is the check identifier and is used in the baseline.
 
 ### ESLint
 
-- Snapshot type: items
+- Snapshot type: `"items"`
 - Each lint message is treated as an item
 - Regressions are new lint messages
 
@@ -146,7 +146,7 @@ The object key is the check identifier and is used in the baseline.
 
 ### TypeScript
 
-- Snapshot type: items
+- Snapshot type: `"items"`
 - Each compiler diagnostic is treated as an item
 - Regressions are new diagnostics
 - Uses the nearest `tsconfig.json` by default, or an explicit one if provided
@@ -164,7 +164,7 @@ If there is any difference between the committed baseline and the expected resul
 
 ## Merge Conflicts
 
-mejora automatically resolves conflicts in both `baseline.json` and `baseline.md`:
+`mejora` automatically resolves conflicts in both `baseline.json` and `baseline.md`:
 
 ```bash
 # After merging branches with baseline changes
