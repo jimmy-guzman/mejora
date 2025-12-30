@@ -1,6 +1,7 @@
 # mejora
 
 > Prevent regressions. Allow improvement.
+> _mejora_ (Spanish for “improvement”)
 
 ![actions][actions-badge]
 [![version][version-badge]][package]
