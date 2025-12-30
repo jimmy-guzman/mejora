@@ -220,13 +220,13 @@ function formatSummary(result: RunResult) {
   summaryLines.push("");
 
   if (hasAnyInitial) {
-    summaryLines.push(blue("✓ Initial baseline created successfully"));
+    summaryLines.push(blue("✔ Initial baseline created successfully"));
   } else if (result.hasRegression) {
     summaryLines.push(`${red("✗ Regressions detected")} - Run failed`);
   } else if (result.hasImprovement) {
-    summaryLines.push(`${green("✓ Improvements detected")} - Baseline updated`);
+    summaryLines.push(`${green("✔ Improvements detected")} - Baseline updated`);
   } else {
-    summaryLines.push(green("✓ All checks passed"));
+    summaryLines.push(green("✔ All checks passed"));
   }
 
   return summaryLines.join("\n");
