@@ -263,6 +263,26 @@ describe("formatJsonOutput", () => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- this is to check the output structure
     expect(parsed.summary.totalIssues).toBe(0);
   });
+
+  it("should set avgDuration to undefined in JSON when results array is empty", () => {
+    const result = {
+      exitCode: 0,
+      hasImprovement: false,
+      hasRegression: false,
+      results: [],
+      totalDuration: 1500,
+    };
+
+    const output = formatJsonOutput(result);
+    const parsed = JSON.parse(output);
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- this is to check the output structure
+    expect(parsed.summary.avgDuration).toBeUndefined();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- this is to check the output structure
+    expect(parsed.summary.totalIssues).toBe(0);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- this is to check the output structure
+    expect(parsed.summary.checksRun).toBe(0);
+  });
 });
 
 describe("formatTextOutput", () => {
@@ -664,12 +684,15 @@ describe("formatTextOutput", () => {
       hasImprovement: false,
       hasRegression: false,
       results: [],
+      totalDuration: 1500,
     };
 
     const output = stripAnsi(formatTextOutput(result));
 
     expect(output).toContain("Summary");
     expect(output).toContain("Checks run: 0");
+    expect(output).toContain("Total issues: 0");
+    expect(output).not.toContain("Duration:");
     expect(output).toContain("✓ All checks passed");
     expect(output).not.toMatch(/\n\nSummary/);
   });

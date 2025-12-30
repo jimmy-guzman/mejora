@@ -3,6 +3,10 @@ import type { CheckResult, RunResult } from "./types";
 import * as c from "./utils/colors";
 import { formatDuration } from "./utils/duration";
 
+function computeTotalIssues(results: CheckResult[]): number {
+  return results.reduce((sum, r) => sum + r.snapshot.items.length, 0);
+}
+
 function categorizeResults(results: CheckResult[]) {
   const improvements: CheckResult[] = [];
   const regressions: CheckResult[] = [];
@@ -27,13 +31,11 @@ export function formatJsonOutput(result: RunResult) {
     result.results,
   );
 
-  const totalIssues = result.results.reduce((sum, r) => {
-    return sum + r.snapshot.items.length;
-  }, 0);
+  const totalIssues = computeTotalIssues(result.results);
   const avgDuration =
-    result.totalDuration === undefined
-      ? undefined
-      : result.totalDuration / result.results.length;
+    result.totalDuration !== undefined && result.results.length > 0
+      ? result.totalDuration / result.results.length
+      : undefined;
 
   const output = {
     checks: result.results.map((check) => {
@@ -232,13 +234,11 @@ function formatSummary(result: RunResult) {
 
   summaryLines.push("");
 
-  const totalIssues = result.results.reduce((sum, r) => {
-    return sum + r.snapshot.items.length;
-  }, 0);
+  const totalIssues = computeTotalIssues(result.results);
 
   summaryLines.push(`  Total issues: ${totalIssues}`);
 
-  if (result.totalDuration !== undefined) {
+  if (result.totalDuration !== undefined && result.results.length > 0) {
     const avgDuration = result.totalDuration / result.results.length;
 
     summaryLines.push(
