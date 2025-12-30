@@ -1,49 +1,135 @@
-import { relative } from "node:path";
+import { relative } from "pathe";
 
 import type { Baseline } from "./types";
+
+import { plural } from "./utils/text";
+
+function parsePathWithLocation(pathWithLocation: string | undefined) {
+  if (!pathWithLocation) return { filePath: undefined, line: undefined };
+
+  const parts = pathWithLocation.split(":");
+  const filePath = parts[0];
+  const line = parts[1];
+
+  return { filePath, line };
+}
+
+function generateItemLine(item: string, href: string, displayPath: string) {
+  const [pathWithLocation, ...rest] = item.split(" - ");
+  const { line } = parsePathWithLocation(pathWithLocation);
+
+  const linkPath = line ? `${href}#L${line}` : href;
+  const lineDisplay = line ? `Line ${line}` : displayPath;
+  const description = rest.length > 0 ? ` - ${rest.join(" - ")}` : "";
+
+  return `- [${lineDisplay}](${linkPath})${description}\n`;
+}
+
+function groupItemsByFile(items: string[]) {
+  const itemsByFile = new Map<string, string[]>();
+  const unparsableItems: string[] = [];
+
+  for (const item of items) {
+    const [pathWithLocation] = item.split(" - ");
+
+    const { filePath } = parsePathWithLocation(pathWithLocation);
+
+    if (filePath) {
+      if (!itemsByFile.has(filePath)) {
+        itemsByFile.set(filePath, []);
+      }
+      itemsByFile.get(filePath)?.push(item);
+    } else {
+      unparsableItems.push(item);
+    }
+  }
+
+  if (unparsableItems.length > 0) {
+    itemsByFile.set("__unparsable__", unparsableItems);
+  }
+
+  return itemsByFile;
+}
+
+function generateFileSection(
+  filePath: string,
+  fileItems: string[],
+  cwd: string,
+  baselineDir: string,
+) {
+  const displayPath = relative(cwd, filePath);
+  const href = relative(baselineDir, filePath);
+
+  let section = `### [${displayPath}](${href}) (${fileItems.length})\n`;
+
+  for (const item of fileItems) {
+    section += generateItemLine(item, href, displayPath);
+  }
+
+  section += "\n";
+
+  return section;
+}
+
+function generateCheckSection(
+  checkId: string,
+  items: string[],
+  cwd: string,
+  baselineDir: string,
+) {
+  const issueCount = items.length;
+  let section = `## ${checkId} (${issueCount} ${plural(issueCount, "issue")})\n\n`;
+
+  if (items.length === 0) {
+    section += "No issues\n";
+
+    return section;
+  }
+
+  const itemsByFile = groupItemsByFile(items);
+  const unparsableItems = itemsByFile.get("__unparsable__");
+
+  itemsByFile.delete("__unparsable__");
+
+  const sortedEntries = [...itemsByFile.entries()].toSorted(([a], [b]) => {
+    return a.localeCompare(b);
+  });
+
+  for (const [filePath, fileItems] of sortedEntries) {
+    section += generateFileSection(filePath, fileItems, cwd, baselineDir);
+  }
+
+  if (unparsableItems && unparsableItems.length > 0) {
+    section += `### Other Issues (${unparsableItems.length})\n`;
+
+    for (const item of unparsableItems) {
+      section += `- ${item}\n`;
+    }
+
+    section += "\n";
+  }
+
+  return section;
+}
 
 export function generateMarkdownReport(
   baseline: Baseline,
   baselineDir: string,
 ) {
-  let md = "# Mejora Baseline\n\n";
-
+  const cwd = process.cwd();
   const entries = Object.entries(baseline.checks);
 
-  for (let i = 0; i < entries.length; i++) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- this is fine because of the loop condition
-    const [checkId, { items = [] }] = entries[i]!;
-    const isLast = i === entries.length - 1;
+  let markdown = "# Mejora Baseline\n\n";
 
-    md += `## ${checkId}\n\n`;
+  for (const [index, [checkId, { items = [] }]] of entries.entries()) {
+    const isLast = index === entries.length - 1;
 
-    if (items.length === 0) {
-      md += "No issues\n";
-    } else {
-      for (const item of items) {
-        const [pathWithLocation, ...rest] = item.split(" - ");
-
-        // TODO: Path parsing may break on Windows drive-letter paths.
-        const parts = pathWithLocation?.split(":");
-        const filePath = parts?.[0];
-        const line = parts?.[1];
-
-        // TODO: Items without a parsable path are silently dropped.
-        if (filePath) {
-          // Assumes absolute file paths.
-          const relativePath = relative(baselineDir, filePath);
-          const linkPath = line ? `${relativePath}#L${line}` : relativePath;
-          const description = rest.length > 0 ? ` - ${rest.join(" - ")}` : "";
-
-          md += `- [${pathWithLocation}](${linkPath})${description}\n`;
-        }
-      }
-    }
+    markdown += generateCheckSection(checkId, items, cwd, baselineDir);
 
     if (!isLast) {
-      md += "\n";
+      markdown += "\n";
     }
   }
 
-  return md;
+  return markdown;
 }

@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { dirname } from "node:path";
 
 import isInCi from "is-in-ci";
+import { dirname } from "pathe";
 
 import type { Baseline, BaselineEntry } from "./types";
 
