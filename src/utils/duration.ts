@@ -1,5 +1,3 @@
-import { dim } from "./colors";
-
 function formatMs(ms: number) {
   if (ms < 1000) return `${ms}ms`;
 
@@ -24,8 +22,8 @@ export function duration(duration: number) {
   const rounded = Math.round(duration);
 
   if (rounded < 1) {
-    return dim("<1ms");
+    return "<1ms";
   }
 
-  return dim(formatMs(rounded));
+  return formatMs(rounded);
 }

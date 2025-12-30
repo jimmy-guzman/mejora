@@ -26,3 +26,5 @@ export const bgRed = createColor("bgRed");
 export const yellow = createColor("yellow");
 
 export const black = createColor("black");
+
+export const gray = createColor("gray");

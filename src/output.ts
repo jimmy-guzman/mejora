@@ -1,6 +1,6 @@
 import type { CheckResult, RunResult } from "./types";
 
-import { blue, bold, dim, green, red } from "./utils/colors";
+import { blue, bold, dim, gray, green, red } from "./utils/colors";
 import { duration } from "./utils/duration";
 import { plural } from "./utils/text";
 
@@ -212,7 +212,7 @@ function formatSummary(result: RunResult) {
     const avgDuration = result.totalDuration / result.results.length;
 
     summaryLines.push(
-      `      ${dim("Duration")}  ${duration(result.totalDuration)} (avg ${duration(avgDuration)})`,
+      `      ${dim("Duration")}  ${duration(result.totalDuration)} ${gray(`(avg ${duration(avgDuration)})`)}`,
     );
   }
 
