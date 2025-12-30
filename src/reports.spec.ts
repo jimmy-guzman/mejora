@@ -238,14 +238,14 @@ describe("generateMarkdownReport", () => {
       String.raw`C:\project\.mejora`,
     );
 
-    expect(result).toMatchInlineSnapshot(String.raw`
+    expect(result).toMatchInlineSnapshot(`
       "# Mejora Baseline
 
       ## eslint (1 issue)
 
-      ### [C](../C) (1)
+      ### [src/index.ts](../src/index.ts) (1)
 
-      - [Line \project\src\index.ts](../C#L\project\src\index.ts) - 'foo' is never used
+      - [Line 10](../src/index.ts#L10) - 'foo' is never used
 
       "
     `);
@@ -269,14 +269,14 @@ describe("generateMarkdownReport", () => {
       String.raw`D:\code\app\.mejora`,
     );
 
-    expect(result).toMatchInlineSnapshot(String.raw`
+    expect(result).toMatchInlineSnapshot(`
       "# Mejora Baseline
 
       ## typescript (1 issue)
 
-      ### [D](../D) (1)
+      ### [types.ts](../types.ts) (1)
 
-      - [Line \code\app\types.ts](../D#L\code\app\types.ts) - Type error
+      - [types.ts](../types.ts) - Type error
 
       "
     `);
@@ -304,16 +304,19 @@ describe("generateMarkdownReport", () => {
       String.raw`C:\project\.mejora`,
     );
 
-    expect(result).toMatchInlineSnapshot(String.raw`
+    expect(result).toMatchInlineSnapshot(`
       "# Mejora Baseline
 
       ## eslint (3 issues)
 
-      ### [C](../C) (3)
+      ### [src/index.ts](../src/index.ts) (2)
 
-      - [Line \project\src\index.ts](../C#L\project\src\index.ts) - error 1
-      - [Line \project\src\index.ts](../C#L\project\src\index.ts) - error 2
-      - [Line \project\src\utils.ts](../C#L\project\src\utils.ts) - error 3
+      - [Line 10](../src/index.ts#L10) - error 1
+      - [Line 20](../src/index.ts#L20) - error 2
+
+      ### [src/utils.ts](../src/utils.ts) (1)
+
+      - [Line 5](../src/utils.ts#L5) - error 3
 
       "
     `);

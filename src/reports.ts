@@ -17,9 +17,13 @@ function escapeHtml(text: string) {
 function parsePathWithLocation(pathWithLocation?: string) {
   if (!pathWithLocation) return { filePath: undefined, line: undefined };
 
-  const [filePath, line] = pathWithLocation.split(":");
+  const match = /^(.+):(\d+)$/.exec(pathWithLocation);
 
-  return { filePath, line };
+  if (match) {
+    return { filePath: match[1], line: match[2] };
+  }
+
+  return { filePath: pathWithLocation, line: undefined };
 }
 
 function parseItem(item: string) {
