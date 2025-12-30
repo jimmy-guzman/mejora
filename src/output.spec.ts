@@ -288,6 +288,7 @@ describe("formatTextOutput", () => {
            error1
            error2
            error3
+
         Duration  2.5s
           Issues  3
 
@@ -328,6 +329,7 @@ describe("formatTextOutput", () => {
     expect(output).toMatchInlineSnapshot(`
       "eslint:
         Initial baseline created with 0 issues
+
           Issues  0
 
         Improvements  0
@@ -376,6 +378,7 @@ describe("formatTextOutput", () => {
            error8
            error9
            ... and 5 more
+
           Issues  15
 
         Improvements  0
@@ -415,6 +418,7 @@ describe("formatTextOutput", () => {
         2 new issues (regressions):
            error1
            error2
+
         Duration  1.5s
           Issues  2
 
@@ -455,6 +459,7 @@ describe("formatTextOutput", () => {
         2 issues fixed (improvements):
            error1
            error2
+
         Duration  1.2s
           Issues  0
 
@@ -496,6 +501,7 @@ describe("formatTextOutput", () => {
            error3
         1 issue fixed (improvement):
            error1
+
         Duration  1.8s
           Issues  2
 
@@ -721,6 +727,7 @@ describe("formatTextOutput", () => {
            error8
            error9
            ... and 5 more
+
           Issues  15
 
         Improvements  0
@@ -769,6 +776,7 @@ describe("formatTextOutput", () => {
            error8
            error9
            ... and 2 more
+
           Issues  0
 
         Improvements  1
@@ -819,12 +827,14 @@ describe("formatTextOutput", () => {
       "eslint:
         1 new issue (regression):
            error1
+
         Duration  1s
           Issues  1
 
       typescript:
         1 issue fixed (improvement):
            error2
+
         Duration  1.5s
           Issues  0
 
