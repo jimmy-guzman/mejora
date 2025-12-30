@@ -1,30 +1,58 @@
 # mejora
 
-Prevent regressions by allowing only improvement.
+> Prevent regressions. Allow improvement.
 
-`mejora` runs checks, compares their results to a stored baseline, and fails only when things get worse.
+![actions][actions-badge]
+[![version][version-badge]][package]
+[![downloads][downloads-badge]][npmtrends]
+[![Install Size][install-size-badge]][packagephobia]
 
-If results improve or stay the same, the run passes.
+`mejora` runs [checks](#supported-checks), compares them to a stored baseline, and fails only when things get worse.
 
-## What problem it solves
+## Behavior
 
-Most tools ask: _“Is this perfect?”_
-`mejora` asks: _“Did this regress?”_
+Each check produces a snapshot.
 
-This makes it practical for:
+Snapshots are compared against a baseline.
 
-- large or legacy codebases
-- incremental cleanup
-- CI enforcement without blocking progress
+- New items are regressions and fail the run
+- Removed items are improvements and pass the run
 
-## How it works
+Snapshots currently use the `items` format:
 
-1. Each check produces a snapshot, a list of items
-2. The snapshot is compared to a baseline
-3. New items cause failure
-4. Removed items are treated as improvement
+```json
+{ "type": "items", "items": ["file.ts:12", "file.ts:45"] }
+```
 
-Baselines are explicit and should be committed to the repo.
+Order does not matter.
+
+The baseline represents the last accepted state and should be committed to the repository.
+
+Default location:
+
+```txt
+.mejora/baseline.json
+```
+
+When a run produces fewer items than the baseline, the run passes and the baseline is updated automatically.
+
+Regressions fail the run.
+
+`mejora --force` updates the baseline even when regressions are present.
+
+### Output
+
+Output is non-interactive and deterministic.
+
+- Plain text by default
+- Markdown output for human-friendly review and navigation
+- `--json` produces structured output for CI and automation
+
+### Exit Codes
+
+- `0` pass or improvement
+- `1` regression detected or baseline out of sync
+- `2` configuration or runtime error
 
 ## Installation
 
@@ -105,7 +133,7 @@ export default defineConfig({
 Each entry in `checks` is an explicit check.
 The object key is the check identifier and is used in the baseline.
 
-## Supported checks
+## Supported Checks
 
 ### ESLint
 
@@ -126,73 +154,13 @@ The object key is the check identifier and is used in the baseline.
 > [!NOTE]
 > `typescript` (^5.0.0) is required as a peer dependency when using the TypeScript check
 
-## Snapshot type
-
-### Items
-
-```json
-{ "type": "items", "items": ["file.ts:12", "file.ts:45"] }
-```
-
-Fails if new items appear.
-Order does not matter.
-
-## Baseline
-
-Default location:
-
-```txt
-.mejora/baseline.json
-```
-
-Example:
-
-```json
-{
-  "version": 1,
-  "checks": {
-    "eslint > no-nested-ternary": {
-      "type": "items",
-      "items": ["src/a.ts:1"]
-    }
-  }
-}
-```
-
-The baseline represents the last accepted state.
-
-## Improvements and baseline updates
-
-When a run produces fewer items than the baseline, the run passes and the baseline is updated automatically to reflect the improvement.
-
-This includes items that no longer exist in the codebase.
-
-Improvements are reported separately from regressions so progress is visible.
-
-## CI behavior
+## CI
 
 When running in CI, mejora does not write the baseline.
 
 Instead, it compares the committed baseline to the expected results from the current codebase.
 
 If there is any difference between the committed baseline and the expected results, the run fails.
-
-## Force mode
-
-`mejora --force` updates the baseline even when regressions are present.
-
-## Exit codes
-
-- `0` pass or improvement
-- `1` regression detected or baseline out of sync
-- `2` configuration or runtime error
-
-## Output
-
-- Default output is plain text
-- No prompts
-- No interactive behavior
-- `--json` produces structured, deterministic output
 
 ## Merge Conflicts
 
@@ -214,6 +182,14 @@ $ git add .mejora/
 $ git commit -m "Merge feature branch"
 ```
 
-## Inspiration
+## Credits
 
-`mejora` is inspired by [betterer](https://phenomnomnominal.github.io/betterer/).
+- `mejora` is inspired by [betterer](https://phenomnomnominal.github.io/betterer/).
+
+[actions-badge]: https://img.shields.io/github/actions/workflow/status/jimmy-guzman/mejora/cd.yml?style=flat-square&logo=github-actions
+[version-badge]: https://img.shields.io/npm/v/mejora?style=flat-square&logo=npm
+[package]: https://www.npmjs.com/package/mejora
+[downloads-badge]: https://img.shields.io/npm/dm/mejora?style=flat-square&logo=npm
+[npmtrends]: https://www.npmtrends.com/mejora
+[packagephobia]: https://packagephobia.com/result?p=mejora
+[install-size-badge]: https://img.shields.io/badge/dynamic/json?url=https://packagephobia.com/v2/api.json%3Fp=mejora&query=$.install.pretty&label=install%20size&style=flat-square&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDggMTA4Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzAwNjgzOCIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzMyZGU4NSIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxwYXRoIGZpbGw9InVybCgjYSkiIGQ9Ik0yMS42NjcgNzMuODA5VjMzLjg2N2wyOC4zMy0xNi4xODggMjguMzM3IDE2LjE4OFY2Ni4xM0w0OS45OTcgODIuMzIxIDM1IDczLjc1VjQxLjYwNGwxNC45OTctOC41N0w2NSA0MS42MDR2MTYuNzg4bC0xNS4wMDMgOC41NzEtMS42NjMtLjk1di0xNi42NzJsOC4zODItNC43OTItNi43MTktMy44MzgtOC4zMyA0Ljc2M1Y2OS44OGw4LjMzIDQuNzYyIDIxLjY3LTEyLjM4M1YzNy43MzdsLTIxLjY3LTEyLjM3OS0yMS42NjMgMTIuMzc5djM5Ljg4TDQ5Ljk5NyA5MCA4NSA3MFYzMEw0OS45OTcgMTAgMTUgMzB2NDB6Ii8+PC9zdmc+
