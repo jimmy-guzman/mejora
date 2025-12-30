@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/jimmy-guzman/mejora/compare/v1.3.1...v1.4.0) (2025-12-30)
+
+
+### Features
+
+* ✨ improve output w/ aligned compact summary ([#15](https://github.com/jimmy-guzman/mejora/issues/15)) ([52e4de1](https://github.com/jimmy-guzman/mejora/commit/52e4de13b2db7058c257923dbcff5666ff682770))
+
 ## [1.3.1](https://github.com/jimmy-guzman/mejora/compare/v1.3.0...v1.3.1) (2025-12-30)
 
 
