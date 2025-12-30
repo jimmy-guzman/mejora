@@ -124,7 +124,7 @@ describe("generateMarkdownReport", () => {
     expect(result.endsWith("\n")).toBe(true);
   });
 
-  it("should skip items without file path", () => {
+  it("should group unparsable items under Other Issues", () => {
     const baseline = {
       checks: {
         eslint: {
@@ -147,6 +147,9 @@ describe("generateMarkdownReport", () => {
 
       ### [src/valid.ts](../src/valid.ts) (1)
       - [Line 10](../src/valid.ts#L10) - valid error
+
+      ### Other Issues (1)
+      -  - invalid item without path
 
       "
     `);

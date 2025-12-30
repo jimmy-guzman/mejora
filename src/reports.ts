@@ -18,6 +18,7 @@ function generateItemLine(item: string, href: string, displayPath: string) {
 
 function groupItemsByFile(items: string[]) {
   const itemsByFile = new Map<string, string[]>();
+  const unparsableItems: string[] = [];
 
   for (const item of items) {
     const [pathWithLocation] = item.split(" - ");
@@ -25,13 +26,19 @@ function groupItemsByFile(items: string[]) {
     const parts = pathWithLocation?.split(":");
     const filePath = parts?.[0];
 
-    // TODO: Items without a parsable path are silently dropped.
     if (filePath) {
       if (!itemsByFile.has(filePath)) {
         itemsByFile.set(filePath, []);
       }
+
       itemsByFile.get(filePath)?.push(item);
+    } else {
+      unparsableItems.push(item);
     }
+  }
+
+  if (unparsableItems.length > 0) {
+    itemsByFile.set("__unparsable__", unparsableItems);
   }
 
   return itemsByFile;
@@ -72,12 +79,27 @@ function generateCheckSection(
     return section;
   }
 
-  const sortedEntries = [...groupItemsByFile(items).entries()].toSorted(
-    ([a], [b]) => a.localeCompare(b),
-  );
+  const itemsByFile = groupItemsByFile(items);
+  const unparsableItems = itemsByFile.get("__unparsable__");
+
+  itemsByFile.delete("__unparsable__");
+
+  const sortedEntries = [...itemsByFile.entries()].toSorted(([a], [b]) => {
+    return a.localeCompare(b);
+  });
 
   for (const [filePath, fileItems] of sortedEntries) {
     section += generateFileSection(filePath, fileItems, cwd, baselineDir);
+  }
+
+  if (unparsableItems && unparsableItems.length > 0) {
+    section += `### Other Issues (${unparsableItems.length})\n`;
+
+    for (const item of unparsableItems) {
+      section += `- ${item}\n`;
+    }
+
+    section += "\n";
   }
 
   return section;
