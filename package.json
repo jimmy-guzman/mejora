@@ -1,8 +1,23 @@
 {
   "name": "mejora",
   "version": "1.4.2",
-  "description": "",
-  "keywords": [],
+  "description": "Prevent regressions. Allow improvement.",
+  "keywords": [
+    "regression",
+    "baseline",
+    "ci",
+    "continuous-integration",
+    "linting",
+    "eslint",
+    "typescript",
+    "quality",
+    "code-quality",
+    "developer-tools",
+    "cli",
+    "testing",
+    "incremental",
+    "legacy-code"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jimmy-guzman/mejora.git"
