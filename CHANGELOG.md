@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/jimmy-guzman/mejora/compare/v1.3.0...v1.3.1) (2025-12-30)
+
+
+### Bug Fixes
+
+* 🐛 consistent output per scenario ([#13](https://github.com/jimmy-guzman/mejora/issues/13)) ([d7daa21](https://github.com/jimmy-guzman/mejora/commit/d7daa219ab3f1390d0b904efc16c25ba39dfce1d))
+
 # [1.3.0](https://github.com/jimmy-guzman/mejora/compare/v1.2.0...v1.3.0) (2025-12-29)
 
 
