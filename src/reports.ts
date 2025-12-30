@@ -131,5 +131,7 @@ export function generateMarkdownReport(
     markdown += generateCheckSection(checkId, items, cwd, baselineDir);
   }
 
+  markdown = markdown.replaceAll(/\n{3,}/g, "\n\n");
+
   return markdown;
 }
