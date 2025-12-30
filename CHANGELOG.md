@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/jimmy-guzman/mejora/compare/v1.4.3...v1.5.0) (2025-12-30)
+
+
+### Features
+
+* ✨ better markdown report w/ file grouping & counts ([#26](https://github.com/jimmy-guzman/mejora/issues/26)) ([fa98472](https://github.com/jimmy-guzman/mejora/commit/fa984720eb7930ce51efd52ad64dc0e02a2b21be))
+
 ## [1.4.3](https://github.com/jimmy-guzman/mejora/compare/v1.4.2...v1.4.3) (2025-12-30)
 
 
