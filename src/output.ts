@@ -95,7 +95,7 @@ function formatItemList(items: string[], maxItems = MAX_ITEMS_TO_DISPLAY) {
 function formatInitialBaseline(check: CheckResult, isFirst: boolean) {
   const prefix = isFirst ? "" : "\n";
   const count = check.snapshot.items.length;
-  const lines: string[] = [
+  const lines = [
     `${prefix}${check.checkId}:`,
     `  Initial baseline created with ${blue(count)} ${plural(count, "issue")}`,
   ];
@@ -103,6 +103,8 @@ function formatInitialBaseline(check: CheckResult, isFirst: boolean) {
   if (check.snapshot.items.length > 0) {
     lines.push(...formatItemList(check.snapshot.items));
   }
+
+  lines.push("");
 
   if (check.duration !== undefined) {
     lines.push(`  ${dim("Duration")}  ${duration(check.duration)}`);
@@ -149,6 +151,7 @@ function formatChangeBaseline(check: CheckResult, isFirst: boolean) {
     `${prefix}${check.checkId}:`,
     ...formatRegressions(check),
     ...formatImprovements(check),
+    "",
   ];
 
   if (check.duration !== undefined) {
