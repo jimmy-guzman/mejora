@@ -1,3 +1,12 @@
+## [1.5.1](https://github.com/jimmy-guzman/mejora/compare/v1.5.0...v1.5.1) (2025-12-30)
+
+
+### Bug Fixes
+
+* 🐛 escape what looks like inline html ([13e0052](https://github.com/jimmy-guzman/mejora/commit/13e0052a2e4ec2c5b4dcab5153cac26efab09708)), closes [#29](https://github.com/jimmy-guzman/mejora/issues/29)
+* 🐛 heading should be surrounded by blank lines ([85b7d49](https://github.com/jimmy-guzman/mejora/commit/85b7d4938a329daefead934e8d330ea8b4cddb19)), closes [#27](https://github.com/jimmy-guzman/mejora/issues/27)
+* 🐛 lists should be surrounded by blank lines ([fff4320](https://github.com/jimmy-guzman/mejora/commit/fff43202f574330baac3b3d64e2068521f0d5a1f)), closes [#28](https://github.com/jimmy-guzman/mejora/issues/28)
+
 # [1.5.0](https://github.com/jimmy-guzman/mejora/compare/v1.4.3...v1.5.0) (2025-12-30)
 
 
