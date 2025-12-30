@@ -54,6 +54,7 @@ describe("formatJsonOutput", () => {
         initialChecks: [],
         regressionChecks: ["eslint"],
         regressions: 1,
+        totalIssues: 2,
         unchanged: 0,
         unchangedChecks: [],
       },
@@ -87,12 +88,14 @@ describe("formatJsonOutput", () => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- this is to check the output structure
     expect(parsed.checks[0].removedItems).toStrictEqual(["error1"]);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- this is to check the output structure
-    expect(parsed.checks[0].totalIssues).toBe(1); // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- this is to check the output structure
+    expect(parsed.checks[0].totalIssues).toBe(1);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- this is to check the output structure
     expect(parsed.summary).toMatchObject({
       checksRun: 1,
       improvementChecks: ["eslint"],
       improvements: 1,
       regressions: 0,
+      totalIssues: 1,
       unchanged: 0,
     });
   });
@@ -130,6 +133,7 @@ describe("formatJsonOutput", () => {
       initial: 1,
       initialChecks: ["eslint"],
       regressions: 0,
+      totalIssues: 1,
       unchanged: 0,
     });
   });
@@ -163,6 +167,7 @@ describe("formatJsonOutput", () => {
       checksRun: 1,
       improvements: 0,
       regressions: 0,
+      totalIssues: 0,
       unchanged: 1,
       unchangedChecks: ["eslint"],
     });
@@ -213,8 +218,70 @@ describe("formatJsonOutput", () => {
       improvements: 1,
       regressionChecks: ["eslint"],
       regressions: 1,
+      totalIssues: 1,
       unchanged: 0,
     });
+  });
+
+  it("should include avgDuration in JSON summary when totalDuration is present", () => {
+    const result = {
+      exitCode: 0,
+      hasImprovement: false,
+      hasRegression: false,
+      results: [
+        {
+          baseline: { items: [], type: "items" as const },
+          checkId: "eslint",
+          duration: 1000,
+          hasImprovement: false,
+          hasRegression: false,
+          isInitial: false,
+          newItems: [],
+          removedItems: [],
+          snapshot: { items: [], type: "items" as const },
+        },
+        {
+          baseline: { items: [], type: "items" as const },
+          checkId: "typescript",
+          duration: 1500,
+          hasImprovement: false,
+          hasRegression: false,
+          isInitial: false,
+          newItems: [],
+          removedItems: [],
+          snapshot: { items: [], type: "items" as const },
+        },
+      ],
+      totalDuration: 2500,
+    };
+
+    const output = formatJsonOutput(result);
+    const parsed = JSON.parse(output);
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- this is to check the output structure
+    expect(parsed.summary.avgDuration).toBe(1250);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- this is to check the output structure
+    expect(parsed.summary.totalIssues).toBe(0);
+  });
+
+  it("should set avgDuration to undefined in JSON when results array is empty", () => {
+    const result = {
+      exitCode: 0,
+      hasImprovement: false,
+      hasRegression: false,
+      results: [],
+      totalDuration: 1500,
+    };
+
+    const output = formatJsonOutput(result);
+    const parsed = JSON.parse(output);
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- this is to check the output structure
+    expect(parsed.summary.avgDuration).toBeUndefined();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- this is to check the output structure
+    expect(parsed.summary.totalIssues).toBe(0);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- this is to check the output structure
+    expect(parsed.summary.checksRun).toBe(0);
   });
 });
 
@@ -228,6 +295,7 @@ describe("formatTextOutput", () => {
         {
           baseline: undefined,
           checkId: "eslint",
+          duration: 2500,
           hasImprovement: false,
           hasRegression: false,
           isInitial: true,
@@ -248,9 +316,12 @@ describe("formatTextOutput", () => {
     expect(output).toContain("error1");
     expect(output).toContain("error2");
     expect(output).toContain("error3");
+    expect(output).toContain("Completed in");
+    expect(output).toContain("3 issues");
     expect(output).toContain("Summary");
     expect(output).toContain("Checks run: 1");
     expect(output).toContain("Initial: 1 (eslint)");
+    expect(output).toContain("Total issues: 3");
     expect(output).toContain("✓ Initial baseline created successfully");
   });
 
@@ -282,6 +353,7 @@ describe("formatTextOutput", () => {
     expect(output).toContain("Initial baseline created with 0 issue(s)");
     expect(output).not.toContain("error");
     expect(output).toContain("Summary");
+    expect(output).toContain("Total issues: 0");
     expect(output).toContain("✓ Initial baseline created successfully");
   });
 
@@ -313,6 +385,7 @@ describe("formatTextOutput", () => {
     expect(output).toContain("eslint:");
     expect(output).toContain("Initial baseline created with 1 issue(s)");
     expect(output).toContain("Completed in");
+    expect(output).toContain("1 issue");
   });
 
   it("should truncate initial baseline items over 10", () => {
@@ -351,6 +424,7 @@ describe("formatTextOutput", () => {
         {
           baseline: { items: [], type: "items" as const },
           checkId: "eslint",
+          duration: 1500,
           hasImprovement: false,
           hasRegression: true,
           isInitial: false,
@@ -367,8 +441,11 @@ describe("formatTextOutput", () => {
     expect(output).toContain("2 new issue(s) (regressions):");
     expect(output).toContain("error1");
     expect(output).toContain("error2");
+    expect(output).toContain("Completed in");
+    expect(output).toContain("2 issues");
     expect(output).toContain("Summary");
     expect(output).toContain("Regressions: 1 (eslint)");
+    expect(output).toContain("Total issues: 2");
     expect(output).toContain("Initial: 0");
     expect(output).toContain("✗ Regressions detected - Run failed");
   });
@@ -382,6 +459,7 @@ describe("formatTextOutput", () => {
         {
           baseline: { items: ["error1", "error2"], type: "items" as const },
           checkId: "eslint",
+          duration: 1200,
           hasImprovement: true,
           hasRegression: false,
           isInitial: false,
@@ -398,8 +476,11 @@ describe("formatTextOutput", () => {
     expect(output).toContain("2 issue(s) fixed (improvements):");
     expect(output).toContain("error1");
     expect(output).toContain("error2");
+    expect(output).toContain("Completed in");
+    expect(output).toContain("0 issues");
     expect(output).toContain("Summary");
     expect(output).toContain("Improvements: 1 (eslint)");
+    expect(output).toContain("Total issues: 0");
     expect(output).toContain("Initial: 0");
     expect(output).toContain("✓ Improvements detected - Baseline updated");
   });
@@ -413,6 +494,7 @@ describe("formatTextOutput", () => {
         {
           baseline: { items: ["error1", "error2"], type: "items" as const },
           checkId: "eslint",
+          duration: 1800,
           hasImprovement: true,
           hasRegression: true,
           isInitial: false,
@@ -429,9 +511,12 @@ describe("formatTextOutput", () => {
     expect(output).toContain("error3");
     expect(output).toContain("1 issue(s) fixed (improvements):");
     expect(output).toContain("error1");
+    expect(output).toContain("Completed in");
+    expect(output).toContain("2 issues");
     expect(output).toContain("Summary");
     expect(output).toContain("Improvements: 1 (eslint)");
     expect(output).toContain("Regressions: 1 (eslint)");
+    expect(output).toContain("Total issues: 2");
     expect(output).toContain("Initial: 0");
     expect(output).toContain("✗ Regressions detected - Run failed");
   });
@@ -463,9 +548,71 @@ describe("formatTextOutput", () => {
     expect(output).toContain("1 issue(s) fixed (improvements):");
     expect(output).toContain("error1");
     expect(output).toContain("Completed in");
+    expect(output).toContain("2 issues");
   });
 
-  it("should format clean pass without double newlines", () => {
+  it("should show unchanged checks with duration and issue count", () => {
+    const result = {
+      exitCode: 0,
+      hasImprovement: false,
+      hasRegression: false,
+      results: [
+        {
+          baseline: { items: ["error1"], type: "items" as const },
+          checkId: "eslint",
+          duration: 1500,
+          hasImprovement: false,
+          hasRegression: false,
+          isInitial: false,
+          newItems: [],
+          removedItems: [],
+          snapshot: { items: ["error1"], type: "items" as const },
+        },
+      ],
+    };
+
+    const output = stripAnsi(formatTextOutput(result));
+
+    expect(output).toContain("eslint:");
+    expect(output).toContain("Completed in");
+    expect(output).toContain("1 issue");
+    expect(output).toContain("Summary");
+    expect(output).toContain("Checks run: 1");
+    expect(output).toContain("Unchanged: 1 (eslint)");
+    expect(output).toContain("Total issues: 1");
+    expect(output).toContain("Initial: 0");
+    expect(output).toContain("✓ All checks passed");
+  });
+
+  it("should show unchanged checks without duration", () => {
+    const result = {
+      exitCode: 0,
+      hasImprovement: false,
+      hasRegression: false,
+      results: [
+        {
+          baseline: { items: ["error1"], type: "items" as const },
+          checkId: "eslint",
+          hasImprovement: false,
+          hasRegression: false,
+          isInitial: false,
+          newItems: [],
+          removedItems: [],
+          snapshot: { items: ["error1"], type: "items" as const },
+        },
+      ],
+    };
+
+    const output = stripAnsi(formatTextOutput(result));
+
+    expect(output).toContain("eslint:");
+    expect(output).not.toContain("Completed in");
+    expect(output).toContain("Summary");
+    expect(output).toContain("Unchanged: 1 (eslint)");
+    expect(output).toContain("✓ All checks passed");
+  });
+
+  it("should format unchanged check as first check without leading newline", () => {
     const result = {
       exitCode: 0,
       hasImprovement: false,
@@ -474,6 +621,7 @@ describe("formatTextOutput", () => {
         {
           baseline: { items: [], type: "items" as const },
           checkId: "eslint",
+          duration: 1000,
           hasImprovement: false,
           hasRegression: false,
           isInitial: false,
@@ -486,13 +634,67 @@ describe("formatTextOutput", () => {
 
     const output = stripAnsi(formatTextOutput(result));
 
+    expect(output).toMatch(/^eslint:/);
+    expect(output).toContain("Completed in");
+    expect(output).toContain("0 issues");
+  });
+
+  it("should format multiple unchanged checks with newline between them", () => {
+    const result = {
+      exitCode: 0,
+      hasImprovement: false,
+      hasRegression: false,
+      results: [
+        {
+          baseline: { items: [], type: "items" as const },
+          checkId: "eslint",
+          duration: 1000,
+          hasImprovement: false,
+          hasRegression: false,
+          isInitial: false,
+          newItems: [],
+          removedItems: [],
+          snapshot: { items: [], type: "items" as const },
+        },
+        {
+          baseline: { items: ["error1"], type: "items" as const },
+          checkId: "typescript",
+          duration: 1500,
+          hasImprovement: false,
+          hasRegression: false,
+          isInitial: false,
+          newItems: [],
+          removedItems: [],
+          snapshot: { items: ["error1"], type: "items" as const },
+        },
+      ],
+    };
+
+    const output = stripAnsi(formatTextOutput(result));
+
+    expect(output).toMatch(/eslint:.*\n\ntypescript:/s);
+    expect(output).toContain("Completed in");
+    expect(output).toContain("Checks run: 2");
+    expect(output).toContain("Unchanged: 2 (eslint, typescript)");
+  });
+
+  it("should format output with no checks run", () => {
+    const result = {
+      exitCode: 0,
+      hasImprovement: false,
+      hasRegression: false,
+      results: [],
+      totalDuration: 1500,
+    };
+
+    const output = stripAnsi(formatTextOutput(result));
+
     expect(output).toContain("Summary");
-    expect(output).toContain("Checks run: 1");
-    expect(output).toContain("Unchanged: 1 (eslint)");
-    expect(output).toContain("Initial: 0");
+    expect(output).toContain("Checks run: 0");
+    expect(output).toContain("Total issues: 0");
+    expect(output).not.toContain("Duration:");
     expect(output).toContain("✓ All checks passed");
-    expect(output).not.toMatch(/^\n/);
-    expect(output).not.toContain("\n\n\n");
+    expect(output).not.toMatch(/\n\nSummary/);
   });
 
   it("should format clean pass with duration", () => {
@@ -518,38 +720,15 @@ describe("formatTextOutput", () => {
 
     const output = stripAnsi(formatTextOutput(result));
 
-    expect(output).toContain("Summary");
-    expect(output).toContain("✓ All checks passed");
-    expect(output).toContain("Initial: 0");
+    expect(output).toContain("eslint:");
     expect(output).toContain("Completed in");
-  });
-
-  it("should skip checks with no changes in text output", () => {
-    const result = {
-      exitCode: 0,
-      hasImprovement: false,
-      hasRegression: false,
-      results: [
-        {
-          baseline: { items: ["error1"], type: "items" as const },
-          checkId: "eslint",
-          hasImprovement: false,
-          hasRegression: false,
-          isInitial: false,
-          newItems: [],
-          removedItems: [],
-          snapshot: { items: ["error1"], type: "items" as const },
-        },
-      ],
-    };
-
-    const output = stripAnsi(formatTextOutput(result));
-
-    expect(output).not.toContain("eslint:");
+    expect(output).toContain("0 issues");
     expect(output).toContain("Summary");
-    expect(output).toContain("Unchanged: 1 (eslint)");
-    expect(output).toContain("Initial: 0");
+    expect(output).toContain("Total issues: 0");
+    expect(output).toContain("Duration:");
+    expect(output).toContain("avg");
     expect(output).toContain("✓ All checks passed");
+    expect(output).toContain("Initial: 0");
   });
 
   it("should truncate regressions over 10", () => {
@@ -611,6 +790,7 @@ describe("formatTextOutput", () => {
         {
           baseline: { items: [], type: "items" as const },
           checkId: "eslint",
+          duration: 1000,
           hasImprovement: false,
           hasRegression: true,
           isInitial: false,
@@ -621,6 +801,7 @@ describe("formatTextOutput", () => {
         {
           baseline: { items: ["error2"], type: "items" as const },
           checkId: "typescript",
+          duration: 1500,
           hasImprovement: true,
           hasRegression: false,
           isInitial: false,
@@ -629,6 +810,7 @@ describe("formatTextOutput", () => {
           snapshot: { items: [], type: "items" as const },
         },
       ],
+      totalDuration: 2500,
     };
 
     const output = stripAnsi(formatTextOutput(result));
@@ -641,6 +823,9 @@ describe("formatTextOutput", () => {
     expect(output).toContain("Checks run: 2");
     expect(output).toContain("Improvements: 1 (typescript)");
     expect(output).toContain("Regressions: 1 (eslint)");
+    expect(output).toContain("Total issues: 1");
+    expect(output).toContain("Duration:");
+    expect(output).toContain("avg");
     expect(output).toContain("Initial: 0");
   });
 
