@@ -15,7 +15,11 @@ function parsePathWithLocation(pathWithLocation: string | undefined) {
 }
 
 function escapeHtml(text: string) {
-  return text.replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+  return text
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll("[", "&#91;")
+    .replaceAll("]", "&#93;");
 }
 
 function generateItemLine(item: string, href: string, displayPath: string) {

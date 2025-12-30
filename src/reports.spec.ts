@@ -388,4 +388,37 @@ describe("generateMarkdownReport", () => {
     expect(result).toContain("&lt;");
     expect(result).toContain("&gt;");
   });
+
+  it("should escape square brackets in error messages", () => {
+    const baseline = {
+      checks: {
+        typescript: {
+          items: [
+            "/project/src/test.ts:125 - The types returned by '[Symbol.iterator]().next(...)' are incompatible.",
+          ],
+          type: "items" as const,
+        },
+      },
+      version: 1,
+    };
+
+    const result = generateMarkdownReport(baseline, "/project/.mejora");
+
+    expect(result).toMatchInlineSnapshot(`
+      "# Mejora Baseline
+
+      ## typescript (1 issue)
+
+
+      ### [src/test.ts](../src/test.ts) (1)
+
+      - [Line 125](../src/test.ts#L125) - The types returned by '&#91;Symbol.iterator&#93;().next(...)' are incompatible.
+
+      "
+    `);
+
+    expect(result).not.toMatch(/ - .*\[(?!Line \d+\])/);
+    expect(result).toContain("&#91;");
+    expect(result).toContain("&#93;");
+  });
 });
