@@ -211,4 +211,124 @@ describe("generateMarkdownReport", () => {
       "
     `);
   });
+
+  it("should handle Windows drive-letter paths", () => {
+    vi.spyOn(process, "cwd").mockReturnValue(String.raw`C:\project`);
+
+    const baseline = {
+      checks: {
+        eslint: {
+          items: [String.raw`C:\project\src\index.ts:10 - 'foo' is never used`],
+          type: "items" as const,
+        },
+      },
+      version: 1,
+    };
+
+    const result = generateMarkdownReport(
+      baseline,
+      String.raw`C:\project\.mejora`,
+    );
+
+    expect(result).toMatchInlineSnapshot(String.raw`
+      "# Mejora Baseline
+
+      ## eslint (1 issue)
+
+      ### [C](../C) (1)
+      - [Line \project\src\index.ts](../C#L\project\src\index.ts) - 'foo' is never used
+
+      "
+    `);
+  });
+
+  it("should handle Windows paths without line numbers", () => {
+    vi.spyOn(process, "cwd").mockReturnValue(String.raw`D:\code\app`);
+
+    const baseline = {
+      checks: {
+        typescript: {
+          items: [String.raw`D:\code\app\types.ts - Type error`],
+          type: "items" as const,
+        },
+      },
+      version: 1,
+    };
+
+    const result = generateMarkdownReport(
+      baseline,
+      String.raw`D:\code\app\.mejora`,
+    );
+
+    expect(result).toMatchInlineSnapshot(String.raw`
+      "# Mejora Baseline
+
+      ## typescript (1 issue)
+
+      ### [D](../D) (1)
+      - [Line \code\app\types.ts](../D#L\code\app\types.ts) - Type error
+
+      "
+    `);
+  });
+
+  it("should group multiple Windows path items from same file", () => {
+    vi.spyOn(process, "cwd").mockReturnValue(String.raw`C:\project`);
+
+    const baseline = {
+      checks: {
+        eslint: {
+          items: [
+            String.raw`C:\project\src\index.ts:10 - error 1`,
+            String.raw`C:\project\src\index.ts:20 - error 2`,
+            String.raw`C:\project\src\utils.ts:5 - error 3`,
+          ],
+          type: "items" as const,
+        },
+      },
+      version: 1,
+    };
+
+    const result = generateMarkdownReport(
+      baseline,
+      String.raw`C:\project\.mejora`,
+    );
+
+    expect(result).toMatchInlineSnapshot(String.raw`
+      "# Mejora Baseline
+
+      ## eslint (3 issues)
+
+      ### [C](../C) (3)
+      - [Line \project\src\index.ts](../C#L\project\src\index.ts) - error 1
+      - [Line \project\src\index.ts](../C#L\project\src\index.ts) - error 2
+      - [Line \project\src\utils.ts](../C#L\project\src\utils.ts) - error 3
+
+      "
+    `);
+  });
+
+  it("should handle mixed Unix and Windows paths", () => {
+    vi.spyOn(process, "cwd").mockReturnValue(String.raw`C:\project`);
+
+    const baseline = {
+      checks: {
+        eslint: {
+          items: [
+            "/project/src/unix.ts:10 - unix error",
+            String.raw`C:\project\src\windows.ts:20 - windows error`,
+          ],
+          type: "items" as const,
+        },
+      },
+      version: 1,
+    };
+
+    const result = generateMarkdownReport(baseline, "/project/.mejora");
+
+    expect(result).toContain("unix.ts");
+    expect(result).toContain("windows.ts");
+    expect(result).toContain("unix error");
+    expect(result).toContain("windows error");
+  });
 });

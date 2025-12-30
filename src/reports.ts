@@ -1,13 +1,22 @@
-import { relative } from "node:path";
+import { relative } from "pathe";
 
 import type { Baseline } from "./types";
 
 import { plural } from "./utils/text";
 
+function parsePathWithLocation(pathWithLocation: string | undefined) {
+  if (!pathWithLocation) return { filePath: undefined, line: undefined };
+
+  const parts = pathWithLocation.split(":");
+  const filePath = parts[0];
+  const line = parts[1];
+
+  return { filePath, line };
+}
+
 function generateItemLine(item: string, href: string, displayPath: string) {
   const [pathWithLocation, ...rest] = item.split(" - ");
-  const parts = pathWithLocation?.split(":");
-  const line = parts?.[1];
+  const { line } = parsePathWithLocation(pathWithLocation);
 
   const linkPath = line ? `${href}#L${line}` : href;
   const lineDisplay = line ? `Line ${line}` : displayPath;
@@ -22,15 +31,13 @@ function groupItemsByFile(items: string[]) {
 
   for (const item of items) {
     const [pathWithLocation] = item.split(" - ");
-    // TODO: Path parsing may break on Windows drive-letter paths.
-    const parts = pathWithLocation?.split(":");
-    const filePath = parts?.[0];
+
+    const { filePath } = parsePathWithLocation(pathWithLocation);
 
     if (filePath) {
       if (!itemsByFile.has(filePath)) {
         itemsByFile.set(filePath, []);
       }
-
       itemsByFile.get(filePath)?.push(item);
     } else {
       unparsableItems.push(item);

@@ -1,4 +1,4 @@
-import { relative, resolve, sep } from "node:path";
+import { relative, resolve, sep } from "pathe";
 
 import type { TypeScriptCheckConfig } from "@/types";
 
