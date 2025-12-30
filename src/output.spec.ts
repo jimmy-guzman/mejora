@@ -291,7 +291,6 @@ describe("formatTextOutput", () => {
         Duration  2.5s
           Issues  3
 
-      Summary
         Improvements  0
          Regressions  0
            Unchanged  0
@@ -331,7 +330,6 @@ describe("formatTextOutput", () => {
         Initial baseline created with 0 issues
           Issues  0
 
-      Summary
         Improvements  0
          Regressions  0
            Unchanged  0
@@ -380,7 +378,6 @@ describe("formatTextOutput", () => {
            ... and 5 more
           Issues  15
 
-      Summary
         Improvements  0
          Regressions  0
            Unchanged  0
@@ -421,7 +418,6 @@ describe("formatTextOutput", () => {
         Duration  1.5s
           Issues  2
 
-      Summary
         Improvements  0
          Regressions  1
            Unchanged  0
@@ -462,7 +458,6 @@ describe("formatTextOutput", () => {
         Duration  1.2s
           Issues  0
 
-      Summary
         Improvements  1
          Regressions  0
            Unchanged  0
@@ -504,7 +499,6 @@ describe("formatTextOutput", () => {
         Duration  1.8s
           Issues  2
 
-      Summary
         Improvements  1
          Regressions  1
            Unchanged  0
@@ -540,7 +534,6 @@ describe("formatTextOutput", () => {
     expect(output).toMatchInlineSnapshot(`
       "eslint (1) 1.5s
 
-      Summary
         Improvements  0
          Regressions  0
            Unchanged  1
@@ -575,7 +568,6 @@ describe("formatTextOutput", () => {
     expect(output).toMatchInlineSnapshot(`
       "eslint (1)
 
-      Summary
         Improvements  0
          Regressions  0
            Unchanged  1
@@ -624,7 +616,6 @@ describe("formatTextOutput", () => {
 
       typescript (1) 1.5s
 
-      Summary
         Improvements  0
          Regressions  0
            Unchanged  2
@@ -647,8 +638,7 @@ describe("formatTextOutput", () => {
     const output = stripAnsi(formatTextOutput(result));
 
     expect(output).toMatchInlineSnapshot(`
-      "Summary
-        Improvements  0
+      "  Improvements  0
          Regressions  0
            Unchanged  0
              Initial  0
@@ -684,7 +674,6 @@ describe("formatTextOutput", () => {
     expect(output).toMatchInlineSnapshot(`
       "eslint (0) 1.5s
 
-      Summary
         Improvements  0
          Regressions  0
            Unchanged  1
@@ -734,7 +723,6 @@ describe("formatTextOutput", () => {
            ... and 5 more
           Issues  15
 
-      Summary
         Improvements  0
          Regressions  1
            Unchanged  0
@@ -783,7 +771,6 @@ describe("formatTextOutput", () => {
            ... and 2 more
           Issues  0
 
-      Summary
         Improvements  1
          Regressions  0
            Unchanged  0
@@ -841,7 +828,6 @@ describe("formatTextOutput", () => {
         Duration  1.5s
           Issues  0
 
-      Summary
         Improvements  1
          Regressions  1
            Unchanged  0
