@@ -1,3 +1,10 @@
+## [1.4.2](https://github.com/jimmy-guzman/mejora/compare/v1.4.1...v1.4.2) (2025-12-30)
+
+
+### Bug Fixes
+
+* 🐛 more human language in output ([#17](https://github.com/jimmy-guzman/mejora/issues/17)) ([0fbccde](https://github.com/jimmy-guzman/mejora/commit/0fbccdec70267bbab05ea84d5d9e2de77a1f649a))
+
 ## [1.4.1](https://github.com/jimmy-guzman/mejora/compare/v1.4.0...v1.4.1) (2025-12-30)
 
 
