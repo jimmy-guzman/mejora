@@ -4,15 +4,7 @@ import type { Baseline } from "./types";
 
 import { plural } from "./utils/text";
 
-function parsePathWithLocation(pathWithLocation: string | undefined) {
-  if (!pathWithLocation) return { filePath: undefined, line: undefined };
-
-  const parts = pathWithLocation.split(":");
-  const filePath = parts[0];
-  const line = parts[1];
-
-  return { filePath, line };
-}
+const UNPARSABLE = "__unparsable__";
 
 function escapeHtml(text: string) {
   return text
@@ -22,101 +14,131 @@ function escapeHtml(text: string) {
     .replaceAll("]", "&#93;");
 }
 
-function generateItemLine(item: string, href: string, displayPath: string) {
+function parsePathWithLocation(pathWithLocation?: string) {
+  if (!pathWithLocation) return { filePath: undefined, line: undefined };
+
+  const [filePath, line] = pathWithLocation.split(":");
+
+  return { filePath, line };
+}
+
+function parseItem(item: string) {
   const [pathWithLocation, ...rest] = item.split(" - ");
-  const { line } = parsePathWithLocation(pathWithLocation);
-  const linkPath = line ? `${href}#L${line}` : href;
-  const lineDisplay = line ? `Line ${line}` : displayPath;
-  const description =
-    rest.length > 0 ? ` - ${escapeHtml(rest.join(" - "))}` : "";
+  const description = rest.join(" - ");
 
-  return `- [${lineDisplay}](${linkPath})${description}\n`;
+  return { description, pathWithLocation };
 }
 
-function groupItemsByFile(items: string[]) {
-  const itemsByFile = new Map<string, string[]>();
-  const unparsableItems: string[] = [];
-
-  for (const item of items) {
-    const [pathWithLocation] = item.split(" - ");
-
-    const { filePath } = parsePathWithLocation(pathWithLocation);
-
-    if (filePath) {
-      if (!itemsByFile.has(filePath)) {
-        itemsByFile.set(filePath, []);
-      }
-      itemsByFile.get(filePath)?.push(item);
-    } else {
-      unparsableItems.push(item);
-    }
-  }
-
-  if (unparsableItems.length > 0) {
-    itemsByFile.set("__unparsable__", unparsableItems);
-  }
-
-  return itemsByFile;
+function createRelativePath(filePath: string, cwd: string) {
+  return relative(cwd, filePath);
 }
 
-function generateFileSection(
+function createHref(filePath: string, baselineDir: string, line?: string) {
+  const href = relative(baselineDir, filePath);
+
+  return line ? `${href}#L${line}` : href;
+}
+
+function createMarkdownLink(text: string, href: string) {
+  return `[${text}](${href})`;
+}
+
+function formatItemLine(
+  item: string,
   filePath: string,
-  fileItems: string[],
   cwd: string,
   baselineDir: string,
 ) {
-  const displayPath = relative(cwd, filePath);
-  const href = relative(baselineDir, filePath);
-  let section = `\n### [${displayPath}](${href}) (${fileItems.length})\n\n`;
+  const { description, pathWithLocation } = parseItem(item);
+  const { line } = parsePathWithLocation(pathWithLocation);
 
-  for (const item of fileItems) {
-    section += generateItemLine(item, href, displayPath);
-  }
+  const displayPath = createRelativePath(filePath, cwd);
+  const href = createHref(filePath, baselineDir, line);
+  const linkText = line ? `Line ${line}` : displayPath;
+  const link = createMarkdownLink(linkText, href);
+  const suffix = description ? ` - ${escapeHtml(description)}` : "";
 
-  section += "\n";
-
-  return section;
+  return `- ${link}${suffix}\n`;
 }
 
-function generateCheckSection(
+function groupItemsByFile(items: string[]) {
+  const grouped = Object.groupBy(items, (item) => {
+    const { pathWithLocation } = parseItem(item);
+    const { filePath = UNPARSABLE } = parsePathWithLocation(pathWithLocation);
+
+    return filePath;
+  });
+
+  return Object.entries(grouped)
+    .map(([filePath, items = []]) => ({ filePath, items }))
+    .toSorted((a, b) => {
+      if (a.filePath === UNPARSABLE) return 1;
+      if (b.filePath === UNPARSABLE) return -1;
+
+      return a.filePath.localeCompare(b.filePath);
+    });
+}
+
+function formatUnparsableSection(items: string[]) {
+  let section = `\n### Other Issues (${items.length})\n\n`;
+
+  for (const item of items) {
+    section += `- ${item}\n`;
+  }
+
+  return `${section}\n`;
+}
+
+function formatFileSection(
+  fileGroup: {
+    filePath: string;
+    items: string[];
+  },
+  cwd: string,
+  baselineDir: string,
+) {
+  if (fileGroup.filePath === UNPARSABLE) {
+    return formatUnparsableSection(fileGroup.items);
+  }
+
+  const displayPath = createRelativePath(fileGroup.filePath, cwd);
+  const href = createHref(fileGroup.filePath, baselineDir);
+  const link = createMarkdownLink(displayPath, href);
+
+  let section = `\n### ${link} (${fileGroup.items.length})\n\n`;
+
+  for (const item of fileGroup.items) {
+    section += formatItemLine(item, fileGroup.filePath, cwd, baselineDir);
+  }
+
+  return `${section}\n`;
+}
+
+function formatCheckSection(
   checkId: string,
   items: string[],
   cwd: string,
   baselineDir: string,
 ) {
   const issueCount = items.length;
-  let section = `\n## ${checkId} (${issueCount} ${plural(issueCount, "issue")})\n\n`;
+  const issueText = plural(issueCount, "issue");
+  let section = `\n## ${checkId} (${issueCount} ${issueText})\n\n`;
 
   if (items.length === 0) {
-    section += "No issues\n";
-
-    return section;
+    return `${section}No issues\n`;
   }
 
-  const itemsByFile = groupItemsByFile(items);
-  const unparsableItems = itemsByFile.get("__unparsable__");
+  const fileGroups = groupItemsByFile(items);
 
-  itemsByFile.delete("__unparsable__");
-
-  const sortedEntries = [...itemsByFile.entries()].toSorted(([a], [b]) => {
-    return a.localeCompare(b);
-  });
-
-  for (const [filePath, fileItems] of sortedEntries) {
-    section += generateFileSection(filePath, fileItems, cwd, baselineDir);
-  }
-
-  if (unparsableItems && unparsableItems.length > 0) {
-    section += `\n### Other Issues (${unparsableItems.length})\n\n`;
-
-    for (const item of unparsableItems) {
-      section += `- ${item}\n`;
-    }
-
-    section += "\n";
+  for (const fileGroup of fileGroups) {
+    section += formatFileSection(fileGroup, cwd, baselineDir);
   }
 
   return section;
+}
+
+function normalizeMarkdown(markdown: string) {
+  return markdown.replaceAll(/\n{3,}/g, "\n\n");
 }
 
 export function generateMarkdownReport(
@@ -124,14 +146,11 @@ export function generateMarkdownReport(
   baselineDir: string,
 ) {
   const cwd = process.cwd();
-  const entries = Object.entries(baseline.checks);
   let markdown = "# Mejora Baseline\n";
 
-  for (const [checkId, { items = [] }] of entries) {
-    markdown += generateCheckSection(checkId, items, cwd, baselineDir);
+  for (const [checkId, { items = [] }] of Object.entries(baseline.checks)) {
+    markdown += formatCheckSection(checkId, items, cwd, baselineDir);
   }
 
-  markdown = markdown.replaceAll(/\n{3,}/g, "\n\n");
-
-  return markdown;
+  return normalizeMarkdown(markdown);
 }
