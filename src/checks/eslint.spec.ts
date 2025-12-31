@@ -14,8 +14,10 @@ vi.mock("eslint", () => {
 
 vi.mock("@/utils/cache", () => {
   return {
-    ensureCacheDir: vi.fn(),
-    makeCacheKey: vi.fn(() => `node_modules/.cache/mejora/eslint/`),
+    ensureCacheDir: vi
+      .fn()
+      .mockResolvedValue("node_modules/.cache/mejora/eslint"),
+    makeCacheKey: vi.fn(() => "abc123def456"),
   };
 });
 

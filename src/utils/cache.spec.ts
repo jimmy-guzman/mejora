@@ -97,10 +97,7 @@ describe("ensureCacheDir", () => {
   });
 
   it("should use process.cwd() when no cwd provided", async () => {
-    const originalCwd = process.cwd.bind(process);
-
-    process.cwd = vi.fn(() => "/default/path");
-
+    vi.spyOn(process, "cwd").mockReturnValue("/default/path");
     vi.mocked(resolve).mockReturnValue(
       "/default/path/node_modules/.cache/mejora",
     );
@@ -114,8 +111,6 @@ describe("ensureCacheDir", () => {
       ".cache",
       "mejora",
     );
-
-    process.cwd = originalCwd;
   });
 
   it("should include subpath when provided", async () => {

@@ -460,7 +460,7 @@ describe("runTypescriptCheck", () => {
 
     mockFlattenDiagnosticMessageText.mockReset();
     mockFlattenDiagnosticMessageText.mockImplementation((msg: unknown) => {
-      return typeof msg === "string" ? msg : msg;
+      return typeof msg === "string" ? msg : String(msg);
     });
 
     const result = await runTypescriptCheck({ tsconfig: "tsconfig.json" });
