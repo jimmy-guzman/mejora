@@ -59,6 +59,13 @@ export async function runEslintCheck(config: ESLintCheckConfig) {
   };
 }
 
+/**
+ * Create an ESLint check configuration.
+ *
+ * @param config - ESLint check configuration options.
+ *
+ * @returns An ESLint check configuration object.
+ */
 export function eslintCheck(config: ESLintCheckConfig) {
   return {
     type: "eslint" as const,

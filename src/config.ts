@@ -15,6 +15,13 @@ const loader = async (filepath: string) => {
   return imported;
 };
 
+/**
+ * Define mejora configuration.
+ *
+ * @param config - mejora configuration object.
+ *
+ * @returns The provided configuration object.
+ */
 export const defineConfig = (config: Config) => {
   return config;
 };
