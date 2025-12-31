@@ -23,7 +23,7 @@ export interface Baseline {
  *
  * @example
  * ```ts
- * eslintCheck({
+ * eslint({
  *   files: ["src/**\/*.{ts,tsx}"],
  *   overrides: {
  *     rules: {
@@ -68,7 +68,7 @@ export interface ESLintCheckConfig {
  *
  * @example
  * ```ts
- * typescriptCheck({
+ * typescript({
  *   overrides: {
  *     compilerOptions: {
  *       noImplicitAny: true,
@@ -114,11 +114,11 @@ export type CheckConfig =
  *
  * @example
  * ```ts
- * import { defineConfig, eslintCheck, typescriptCheck } from "mejora";
+ * import { defineConfig, eslint, typescript } from "mejora";
  *
  * export default defineConfig({
  *   checks: {
- *     "eslint > no-nested-ternary": eslintCheck({
+ *     "eslint > no-nested-ternary": eslint({
  *       files: ["src/**\/*.{ts,tsx}"],
  *       overrides: {
  *         rules: {
@@ -126,7 +126,7 @@ export type CheckConfig =
  *         },
  *       },
  *     }),
- *     "typescript": typescriptCheck({
+ *     "typescript": typescript({
  *       overrides: {
  *         compilerOptions: {
  *           noImplicitAny: true,
@@ -144,13 +144,13 @@ export interface Config {
    * Each key is a check identifier used in the baseline and output.
    * The identifier can contain any characters.
    *
-   * Use `eslintCheck()` and `typescriptCheck()` helpers to create check configs.
+   * Use `eslint()` and `typescript()` helpers to create check configs.
    *
    * @example
    * ```ts
    * {
-   *   "eslint > no-console": eslintCheck({ ... }),
-   *   "typescript": typescriptCheck({ ... }),
+   *   "eslint > no-console": eslint({ ... }),
+   *   "typescript": typescript({ ... }),
    * }
    * ```
    */

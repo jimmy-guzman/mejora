@@ -131,6 +131,13 @@ export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
   };
 }
 
+/**
+ * Create a TypeScript check configuration.
+ *
+ * @param config - TypeScript check configuration options.
+ *
+ * @returns A TypeScript check configuration object.
+ */
 export function typescriptCheck(config: TypeScriptCheckConfig) {
   return {
     type: "typescript" as const,
