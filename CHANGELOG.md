@@ -1,3 +1,10 @@
+## [1.5.5](https://github.com/jimmy-guzman/mejora/compare/v1.5.4...v1.5.5) (2025-12-31)
+
+
+### Bug Fixes
+
+* 🐛 make jsdoc consistent with usage ([#39](https://github.com/jimmy-guzman/mejora/issues/39)) ([2ef19fd](https://github.com/jimmy-guzman/mejora/commit/2ef19fdb0cebf428a4a9f75d4b28077bd69e075a))
+
 ## [1.5.4](https://github.com/jimmy-guzman/mejora/compare/v1.5.3...v1.5.4) (2025-12-31)
 
 
