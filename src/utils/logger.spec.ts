@@ -63,7 +63,7 @@ describe("logger", () => {
       logger.error("error message");
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        expect.stringContaining(" ERROR "),
+        expect.stringContaining("✖"),
         expect.stringContaining("error message"),
       );
     });
@@ -74,7 +74,7 @@ describe("logger", () => {
       logger.error(error);
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        expect.stringContaining(" ERROR "),
+        expect.stringContaining("✖"),
         expect.stringContaining("test error"),
       );
     });
@@ -83,7 +83,7 @@ describe("logger", () => {
       logger.error("prefix", { code: 500 });
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        expect.stringContaining(" ERROR "),
+        expect.stringContaining("✖"),
         "prefix { code: 500 }",
       );
     });

@@ -263,6 +263,7 @@ describe("MejoraRunner", () => {
     const config = {
       checks: { check1: { files: ["*.js"], type: "eslint" as const } },
     };
+
     const snapshot = {
       items: ["file.js:1:1 - error" as const],
       type: "items" as const,
@@ -289,6 +290,7 @@ describe("MejoraRunner", () => {
     const config = {
       checks: { check1: { files: ["*.js"], type: "eslint" as const } },
     };
+
     const existingBaseline = {
       checks: {
         check1: {
@@ -300,6 +302,7 @@ describe("MejoraRunner", () => {
     };
 
     mockLoad.mockResolvedValue(existingBaseline);
+
     vi.mocked(runEslintCheck).mockResolvedValue({
       items: ["file2.js:2:2 - error"],
       type: "items",
@@ -338,6 +341,7 @@ describe("MejoraRunner", () => {
     };
 
     mockLoad.mockResolvedValue(null);
+
     vi.mocked(runEslintCheck).mockResolvedValue({
       items: ["file.js:1:1 - error"],
       type: "items",
@@ -372,6 +376,7 @@ describe("MejoraRunner", () => {
     const config = {
       checks: { check1: { files: ["*.js"], type: "eslint" as const } },
     };
+
     const existingBaseline = {
       checks: {
         check1: {
@@ -383,6 +388,7 @@ describe("MejoraRunner", () => {
     };
 
     mockLoad.mockResolvedValue(existingBaseline);
+
     vi.mocked(runEslintCheck).mockResolvedValue({
       items: ["file2.js:2:2 - error"],
       type: "items",
@@ -424,7 +430,6 @@ describe("MejoraRunner", () => {
       items: ["file1.js:1:1 - error", "file2.js:2:2 - error"],
       type: "items",
     });
-
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: false,
       hasRegression: true,
@@ -448,7 +453,6 @@ describe("MejoraRunner", () => {
       }),
       undefined,
     );
-
     expect(result.exitCode).toBe(1);
   });
 
@@ -556,7 +560,6 @@ describe("MejoraRunner", () => {
     );
 
     const runner = new MejoraRunner();
-
     const logSpy = vi.spyOn(logger, "error");
 
     await expect(runner.run(config)).resolves.toStrictEqual({
@@ -588,7 +591,6 @@ describe("MejoraRunner", () => {
     );
 
     const runner = new MejoraRunner();
-
     const logSpy = vi.spyOn(logger, "error");
 
     await expect(runner.run(config)).resolves.toStrictEqual({
@@ -622,7 +624,6 @@ describe("MejoraRunner", () => {
       items: ["file.js:1:1 - error"],
       type: "items",
     });
-
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: false,
       hasRegression: false,
@@ -658,17 +659,17 @@ describe("MejoraRunner", () => {
       });
 
       const runner = new MejoraRunner();
-
-      const stdoutSpy = vi.spyOn(process.stdout, "write");
+      const { Spinner } = await import("picospinner");
+      const spinnerStartSpy = vi.spyOn(Spinner.prototype, "start");
 
       await runner.run(config, { json: true });
 
-      expect(stdoutSpy).not.toHaveBeenCalled();
+      expect(spinnerStartSpy).not.toHaveBeenCalled();
 
-      stdoutSpy.mockRestore();
+      spinnerStartSpy.mockRestore();
     });
 
-    it("should show spinner when json option is false", async () => {
+    it("should not show spinner in CI environment", async () => {
       const config = {
         checks: { check1: { files: ["*.js"], type: "eslint" as const } },
       };
@@ -682,18 +683,91 @@ describe("MejoraRunner", () => {
         removedItems: [],
       });
 
-      const runner = new MejoraRunner();
+      const runner = new MejoraRunner(undefined, true);
+      const { Spinner } = await import("picospinner");
+      const spinnerStartSpy = vi.spyOn(Spinner.prototype, "start");
 
+      await runner.run(config);
+
+      expect(spinnerStartSpy).not.toHaveBeenCalled();
+
+      spinnerStartSpy.mockRestore();
+    });
+
+    it("should not show spinner when stdout is not a TTY", async () => {
+      const config = {
+        checks: { check1: { files: ["*.js"], type: "eslint" as const } },
+      };
+
+      vi.mocked(runEslintCheck).mockResolvedValue({ items: [], type: "items" });
+      vi.mocked(compareSnapshots).mockReturnValue({
+        hasImprovement: false,
+        hasRegression: false,
+        isInitial: true,
+        newItems: [],
+        removedItems: [],
+      });
+
+      const originalIsTTY = process.stdout.isTTY;
+
+      Object.defineProperty(process.stdout, "isTTY", {
+        configurable: true,
+        value: false,
+      });
+
+      const runner = new MejoraRunner();
+      const { Spinner } = await import("picospinner");
+      const spinnerStartSpy = vi.spyOn(Spinner.prototype, "start");
+
+      await runner.run(config);
+
+      expect(spinnerStartSpy).not.toHaveBeenCalled();
+
+      Object.defineProperty(process.stdout, "isTTY", {
+        configurable: true,
+        value: originalIsTTY,
+      });
+
+      spinnerStartSpy.mockRestore();
+    });
+
+    it("should show spinner in interactive TTY when not in CI", async () => {
+      const config = {
+        checks: { check1: { files: ["*.js"], type: "eslint" as const } },
+      };
+
+      vi.mocked(runEslintCheck).mockResolvedValue({ items: [], type: "items" });
+      vi.mocked(compareSnapshots).mockReturnValue({
+        hasImprovement: false,
+        hasRegression: false,
+        isInitial: true,
+        newItems: [],
+        removedItems: [],
+      });
+
+      const originalIsTTY = process.stdout.isTTY;
+
+      Object.defineProperty(process.stdout, "isTTY", {
+        configurable: true,
+        value: true,
+      });
+
+      const runner = new MejoraRunner(undefined, false);
       const stdoutSpy = vi.spyOn(process.stdout, "write").mockReturnValue(true);
 
       await runner.run(config, { json: false });
 
       expect(stdoutSpy.mock.calls.length).toBeGreaterThan(0);
 
+      Object.defineProperty(process.stdout, "isTTY", {
+        configurable: true,
+        value: originalIsTTY,
+      });
+
       stdoutSpy.mockRestore();
     });
 
-    it("should show spinner by default when no options provided", async () => {
+    it("should show spinner by default when in interactive TTY", async () => {
       const config = {
         checks: { check1: { files: ["*.js"], type: "eslint" as const } },
       };
@@ -707,13 +781,24 @@ describe("MejoraRunner", () => {
         removedItems: [],
       });
 
-      const runner = new MejoraRunner();
+      const originalIsTTY = process.stdout.isTTY;
 
+      Object.defineProperty(process.stdout, "isTTY", {
+        configurable: true,
+        value: true,
+      });
+
+      const runner = new MejoraRunner(undefined, false);
       const stdoutSpy = vi.spyOn(process.stdout, "write").mockReturnValue(true);
 
       await runner.run(config);
 
       expect(stdoutSpy.mock.calls.length).toBeGreaterThan(0);
+
+      Object.defineProperty(process.stdout, "isTTY", {
+        configurable: true,
+        value: originalIsTTY,
+      });
 
       stdoutSpy.mockRestore();
     });
@@ -725,8 +810,14 @@ describe("MejoraRunner", () => {
 
       vi.mocked(runEslintCheck).mockRejectedValue(new Error("Check failed"));
 
-      const runner = new MejoraRunner();
+      const originalIsTTY = process.stdout.isTTY;
 
+      Object.defineProperty(process.stdout, "isTTY", {
+        configurable: true,
+        value: true,
+      });
+
+      const runner = new MejoraRunner(undefined, false);
       const stdoutSpy = vi.spyOn(process.stdout, "write").mockReturnValue(true);
 
       const result = await runner.run(config);
@@ -734,7 +825,107 @@ describe("MejoraRunner", () => {
       expect(result.exitCode).toBe(2);
       expect(stdoutSpy.mock.calls.length).toBeGreaterThan(0);
 
+      Object.defineProperty(process.stdout, "isTTY", {
+        configurable: true,
+        value: originalIsTTY,
+      });
+
       stdoutSpy.mockRestore();
+    });
+
+    it("should use logger messages instead of spinner in CI", async () => {
+      const config = {
+        checks: { check1: { files: ["*.js"], type: "eslint" as const } },
+      };
+
+      vi.mocked(runEslintCheck).mockResolvedValue({ items: [], type: "items" });
+      vi.mocked(validateEslintDeps).mockResolvedValue(undefined);
+      vi.mocked(compareSnapshots).mockReturnValue({
+        hasImprovement: false,
+        hasRegression: false,
+        isInitial: true,
+        newItems: [],
+        removedItems: [],
+      });
+
+      const runner = new MejoraRunner(undefined, true);
+      const startSpy = vi.spyOn(logger, "start");
+      const successSpy = vi.spyOn(logger, "success");
+
+      await runner.run(config);
+
+      expect(startSpy).toHaveBeenCalledWith("Running check1...");
+      expect(successSpy).toHaveBeenCalledWith("check1 complete");
+
+      startSpy.mockRestore();
+      successSpy.mockRestore();
+    });
+
+    it("should call spinner.succeed when check completes successfully", async () => {
+      const config = {
+        checks: { check1: { files: ["*.js"], type: "eslint" as const } },
+      };
+
+      vi.mocked(runEslintCheck).mockResolvedValue({ items: [], type: "items" });
+      vi.mocked(compareSnapshots).mockReturnValue({
+        hasImprovement: false,
+        hasRegression: false,
+        isInitial: true,
+        newItems: [],
+        removedItems: [],
+      });
+
+      const originalIsTTY = process.stdout.isTTY;
+
+      Object.defineProperty(process.stdout, "isTTY", {
+        configurable: true,
+        value: true,
+      });
+
+      const runner = new MejoraRunner(undefined, false);
+      const { Spinner } = await import("picospinner");
+      const spinnerSucceedSpy = vi.spyOn(Spinner.prototype, "succeed");
+
+      await runner.run(config);
+
+      expect(spinnerSucceedSpy).toHaveBeenCalledWith("check1 complete");
+
+      Object.defineProperty(process.stdout, "isTTY", {
+        configurable: true,
+        value: originalIsTTY,
+      });
+
+      spinnerSucceedSpy.mockRestore();
+    });
+
+    it("should call spinner.fail when check fails", async () => {
+      const config = {
+        checks: { check1: { files: ["*.js"], type: "eslint" as const } },
+      };
+
+      vi.mocked(runEslintCheck).mockRejectedValue(new Error("Check failed"));
+
+      const originalIsTTY = process.stdout.isTTY;
+
+      Object.defineProperty(process.stdout, "isTTY", {
+        configurable: true,
+        value: true,
+      });
+
+      const runner = new MejoraRunner(undefined, false);
+      const { Spinner } = await import("picospinner");
+      const spinnerFailSpy = vi.spyOn(Spinner.prototype, "fail");
+
+      await runner.run(config);
+
+      expect(spinnerFailSpy).toHaveBeenCalledWith("check1 failed");
+
+      Object.defineProperty(process.stdout, "isTTY", {
+        configurable: true,
+        value: originalIsTTY,
+      });
+
+      spinnerFailSpy.mockRestore();
     });
   });
 });

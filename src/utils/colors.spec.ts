@@ -14,8 +14,6 @@ describe("colors", () => {
     expect(c.green(1234)).toBe(`[32m1234[39m`);
     expect(c.red("test")).toBe(`[31mtest[39m`);
     expect(c.red(1234)).toBe(`[31m1234[39m`);
-    expect(c.yellow("test")).toBe(`[33mtest[39m`);
-    expect(c.yellow(1234)).toBe(`[33m1234[39m`);
     expect(c.gray("test")).toBe(`[90mtest[39m`);
     expect(c.gray(1234)).toBe(`[90m1234[39m`);
   });

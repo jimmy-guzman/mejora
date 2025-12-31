@@ -22,6 +22,7 @@ function format(...args: unknown[]) {
   return args
     .map((arg) => {
       if (typeof arg === "string") return arg;
+
       if (arg instanceof Error) return formatError(arg);
 
       return inspect(arg, { colors: false, depth: 10 });
@@ -32,7 +33,7 @@ function format(...args: unknown[]) {
 export const logger = {
   error: (...args: unknown[]) => {
     // eslint-disable-next-line no-console -- logger utility
-    console.error(c.bgRed(c.black(" ERROR ")), format(...args));
+    console.error(c.red("✖"), format(...args));
   },
   log: (...args: unknown[]) => {
     // eslint-disable-next-line no-console -- logger utility
