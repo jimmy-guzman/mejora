@@ -97,6 +97,16 @@ export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
 
   const host = createIncrementalCompilerHost(options, sys);
 
+  const realWriteFile = host.writeFile.bind(host);
+
+  host.writeFile = (fileName, content, ...rest) => {
+    const out = resolve(fileName);
+
+    if (out !== resolve(tsBuildInfoFile)) return;
+
+    realWriteFile(fileName, content, ...rest);
+  };
+
   const incrementalProgram = createIncrementalProgram({
     host,
     options,
@@ -107,6 +117,8 @@ export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
   const program = incrementalProgram.getProgram();
 
   const diagnostics = getPreEmitDiagnostics(program);
+
+  incrementalProgram.emit();
 
   const workspaceDiagnostics = diagnostics.filter((diagnostic) => {
     if (!diagnostic.file) return true;

@@ -52,15 +52,19 @@ describe("typescriptCheck", () => {
 
 describe("runTypescriptCheck", () => {
   beforeEach(() => {
+    vi.clearAllMocks();
     vi.spyOn(process, "cwd").mockReturnValue("/test/project");
 
-    mockCreateIncrementalCompilerHost.mockReturnValue({});
-    mockGetProgram.mockReturnValue({});
-    mockCreateIncrementalProgram.mockReturnValue({
-      getProgram: mockGetProgram,
+    mockCreateIncrementalCompilerHost.mockReturnValue({
+      writeFile: vi.fn(),
     });
 
-    vi.clearAllMocks();
+    mockGetProgram.mockReturnValue({});
+
+    mockCreateIncrementalProgram.mockReturnValue({
+      emit: vi.fn(),
+      getProgram: mockGetProgram,
+    });
   });
 
   afterEach(() => {
@@ -468,6 +472,80 @@ describe("runTypescriptCheck", () => {
     expect(result.items).toHaveLength(1);
     expect(result.items[0]).toMatch(/^src\/file\.ts:/);
     expect(result.items[0]).toContain("error inside");
+  });
+
+  it("should call emit to enable tsbuildinfo caching", async () => {
+    const realWriteFile = vi.fn();
+    const host = { writeFile: realWriteFile };
+
+    const emit = vi.fn();
+
+    mockCreateIncrementalCompilerHost.mockReturnValue(host);
+
+    mockCreateIncrementalProgram.mockReturnValue({
+      emit,
+      getProgram: mockGetProgram,
+    });
+
+    mockFindConfigFile.mockReturnValue("/test/project/tsconfig.json");
+    mockReadConfigFile.mockReturnValue({ config: {} });
+    mockParseJsonConfigFileContent.mockReturnValue({
+      fileNames: ["src/file.ts"],
+      options: {},
+    });
+    mockGetPreEmitDiagnostics.mockReturnValue([]);
+
+    await runTypescriptCheck({ tsconfig: "tsconfig.json" });
+
+    expect(emit).toHaveBeenCalledOnce();
+  });
+
+  it("should filter host.writeFile to only allow tsBuildInfoFile writes", async () => {
+    const realWriteFile = vi.fn();
+    const host = { writeFile: realWriteFile };
+
+    let capturedHost: typeof host | undefined;
+    let capturedOptions: { tsBuildInfoFile: string };
+
+    const emit = vi.fn();
+
+    mockCreateIncrementalCompilerHost.mockReturnValue(host);
+
+    mockCreateIncrementalProgram.mockImplementation(
+      (args: { host: typeof host; options: { tsBuildInfoFile: string } }) => {
+        capturedHost = args.host;
+        capturedOptions = args.options;
+
+        emit.mockImplementation(() => {
+          capturedHost?.writeFile(capturedOptions.tsBuildInfoFile, "BUILDINFO");
+          capturedHost?.writeFile("/test/project/src/file.ts", "NOPE");
+          capturedHost?.writeFile(
+            "/test/project/node_modules/.cache/mejora/typescript/other.tsbuildinfo",
+            "NOPE",
+          );
+        });
+
+        return {
+          emit,
+          getProgram: mockGetProgram,
+        };
+      },
+    );
+
+    mockFindConfigFile.mockReturnValue("/test/project/tsconfig.json");
+    mockReadConfigFile.mockReturnValue({ config: {} });
+    mockParseJsonConfigFileContent.mockReturnValue({
+      fileNames: ["src/file.ts"],
+      options: {},
+    });
+    mockGetPreEmitDiagnostics.mockReturnValue([]);
+
+    await runTypescriptCheck({ tsconfig: "tsconfig.json" });
+
+    expect(realWriteFile).toHaveBeenCalledExactlyOnceWith(
+      "/test/project/node_modules/.cache/mejora/typescript/abc123def456.tsbuildinfo",
+      "BUILDINFO",
+    );
   });
 });
 
