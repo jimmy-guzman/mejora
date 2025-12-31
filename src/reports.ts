@@ -142,7 +142,7 @@ function formatCheckSection(
 }
 
 function normalizeMarkdown(markdown: string) {
-  return markdown.replaceAll(/\n{3,}/g, "\n\n");
+  return `${markdown.replaceAll(/\n{3,}/g, "\n\n").trimEnd()}\n`;
 }
 
 export function generateMarkdownReport(
