@@ -1,3 +1,10 @@
+## [1.5.6](https://github.com/jimmy-guzman/mejora/compare/v1.5.5...v1.5.6) (2025-12-31)
+
+
+### Bug Fixes
+
+* 🐛 prevent multiple spinners on CI ([#40](https://github.com/jimmy-guzman/mejora/issues/40)) ([1fea852](https://github.com/jimmy-guzman/mejora/commit/1fea852caa714731700c54545d1a96d6776af80d)), closes [#32](https://github.com/jimmy-guzman/mejora/issues/32)
+
 ## [1.5.5](https://github.com/jimmy-guzman/mejora/compare/v1.5.4...v1.5.5) (2025-12-31)
 
 
