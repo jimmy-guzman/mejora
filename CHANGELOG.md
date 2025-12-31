@@ -1,3 +1,10 @@
+## [1.5.3](https://github.com/jimmy-guzman/mejora/compare/v1.5.2...v1.5.3) (2025-12-31)
+
+
+### Bug Fixes
+
+* 🐛 prevent extra line break at end of md report ([#38](https://github.com/jimmy-guzman/mejora/issues/38)) ([9f9c77d](https://github.com/jimmy-guzman/mejora/commit/9f9c77d2aeb450bbf3d63486eafd8da850cc3a8d)), closes [#35](https://github.com/jimmy-guzman/mejora/issues/35)
+
 ## [1.5.2](https://github.com/jimmy-guzman/mejora/compare/v1.5.1...v1.5.2) (2025-12-30)
 
 
