@@ -21,10 +21,4 @@ export const green = createColor("green");
 
 export const red = createColor("red");
 
-export const bgRed = createColor("bgRed");
-
-export const yellow = createColor("yellow");
-
-export const black = createColor("black");
-
 export const gray = createColor("gray");
