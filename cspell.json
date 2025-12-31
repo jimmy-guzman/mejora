@@ -30,6 +30,7 @@
     "tsdown",
     "typecheck",
     "unrs",
+    "unstub",
     "vitest",
     "wagoid"
   ],

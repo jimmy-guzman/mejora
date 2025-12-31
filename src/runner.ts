@@ -1,3 +1,4 @@
+import isInCi from "is-in-ci";
 import { Spinner } from "picospinner";
 
 import type { CheckResult, CliOptions, Config } from "./types";
@@ -13,9 +14,11 @@ import { logger } from "./utils/logger";
 
 export class MejoraRunner {
   private baselineManager: BaselineManager;
+  private isCI: boolean;
 
-  constructor(baselinePath?: string) {
+  constructor(baselinePath?: string, isCI = isInCi) {
     this.baselineManager = new BaselineManager(baselinePath);
+    this.isCI = isCI;
   }
 
   private static filterChecks(checks: Config["checks"], options: CliOptions) {
@@ -72,21 +75,23 @@ export class MejoraRunner {
 
     const checksToRun = MejoraRunner.filterChecks(config.checks, options);
 
+    const isSpinning = !options.json && !this.isCI && process.stdout.isTTY;
+
     for (const [checkId, checkConfig] of Object.entries(checksToRun)) {
-      const spinner = options.json
-        ? null
-        : new Spinner(`Running ${checkId}...`);
+      const spinner = isSpinning ? new Spinner(`Running ${checkId}...`) : null;
 
       try {
-        spinner?.start();
+        if (spinner) {
+          spinner.start();
+        } else {
+          logger.start(`Running ${checkId}...`);
+        }
 
         const checkStartTime = performance.now();
         const snapshot = await MejoraRunner.runCheck(checkConfig);
         const checkDuration = performance.now() - checkStartTime;
-
         const baselineEntry = BaselineManager.getEntry(baseline, checkId);
         const comparison = compareSnapshots(snapshot, baselineEntry);
-
         const result = {
           baseline: baselineEntry,
           checkId,
@@ -104,9 +109,11 @@ export class MejoraRunner {
         if (comparison.hasRegression) {
           hasAnyRegression = true;
         }
+
         if (comparison.hasImprovement) {
           hasAnyImprovement = true;
         }
+
         if (comparison.isInitial) {
           hasAnyInitial = true;
         }
@@ -122,9 +129,17 @@ export class MejoraRunner {
           });
         }
 
-        spinner?.succeed(`${checkId} complete`);
+        if (spinner) {
+          spinner.succeed(`${checkId} complete`);
+        } else {
+          logger.success(`${checkId} complete`);
+        }
       } catch (error) {
-        spinner?.fail(`${checkId} failed`);
+        if (spinner) {
+          spinner.fail(`${checkId} failed`);
+        } else {
+          logger.error(`${checkId} failed`);
+        }
 
         logger.error(`Error running check "${checkId}":`, error);
 
@@ -137,7 +152,6 @@ export class MejoraRunner {
         };
       }
     }
-
     if (
       updatedBaseline &&
       updatedBaseline !== baseline &&
