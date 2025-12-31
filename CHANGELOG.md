@@ -1,3 +1,10 @@
+## [1.5.4](https://github.com/jimmy-guzman/mejora/compare/v1.5.3...v1.5.4) (2025-12-31)
+
+
+### Bug Fixes
+
+* 🐛 md reports should not have line numbers in hrefs ([#37](https://github.com/jimmy-guzman/mejora/issues/37)) ([21b0878](https://github.com/jimmy-guzman/mejora/commit/21b08788036a050508158f96677bcdab068e17ee)), closes [#21](https://github.com/jimmy-guzman/mejora/issues/21)
+
 ## [1.5.3](https://github.com/jimmy-guzman/mejora/compare/v1.5.2...v1.5.3) (2025-12-31)
 
 
