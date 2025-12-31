@@ -518,7 +518,7 @@ describe("runTypescriptCheck", () => {
         capturedOptions = args.options;
 
         emit.mockImplementation(() => {
-          capturedHost?.writeFile(capturedOptions.tsBuildInfoFile, "BUILDINFO");
+          capturedHost?.writeFile(capturedOptions.tsBuildInfoFile, "testing");
           capturedHost?.writeFile("/test/project/src/file.ts", "NOPE");
           capturedHost?.writeFile(
             "/test/project/node_modules/.cache/mejora/typescript/other.tsbuildinfo",
@@ -545,7 +545,7 @@ describe("runTypescriptCheck", () => {
 
     expect(realWriteFile).toHaveBeenCalledExactlyOnceWith(
       "/test/project/node_modules/.cache/mejora/typescript/abc123def456.tsbuildinfo",
-      "BUILDINFO",
+      "testing",
     );
   });
 });
