@@ -485,4 +485,33 @@ describe("generateMarkdownReport", () => {
     expect(result).toMatch(/[^\n]\n$/);
     expect(result.endsWith("\n\n")).toBe(false);
   });
+
+  it("should handle file paths with line and column numbers", () => {
+    const baseline = {
+      checks: {
+        eslint: {
+          items: [
+            "/project/src/index.ts:4:7 - @typescript-eslint/no-unused-vars",
+          ],
+          type: "items" as const,
+        },
+      },
+      version: 1,
+    };
+    const result = generateMarkdownReport(baseline, "/project/.mejora");
+
+    expect(result).toMatchInlineSnapshot(`
+      "# Mejora Baseline
+
+      ## eslint (1 issue)
+
+      ### [src/index.ts](../src/index.ts) (1)
+
+      - [Line 4](../src/index.ts#L4) - @typescript-eslint/no-unused-vars
+      "
+    `);
+
+    expect(result).not.toContain("src/index.ts:4:7");
+    expect(result).not.toContain("src/index.ts:4");
+  });
 });

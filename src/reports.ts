@@ -17,7 +17,7 @@ function escapeHtml(text: string) {
 function parsePathWithLocation(pathWithLocation?: string) {
   if (!pathWithLocation) return { filePath: undefined, line: undefined };
 
-  const match = /^(.+):(\d+)$/.exec(pathWithLocation);
+  const match = /^(.+?):(\d+)(?::\d+)?$/.exec(pathWithLocation);
 
   if (match) {
     return { filePath: match[1], line: match[2] };
