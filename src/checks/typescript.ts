@@ -44,6 +44,7 @@ export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
     parseJsonConfigFileContent,
     readConfigFile,
     sys,
+    version,
   } = await import("typescript");
 
   const cwd = process.cwd();
@@ -83,6 +84,8 @@ export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
   const cacheKey = makeCacheKey({
     configPath,
     overrides: config.overrides?.compilerOptions ?? {},
+    parsedOptions: parseResult.options,
+    typescriptVersion: version,
   });
 
   const tsBuildInfoFile = resolve(cacheDir, `${cacheKey}.tsbuildinfo`);

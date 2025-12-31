@@ -22,6 +22,7 @@ vi.mock("typescript", () => {
       fileExists: vi.fn(),
       readFile: vi.fn(),
     },
+    version: "5.0.0",
   };
 });
 
