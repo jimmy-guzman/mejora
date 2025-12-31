@@ -1,7 +1,9 @@
 import type { TypeScriptCheckConfig } from "@/types";
 
 const mockGetPreEmitDiagnostics = vi.fn();
-const mockCreateProgram = vi.fn();
+const mockGetProgram = vi.fn();
+const mockCreateIncrementalProgram = vi.fn();
+const mockCreateIncrementalCompilerHost = vi.fn();
 const mockFindConfigFile = vi.fn();
 const mockReadConfigFile = vi.fn();
 const mockParseJsonConfigFileContent = vi.fn();
@@ -9,7 +11,8 @@ const mockFlattenDiagnosticMessageText = vi.fn();
 
 vi.mock("typescript", () => {
   return {
-    createProgram: mockCreateProgram,
+    createIncrementalCompilerHost: mockCreateIncrementalCompilerHost,
+    createIncrementalProgram: mockCreateIncrementalProgram,
     findConfigFile: mockFindConfigFile,
     flattenDiagnosticMessageText: mockFlattenDiagnosticMessageText,
     getPreEmitDiagnostics: mockGetPreEmitDiagnostics,
@@ -22,6 +25,15 @@ vi.mock("typescript", () => {
   };
 });
 
+vi.mock("@/utils/cache", () => {
+  return {
+    ensureCacheDir: vi
+      .fn()
+      .mockResolvedValue("/test/project/node_modules/.cache/mejora/typescript"),
+    makeCacheKey: vi.fn().mockReturnValue("abc123def456"),
+  };
+});
+
 const { runTypescriptCheck, typescriptCheck } = await import("./typescript");
 
 describe("typescriptCheck", () => {
@@ -30,7 +42,6 @@ describe("typescriptCheck", () => {
       overrides: { compilerOptions: { strict: true } },
       tsconfig: "tsconfig.json",
     };
-
     const result = typescriptCheck(config);
 
     expect(result.type).toBe("typescript");
@@ -41,9 +52,15 @@ describe("typescriptCheck", () => {
 
 describe("runTypescriptCheck", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-
     vi.spyOn(process, "cwd").mockReturnValue("/test/project");
+
+    mockCreateIncrementalCompilerHost.mockReturnValue({});
+    mockGetProgram.mockReturnValue({});
+    mockCreateIncrementalProgram.mockReturnValue({
+      getProgram: mockGetProgram,
+    });
+
+    vi.clearAllMocks();
   });
 
   afterEach(() => {
@@ -57,7 +74,6 @@ describe("runTypescriptCheck", () => {
       fileNames: [],
       options: {},
     });
-    mockCreateProgram.mockReturnValue({});
     mockGetPreEmitDiagnostics.mockReturnValue([]);
 
     const result = await runTypescriptCheck({ tsconfig: "tsconfig.json" });
@@ -66,6 +82,73 @@ describe("runTypescriptCheck", () => {
       items: [],
       type: "items",
     });
+  });
+
+  it("should create incremental compiler with correct options", async () => {
+    mockFindConfigFile.mockReturnValue("/test/project/tsconfig.json");
+    mockReadConfigFile.mockReturnValue({ config: {} });
+    mockParseJsonConfigFileContent.mockReturnValue({
+      fileNames: ["src/file.ts"],
+      options: { strict: true },
+    });
+    mockGetPreEmitDiagnostics.mockReturnValue([]);
+
+    await runTypescriptCheck({ tsconfig: "tsconfig.json" });
+
+    expect(mockCreateIncrementalProgram).toHaveBeenCalledWith({
+      host: expect.anything(),
+      options: expect.objectContaining({
+        incremental: true,
+        noEmit: true,
+        skipLibCheck: true,
+        strict: true,
+        tsBuildInfoFile:
+          "/test/project/node_modules/.cache/mejora/typescript/abc123def456.tsbuildinfo",
+      }),
+      projectReferences: [],
+      rootNames: ["src/file.ts"],
+    });
+  });
+
+  it("should pass project references when available", async () => {
+    const projectReferences = [{ path: "../shared" }];
+
+    mockFindConfigFile.mockReturnValue("/test/project/tsconfig.json");
+    mockReadConfigFile.mockReturnValue({ config: {} });
+    mockParseJsonConfigFileContent.mockReturnValue({
+      fileNames: [],
+      options: {},
+      projectReferences,
+    });
+    mockGetPreEmitDiagnostics.mockReturnValue([]);
+
+    await runTypescriptCheck({ tsconfig: "tsconfig.json" });
+
+    expect(mockCreateIncrementalProgram).toHaveBeenCalledWith(
+      expect.objectContaining({
+        projectReferences,
+      }),
+    );
+  });
+
+  it("should respect skipLibCheck from tsconfig", async () => {
+    mockFindConfigFile.mockReturnValue("/test/project/tsconfig.json");
+    mockReadConfigFile.mockReturnValue({ config: {} });
+    mockParseJsonConfigFileContent.mockReturnValue({
+      fileNames: [],
+      options: { skipLibCheck: false },
+    });
+    mockGetPreEmitDiagnostics.mockReturnValue([]);
+
+    await runTypescriptCheck({ tsconfig: "tsconfig.json" });
+
+    expect(mockCreateIncrementalProgram).toHaveBeenCalledWith(
+      expect.objectContaining({
+        options: expect.objectContaining({
+          skipLibCheck: false,
+        }),
+      }),
+    );
   });
 
   it("should extract diagnostics as filepath:line:column - TScode: message", async () => {
@@ -83,7 +166,6 @@ describe("runTypescriptCheck", () => {
       fileNames: ["src/file.ts"],
       options: {},
     });
-    mockCreateProgram.mockReturnValue({});
     mockGetPreEmitDiagnostics.mockReturnValue([
       {
         code: 2304,
@@ -108,7 +190,6 @@ describe("runTypescriptCheck", () => {
       fileNames: [],
       options: {},
     });
-    mockCreateProgram.mockReturnValue({});
     mockGetPreEmitDiagnostics.mockReturnValue([
       {
         code: 5009,
@@ -134,7 +215,6 @@ describe("runTypescriptCheck", () => {
         line: 0,
       }),
     };
-
     const mockFile2 = {
       fileName: "/test/project/apple.ts",
       getLineAndCharacterOfPosition: vi.fn().mockReturnValue({
@@ -149,7 +229,6 @@ describe("runTypescriptCheck", () => {
       fileNames: [],
       options: {},
     });
-    mockCreateProgram.mockReturnValue({});
     mockGetPreEmitDiagnostics.mockReturnValue([
       { code: 2304, file: mockFile1, messageText: "error", start: 0 },
       { code: 2304, file: mockFile2, messageText: "error", start: 0 },
@@ -169,7 +248,6 @@ describe("runTypescriptCheck", () => {
       fileNames: [],
       options: {},
     });
-    mockCreateProgram.mockReturnValue({});
     mockGetPreEmitDiagnostics.mockReturnValue([]);
 
     await runTypescriptCheck({ tsconfig: "tsconfig.build.json" });
@@ -208,10 +286,9 @@ describe("runTypescriptCheck", () => {
       fileNames: [],
       options: {},
     });
-    mockCreateProgram.mockReturnValue({});
     mockGetPreEmitDiagnostics.mockReturnValue([]);
 
-    const overrides = { compilerOptions: { noEmit: true, strict: true } };
+    const overrides = { compilerOptions: { strict: true } };
 
     await runTypescriptCheck({ overrides, tsconfig: "tsconfig.json" });
 
@@ -238,7 +315,6 @@ describe("runTypescriptCheck", () => {
       fileNames: [],
       options: {},
     });
-    mockCreateProgram.mockReturnValue({});
     mockGetPreEmitDiagnostics.mockReturnValue([
       { code: 2304, file: mockFile, messageText: "error", start: 0 },
     ]);
@@ -264,7 +340,6 @@ describe("runTypescriptCheck", () => {
       fileNames: [],
       options: {},
     });
-    mockCreateProgram.mockReturnValue({});
     mockGetPreEmitDiagnostics.mockReturnValue([
       {
         code: 2345,
@@ -306,7 +381,6 @@ describe("runTypescriptCheck", () => {
         line: 0,
       }),
     };
-
     const mockFileOutside = {
       fileName: "/test/libs/mocks/src/file.ts",
       getLineAndCharacterOfPosition: vi.fn().mockReturnValue({
@@ -321,7 +395,6 @@ describe("runTypescriptCheck", () => {
       fileNames: [],
       options: {},
     });
-    mockCreateProgram.mockReturnValue({});
     mockGetPreEmitDiagnostics.mockReturnValue([
       {
         code: 2304,
@@ -355,7 +428,6 @@ describe("runTypescriptCheck", () => {
         line: 0,
       }),
     };
-
     const mockFileSibling = {
       fileName: "/test/project-other/src/file.ts",
       getLineAndCharacterOfPosition: vi.fn().mockReturnValue({
@@ -370,7 +442,7 @@ describe("runTypescriptCheck", () => {
       fileNames: [],
       options: {},
     });
-    mockCreateProgram.mockReturnValue({});
+
     mockGetPreEmitDiagnostics.mockReturnValue([
       {
         code: 2304,
@@ -387,7 +459,9 @@ describe("runTypescriptCheck", () => {
     ]);
 
     mockFlattenDiagnosticMessageText.mockReset();
-    mockFlattenDiagnosticMessageText.mockReturnValue("error inside");
+    mockFlattenDiagnosticMessageText.mockImplementation((msg: unknown) => {
+      return typeof msg === "string" ? msg : msg;
+    });
 
     const result = await runTypescriptCheck({ tsconfig: "tsconfig.json" });
 

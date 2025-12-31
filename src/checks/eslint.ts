@@ -2,7 +2,7 @@ import { relative } from "pathe";
 
 import type { ESLintCheckConfig } from "@/types";
 
-import { makeCacheKey } from "@/utils/cache";
+import { ensureCacheDir, makeCacheKey } from "@/utils/cache";
 
 type Item = `${string}:${number}:${number} - ${string}`;
 
@@ -33,9 +33,11 @@ export async function runEslintCheck(config: ESLintCheckConfig) {
   const { ESLint } = await import("eslint");
   const cwd = process.cwd();
 
+  const cacheDir = await ensureCacheDir(cwd, "eslint");
+
   const eslint = new ESLint({
     cache: true,
-    cacheLocation: `node_modules/.cache/mejora/eslint/${makeCacheKey(config)}`,
+    cacheLocation: `${cacheDir}/${makeCacheKey(config)}`,
     concurrency: "auto",
     overrideConfig: config.overrides,
   });

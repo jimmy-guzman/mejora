@@ -12,6 +12,13 @@ vi.mock("eslint", () => {
   };
 });
 
+vi.mock("@/utils/cache", () => {
+  return {
+    ensureCacheDir: vi.fn(),
+    makeCacheKey: vi.fn(() => `node_modules/.cache/mejora/eslint/`),
+  };
+});
+
 const { eslintCheck, runEslintCheck } = await import("./eslint");
 const { ESLint } = await import("eslint");
 

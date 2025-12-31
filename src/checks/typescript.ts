@@ -2,6 +2,8 @@ import { relative, resolve, sep } from "pathe";
 
 import type { TypeScriptCheckConfig } from "@/types";
 
+import { ensureCacheDir, makeCacheKey } from "@/utils/cache";
+
 export async function validateTypescriptDeps() {
   try {
     await import("typescript");
@@ -34,7 +36,8 @@ const createItem = ({
 
 export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
   const {
-    createProgram,
+    createIncrementalCompilerHost,
+    createIncrementalProgram,
     findConfigFile,
     flattenDiagnosticMessageText,
     getPreEmitDiagnostics,
@@ -42,6 +45,7 @@ export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
     readConfigFile,
     sys,
   } = await import("typescript");
+
   const cwd = process.cwd();
 
   const fileExists = sys.fileExists.bind(sys);
@@ -70,14 +74,37 @@ export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
   const parseResult = parseJsonConfigFileContent(
     TSConfig,
     sys,
-    process.cwd(),
+    cwd,
     config.overrides?.compilerOptions,
   );
 
-  const program = createProgram({
-    options: parseResult.options,
+  const cacheDir = await ensureCacheDir(cwd, "typescript");
+
+  const cacheKey = makeCacheKey({
+    configPath,
+    overrides: config.overrides?.compilerOptions ?? {},
+  });
+
+  const tsBuildInfoFile = resolve(cacheDir, `${cacheKey}.tsbuildinfo`);
+
+  const options = {
+    ...parseResult.options,
+    incremental: true,
+    noEmit: true,
+    skipLibCheck: parseResult.options.skipLibCheck ?? true,
+    tsBuildInfoFile,
+  };
+
+  const host = createIncrementalCompilerHost(options, sys);
+
+  const incrementalProgram = createIncrementalProgram({
+    host,
+    options,
+    projectReferences: parseResult.projectReferences ?? [],
     rootNames: parseResult.fileNames,
   });
+
+  const program = incrementalProgram.getProgram();
 
   const diagnostics = getPreEmitDiagnostics(program);
 
@@ -119,6 +146,7 @@ export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
         diagnostic.messageText,
         "\n",
       );
+
       const item = `(global) - TS${diagnostic.code}: ${message}` as const;
 
       items.push(item);
