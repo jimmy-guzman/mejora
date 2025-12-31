@@ -46,7 +46,6 @@ describe("generateMarkdownReport", () => {
       ### [src/index.ts](../src/index.ts) (1)
 
       - [Line 10](../src/index.ts#L10) - 'foo' is never used
-
       "
     `);
   });
@@ -72,7 +71,6 @@ describe("generateMarkdownReport", () => {
       ### [src/types.ts](../src/types.ts) (1)
 
       - [src/types.ts](../src/types.ts) - Type error
-
       "
     `);
   });
@@ -108,7 +106,6 @@ describe("generateMarkdownReport", () => {
       ### [src/b.ts](../src/b.ts) (1)
 
       - [Line 2](../src/b.ts#L2) - error b
-
       "
     `);
   });
@@ -155,7 +152,6 @@ describe("generateMarkdownReport", () => {
       ### Other Issues (1)
 
       -  - invalid item without path
-
       "
     `);
   });
@@ -180,7 +176,6 @@ describe("generateMarkdownReport", () => {
       ### [src/index.ts](../src/index.ts) (1)
 
       - [Line 10](../src/index.ts#L10)
-
       "
     `);
   });
@@ -215,7 +210,6 @@ describe("generateMarkdownReport", () => {
       ### [src/utils.ts](../src/utils.ts) (1)
 
       - [Line 5](../src/utils.ts#L5) - error 3
-
       "
     `);
   });
@@ -246,7 +240,6 @@ describe("generateMarkdownReport", () => {
       ### [src/index.ts](../src/index.ts) (1)
 
       - [Line 10](../src/index.ts#L10) - 'foo' is never used
-
       "
     `);
   });
@@ -277,7 +270,6 @@ describe("generateMarkdownReport", () => {
       ### [types.ts](../types.ts) (1)
 
       - [types.ts](../types.ts) - Type error
-
       "
     `);
   });
@@ -317,7 +309,6 @@ describe("generateMarkdownReport", () => {
       ### [src/utils.ts](../src/utils.ts) (1)
 
       - [Line 5](../src/utils.ts#L5) - error 3
-
       "
     `);
   });
@@ -369,7 +360,6 @@ describe("generateMarkdownReport", () => {
       ### [src/form.tsx](../src/form.tsx) (1)
 
       - [Line 71](../src/form.tsx#L71) - TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'string | FormikErrors&lt;ItemGroupUploadFormikRow&gt;'.
-
       "
     `);
 
@@ -401,7 +391,6 @@ describe("generateMarkdownReport", () => {
       ### [src/test.ts](../src/test.ts) (1)
 
       - [Line 125](../src/test.ts#L125) - The types returned by '&#91;Symbol.iterator&#93;().next(...)' are incompatible.
-
       "
     `);
 
@@ -450,7 +439,6 @@ describe("generateMarkdownReport", () => {
       ### [src/c.ts](../src/c.ts) (1)
 
       - [Line 3](../src/c.ts#L3) - error c
-
       "
     `);
   });
@@ -479,5 +467,22 @@ describe("generateMarkdownReport", () => {
 
     expect(aardvarkIndex).toBeLessThan(zebraIndex);
     expect(zebraIndex).toBeLessThan(unparsableIndex);
+  });
+
+  it("should end with exactly one newline even when there are issues", () => {
+    const baseline = {
+      checks: {
+        eslint: {
+          items: ["/project/src/index.ts:10 - 'foo' is never used"],
+          type: "items" as const,
+        },
+      },
+      version: 1,
+    };
+
+    const result = generateMarkdownReport(baseline, "/project/.mejora");
+
+    expect(result).toMatch(/[^\n]\n$/);
+    expect(result.endsWith("\n\n")).toBe(false);
   });
 });
