@@ -2,7 +2,7 @@ import { relative } from "pathe";
 
 import type { ESLintCheckConfig } from "@/types";
 
-import { ensureCacheDir, makeCacheKey } from "@/utils/cache";
+import { createCacheKey, ensureCacheDir } from "@/utils/cache";
 
 type Item = `${string}:${number}:${number} - ${string}`;
 
@@ -37,7 +37,7 @@ export async function runEslintCheck(config: ESLintCheckConfig) {
 
   const eslint = new ESLint({
     cache: true,
-    cacheLocation: `${cacheDir}/${makeCacheKey(config)}`,
+    cacheLocation: `${cacheDir}/${createCacheKey(config)}`,
     concurrency: "auto",
     overrideConfig: config.overrides,
   });

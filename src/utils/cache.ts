@@ -3,28 +3,30 @@ import { mkdir } from "node:fs/promises";
 
 import { resolve } from "pathe";
 
-/**
- * Creates a stable cache key for any input by hashing a canonical JSON representation.
- * Object properties are sorted to ensure consistent keys regardless of property order.
- *
- * @param input The input to create a cache key for
- *
- * @returns A SHA-256 hash string representing the cache key
- */
-export function makeCacheKey(input: unknown): string {
-  const json = JSON.stringify(input ?? null, (_key, value: unknown) => {
-    if (value && typeof value === "object" && !Array.isArray(value)) {
-      const obj = value as Record<string, unknown>;
+const stableReplacer = (_key: string, value: unknown) => {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    const obj = value as Record<string, unknown>;
+    const sorted: Record<string, unknown> = {};
 
-      return Object.keys(obj)
-        .toSorted()
-        .reduce<Record<string, unknown>>((sorted, key) => {
-          return { ...sorted, [key]: obj[key] };
-        }, {});
+    for (const key of Object.keys(obj).toSorted()) {
+      sorted[key] = obj[key];
     }
 
-    return value;
-  });
+    return sorted;
+  }
+
+  return value;
+};
+
+/**
+ * Generates a stable hash key for caching purposes
+ *
+ * @param input The input to hash
+ *
+ * @returns A stable hash key for the given input
+ */
+export function createCacheKey(input: unknown): string {
+  const json = JSON.stringify(input ?? null, stableReplacer);
 
   return createHash("sha256").update(json).digest("hex");
 }

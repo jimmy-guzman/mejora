@@ -28,10 +28,10 @@ vi.mock("typescript", () => {
 
 vi.mock("@/utils/cache", () => {
   return {
+    createCacheKey: vi.fn().mockReturnValue("abc123def456"),
     ensureCacheDir: vi
       .fn()
       .mockResolvedValue("/test/project/node_modules/.cache/mejora/typescript"),
-    makeCacheKey: vi.fn().mockReturnValue("abc123def456"),
   };
 });
 
