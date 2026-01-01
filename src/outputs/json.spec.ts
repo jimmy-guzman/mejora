@@ -250,4 +250,77 @@ describe("formatJsonOutput", () => {
       }),
     );
   });
+
+  it("should count a check as both improvement and regression when both flags are true", () => {
+    const result = {
+      exitCode: 1,
+      hasImprovement: true,
+      hasRegression: true,
+      results: [
+        {
+          baseline: { items: ["a"], type: "items" as const },
+          checkId: "eslint",
+          hasImprovement: true,
+          hasRegression: true,
+          isInitial: false,
+          newItems: ["b"],
+          removedItems: ["a"],
+          snapshot: { items: ["b"], type: "items" as const },
+        },
+      ],
+    };
+
+    const parsed = JSON.parse(formatJsonOutput(result));
+
+    expect(parsed).toMatchObject({
+      summary: expect.objectContaining({
+        checksRun: 1,
+        improvementChecks: ["eslint"],
+        improvements: 1,
+        initial: 0,
+        initialChecks: [],
+        regressionChecks: ["eslint"],
+        regressions: 1,
+        totalIssues: 1,
+        unchanged: 0,
+        unchangedChecks: [],
+      }),
+    });
+  });
+
+  it("should treat initial checks as initial only even if improvement/regression flags are true", () => {
+    const result = {
+      exitCode: 0,
+      hasImprovement: true,
+      hasRegression: true,
+      results: [
+        {
+          baseline: undefined,
+          checkId: "eslint",
+          hasImprovement: true,
+          hasRegression: true,
+          isInitial: true,
+          newItems: ["b"],
+          removedItems: ["a"],
+          snapshot: { items: ["b"], type: "items" as const },
+        },
+      ],
+    };
+
+    const parsed = JSON.parse(formatJsonOutput(result));
+
+    expect(parsed).toMatchObject({
+      summary: expect.objectContaining({
+        checksRun: 1,
+        improvementChecks: [],
+        improvements: 0,
+        initial: 1,
+        initialChecks: ["eslint"],
+        regressionChecks: [],
+        regressions: 0,
+        unchanged: 0,
+        unchangedChecks: [],
+      }),
+    });
+  });
 });
