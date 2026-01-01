@@ -4,7 +4,7 @@ import { blue, bold, dim, gray, green, red } from "@/utils/colors";
 import { duration } from "@/utils/duration";
 import { plural } from "@/utils/text";
 
-import { average, categorize, sum } from "./utils";
+import { average } from "./average";
 
 const MAX_ITEMS_TO_DISPLAY = 10;
 
@@ -138,35 +138,61 @@ function formatStatusMessage(result: RunResult, hasAnyInitial: boolean) {
 }
 
 function formatSummary(result: RunResult) {
-  const hasAnyInitial = result.results.some((r) => r.isInitial);
-  const { improvements, initial, regressions, unchanged } = categorize(
-    result.results,
-  );
+  const acc = {
+    hasAnyInitial: false,
+    totalImprovements: 0,
+    totalInitial: 0,
+    totalIssues: 0,
+    totalRegressions: 0,
+    totalUnchanged: 0,
+  };
 
-  const totalImprovements = sum(improvements, (r) => r.removedItems);
-  const totalRegressions = sum(regressions, (r) => r.newItems);
-  const totalUnchanged = sum(unchanged, (r) => r.snapshot.items);
-  const totalInitial = sum(initial, (r) => r.snapshot.items);
-  const totalIssues = sum(result.results, (r) => r.snapshot.items);
+  for (const check of result.results) {
+    const issueCount = check.snapshot.items.length;
+
+    acc.totalIssues += issueCount;
+
+    if (check.isInitial) {
+      acc.hasAnyInitial = true;
+      acc.totalInitial += issueCount;
+      continue;
+    }
+
+    const { hasImprovement, hasRegression } = check;
+
+    if (hasImprovement) {
+      acc.totalImprovements += check.removedItems.length;
+    }
+
+    if (hasRegression) {
+      acc.totalRegressions += check.newItems.length;
+    }
+
+    if (!hasImprovement && !hasRegression) {
+      acc.totalUnchanged += issueCount;
+    }
+  }
 
   const summaryLines = [
-    `  ${dim("Improvements")}  ${green(totalImprovements)}`,
-    `   ${dim("Regressions")}  ${red(totalRegressions)}`,
-    `     ${dim("Unchanged")}  ${totalUnchanged}`,
-    `       ${dim("Initial")}  ${blue(totalInitial)}`,
+    `  ${dim("Improvements")}  ${green(acc.totalImprovements)}`,
+    `   ${dim("Regressions")}  ${red(acc.totalRegressions)}`,
+    `     ${dim("Unchanged")}  ${acc.totalUnchanged}`,
+    `       ${dim("Initial")}  ${blue(acc.totalInitial)}`,
     `        ${dim("Checks")}  ${result.results.length}`,
-    `        ${dim("Issues")}  ${bold(totalIssues)}`,
+    `        ${dim("Issues")}  ${bold(acc.totalIssues)}`,
   ];
 
   const avgDuration = average(result.totalDuration, result.results.length);
 
   if (result.totalDuration !== undefined && avgDuration !== undefined) {
     summaryLines.push(
-      `      ${dim("Duration")}  ${duration(result.totalDuration)} ${gray(`(avg ${duration(avgDuration)})`)}`,
+      `      ${dim("Duration")}  ${duration(result.totalDuration)} ${gray(
+        `(avg ${duration(avgDuration)})`,
+      )}`,
     );
   }
 
-  summaryLines.push("", formatStatusMessage(result, hasAnyInitial));
+  summaryLines.push("", formatStatusMessage(result, acc.hasAnyInitial));
 
   return summaryLines.join("\n");
 }

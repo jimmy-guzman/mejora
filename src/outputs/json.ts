@@ -1,6 +1,6 @@
 import type { RunResult } from "@/types";
 
-import { average } from "./utils";
+import { average } from "./average";
 
 export function formatJsonOutput(result: RunResult) {
   const { results, totalDuration } = result;
