@@ -1,15 +1,48 @@
 import type { Linter } from "eslint";
 import type { CompilerOptions } from "typescript";
 
+export interface DiagnosticItem {
+  /**
+   * Diagnostic error code.
+   * - For ESLint, this is the rule ID.
+   * - For TypeScript, this is the TS error code.
+   *
+   * @example "no-nested-ternary" (for ESLint)
+   *
+   * @example "TS2345" (for TypeScript)
+   */
+  code: string;
+  /**
+   * 1-indexed column number for display.
+   */
+  column: number;
+  /**
+   * Relative path from cwd.
+   */
+  file: string;
+  /**
+   * Hash of canonical representation.
+   */
+  id: string;
+  /**
+   * 1-indexed line number for display.
+   */
+  line: number;
+  /**
+   *  The diagnostic message.
+   */
+  message: string;
+}
+
 export interface ItemsSnapshot {
-  items: string[];
+  items: DiagnosticItem[];
   type: "items";
 }
 
 export type Snapshot = ItemsSnapshot;
 
 export interface BaselineEntry {
-  items?: string[];
+  items?: DiagnosticItem[];
   type: Snapshot["type"];
 }
 
@@ -167,8 +200,8 @@ export interface CheckResult {
   hasImprovement: boolean;
   hasRegression: boolean;
   isInitial: boolean;
-  newItems: string[];
-  removedItems: string[];
+  newItems: DiagnosticItem[];
+  removedItems: DiagnosticItem[];
   snapshot: Snapshot;
 }
 

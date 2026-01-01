@@ -1,4 +1,4 @@
-import type { RunResult } from "@/types";
+import type { DiagnosticItem, RunResult } from "@/types";
 
 import { average } from "./average";
 
@@ -8,8 +8,8 @@ interface Check {
   hasImprovement: boolean;
   hasRegression: boolean;
   isInitial: boolean;
-  newItems: string[];
-  removedItems: string[];
+  newItems: DiagnosticItem[];
+  removedItems: DiagnosticItem[];
   totalIssues: number;
 }
 

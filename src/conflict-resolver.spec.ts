@@ -3,21 +3,46 @@ import { BASELINE_VERSION } from "./constants";
 
 describe("resolveBaselineConflict", () => {
   it("should merge conflicts with union of items", () => {
+    const item1 = {
+      code: "no-unused-vars",
+      column: 1,
+      file: "src/a.ts",
+      id: "error1-id",
+      line: 10,
+      message: "error1",
+    };
+    const item2 = {
+      code: "no-undef",
+      column: 1,
+      file: "src/b.ts",
+      id: "error2-id",
+      line: 20,
+      message: "error2",
+    };
+    const item3 = {
+      code: "semi",
+      column: 1,
+      file: "src/c.ts",
+      id: "error3-id",
+      line: 30,
+      message: "error3",
+    };
+
     const conflictContent = [
       "{",
-      '  "version": 1,',
+      `  "version": ${BASELINE_VERSION},`,
       "<<<<<<< HEAD",
       '  "checks": {',
       '    "eslint": {',
       '      "type": "items",',
-      '      "items": ["error1", "error2"]',
+      `      "items": [${JSON.stringify(item1)}, ${JSON.stringify(item2)}]`,
       "    }",
       "  }",
       "=======",
       '  "checks": {',
       '    "eslint": {',
       '      "type": "items",',
-      '      "items": ["error2", "error3"]',
+      `      "items": [${JSON.stringify(item2)}, ${JSON.stringify(item3)}]`,
       "    }",
       "  }",
       ">>>>>>> feature",
@@ -26,29 +51,46 @@ describe("resolveBaselineConflict", () => {
 
     const result = resolveBaselineConflict(conflictContent);
 
-    expect(result.checks.eslint?.items).toStrictEqual([
-      "error1",
-      "error2",
-      "error3",
-    ]);
+    expect(result.checks.eslint?.items).toHaveLength(3);
+
+    const ids = result.checks.eslint?.items?.map((i) => i.id).toSorted();
+
+    expect(ids).toStrictEqual(["error1-id", "error2-id", "error3-id"]);
   });
 
   it("should merge conflicts with different checks on each side", () => {
+    const item1 = {
+      code: "no-unused-vars",
+      column: 1,
+      file: "src/a.ts",
+      id: "error1-id",
+      line: 10,
+      message: "error1",
+    };
+    const item2 = {
+      code: "TS2304",
+      column: 1,
+      file: "src/b.ts",
+      id: "error2-id",
+      line: 20,
+      message: "error2",
+    };
+
     const conflictContent = [
       "{",
-      '  "version": 1,',
+      `  "version": ${BASELINE_VERSION},`,
       "<<<<<<< HEAD",
       '  "checks": {',
       '    "eslint": {',
       '      "type": "items",',
-      '      "items": ["error1"]',
+      `      "items": [${JSON.stringify(item1)}]`,
       "    }",
       "  }",
       "=======",
       '  "checks": {',
       '    "typescript": {',
       '      "type": "items",',
-      '      "items": ["error2"]',
+      `      "items": [${JSON.stringify(item2)}]`,
       "    }",
       "  }",
       ">>>>>>> feature",
@@ -57,26 +99,61 @@ describe("resolveBaselineConflict", () => {
 
     const result = resolveBaselineConflict(conflictContent);
 
-    expect(result.checks.eslint?.items).toStrictEqual(["error1"]);
-    expect(result.checks.typescript?.items).toStrictEqual(["error2"]);
+    expect(result.checks.eslint?.items).toHaveLength(1);
+    expect(result.checks.eslint?.items?.[0]?.id).toBe("error1-id");
+    expect(result.checks.typescript?.items).toHaveLength(1);
+    expect(result.checks.typescript?.items?.[0]?.id).toBe("error2-id");
   });
 
   it("should merge conflicts with overlapping items", () => {
+    const item1 = {
+      code: "no-unused-vars",
+      column: 1,
+      file: "src/a.ts",
+      id: "error1-id",
+      line: 10,
+      message: "error1",
+    };
+    const item2 = {
+      code: "no-undef",
+      column: 1,
+      file: "src/b.ts",
+      id: "error2-id",
+      line: 20,
+      message: "error2",
+    };
+    const item3 = {
+      code: "semi",
+      column: 1,
+      file: "src/c.ts",
+      id: "error3-id",
+      line: 30,
+      message: "error3",
+    };
+    const item4 = {
+      code: "quotes",
+      column: 1,
+      file: "src/d.ts",
+      id: "error4-id",
+      line: 40,
+      message: "error4",
+    };
+
     const conflictContent = [
       "{",
-      '  "version": 1,',
+      `  "version": ${BASELINE_VERSION},`,
       "<<<<<<< HEAD",
       '  "checks": {',
       '    "eslint": {',
       '      "type": "items",',
-      '      "items": ["error1", "error2", "error3"]',
+      `      "items": [${JSON.stringify(item1)}, ${JSON.stringify(item2)}, ${JSON.stringify(item3)}]`,
       "    }",
       "  }",
       "=======",
       '  "checks": {',
       '    "eslint": {',
       '      "type": "items",',
-      '      "items": ["error2", "error3", "error4"]',
+      `      "items": [${JSON.stringify(item2)}, ${JSON.stringify(item3)}, ${JSON.stringify(item4)}]`,
       "    }",
       "  }",
       ">>>>>>> feature",
@@ -85,30 +162,67 @@ describe("resolveBaselineConflict", () => {
 
     const result = resolveBaselineConflict(conflictContent);
 
-    expect(result.checks.eslint?.items).toStrictEqual([
-      "error1",
-      "error2",
-      "error3",
-      "error4",
+    expect(result.checks.eslint?.items).toHaveLength(4);
+
+    const ids = result.checks.eslint?.items?.map((i) => i.id).toSorted();
+
+    expect(ids).toStrictEqual([
+      "error1-id",
+      "error2-id",
+      "error3-id",
+      "error4-id",
     ]);
   });
 
-  it("should sort merged items alphabetically", () => {
+  it("should sort merged items by ID", () => {
+    const itemZ = {
+      code: "z-error",
+      column: 1,
+      file: "src/z.ts",
+      id: "z-error-id",
+      line: 10,
+      message: "z-error",
+    };
+    const itemA = {
+      code: "a-error",
+      column: 1,
+      file: "src/a.ts",
+      id: "a-error-id",
+      line: 20,
+      message: "a-error",
+    };
+    const itemM = {
+      code: "m-error",
+      column: 1,
+      file: "src/m.ts",
+      id: "m-error-id",
+      line: 30,
+      message: "m-error",
+    };
+    const itemB = {
+      code: "b-error",
+      column: 1,
+      file: "src/b.ts",
+      id: "b-error-id",
+      line: 40,
+      message: "b-error",
+    };
+
     const conflictContent = [
       "{",
-      '  "version": 1,',
+      `  "version": ${BASELINE_VERSION},`,
       "<<<<<<< HEAD",
       '  "checks": {',
       '    "eslint": {',
       '      "type": "items",',
-      '      "items": ["z-error", "a-error"]',
+      `      "items": [${JSON.stringify(itemZ)}, ${JSON.stringify(itemA)}]`,
       "    }",
       "  }",
       "=======",
       '  "checks": {',
       '    "eslint": {',
       '      "type": "items",',
-      '      "items": ["m-error", "b-error"]',
+      `      "items": [${JSON.stringify(itemM)}, ${JSON.stringify(itemB)}]`,
       "    }",
       "  }",
       ">>>>>>> feature",
@@ -117,38 +231,73 @@ describe("resolveBaselineConflict", () => {
 
     const result = resolveBaselineConflict(conflictContent);
 
-    expect(result.checks.eslint?.items).toStrictEqual([
-      "a-error",
-      "b-error",
-      "m-error",
-      "z-error",
+    const ids = result.checks.eslint?.items?.map((i) => i.id);
+
+    expect(ids).toStrictEqual([
+      "a-error-id",
+      "b-error-id",
+      "m-error-id",
+      "z-error-id",
     ]);
   });
 
   it("should merge multiple checks with conflicts", () => {
+    const eslintItem1 = {
+      code: "no-unused-vars",
+      column: 1,
+      file: "src/a.ts",
+      id: "eslint-error1-id",
+      line: 10,
+      message: "error1",
+    };
+    const eslintItem2 = {
+      code: "no-undef",
+      column: 1,
+      file: "src/b.ts",
+      id: "eslint-error2-id",
+      line: 20,
+      message: "error2",
+    };
+    const tsItem1 = {
+      code: "TS2304",
+      column: 1,
+      file: "src/c.ts",
+      id: "ts-error1-id",
+      line: 30,
+      message: "ts-error1",
+    };
+    const tsItem2 = {
+      code: "TS2345",
+      column: 1,
+      file: "src/d.ts",
+      id: "ts-error2-id",
+      line: 40,
+      message: "ts-error2",
+    };
+
     const conflictContent = [
       "{",
-      '  "version": 1,',
+      `  "version": ${BASELINE_VERSION},`,
       "<<<<<<< HEAD",
       '  "checks": {',
       '    "eslint": {',
       '      "type": "items",',
-      '      "items": ["error1"]',
+      `      "items": [${JSON.stringify(eslintItem1)}]`,
       "    },",
       '    "typescript": {',
       '      "type": "items",',
-      '      "items": ["ts-error1"]',
+      `      "items": [${JSON.stringify(tsItem1)}]`,
       "    }",
       "  }",
       "=======",
       '  "checks": {',
       '    "eslint": {',
       '      "type": "items",',
-      '      "items": ["error2"]',
+      `      "items": [${JSON.stringify(eslintItem2)}]`,
       "    },",
       '    "typescript": {',
       '      "type": "items",',
-      '      "items": ["ts-error2"]',
+      `      "items": [${JSON.stringify(tsItem2)}]`,
       "    }",
       "  }",
       ">>>>>>> feature",
@@ -157,29 +306,52 @@ describe("resolveBaselineConflict", () => {
 
     const result = resolveBaselineConflict(conflictContent);
 
-    expect(result.checks.eslint?.items).toStrictEqual(["error1", "error2"]);
-    expect(result.checks.typescript?.items).toStrictEqual([
-      "ts-error1",
-      "ts-error2",
-    ]);
+    expect(result.checks.eslint?.items).toHaveLength(2);
+
+    const eslintIds = result.checks.eslint?.items?.map((i) => i.id).toSorted();
+
+    expect(eslintIds).toStrictEqual(["eslint-error1-id", "eslint-error2-id"]);
+
+    expect(result.checks.typescript?.items).toHaveLength(2);
+
+    const tsIds = result.checks.typescript?.items?.map((i) => i.id).toSorted();
+
+    expect(tsIds).toStrictEqual(["ts-error1-id", "ts-error2-id"]);
   });
 
   it("should preserve check type from either side", () => {
+    const item1 = {
+      code: "no-unused-vars",
+      column: 1,
+      file: "src/a.ts",
+      id: "error1-id",
+      line: 10,
+      message: "error1",
+    };
+    const item2 = {
+      code: "no-undef",
+      column: 1,
+      file: "src/b.ts",
+      id: "error2-id",
+      line: 20,
+      message: "error2",
+    };
+
     const conflictContent = [
       "{",
-      '  "version": 1,',
+      `  "version": ${BASELINE_VERSION},`,
       "<<<<<<< HEAD",
       '  "checks": {',
       '    "eslint": {',
       '      "type": "items",',
-      '      "items": ["error1"]',
+      `      "items": [${JSON.stringify(item1)}]`,
       "    }",
       "  }",
       "=======",
       '  "checks": {',
       '    "eslint": {',
       '      "type": "items",',
-      '      "items": ["error2"]',
+      `      "items": [${JSON.stringify(item2)}]`,
       "    }",
       "  }",
       ">>>>>>> feature",
@@ -194,7 +366,7 @@ describe("resolveBaselineConflict", () => {
   it("should return baseline with correct version", () => {
     const conflictContent = [
       "{",
-      '  "version": 1,',
+      `  "version": ${BASELINE_VERSION},`,
       "<<<<<<< HEAD",
       '  "checks": {}',
       "=======",
@@ -205,13 +377,13 @@ describe("resolveBaselineConflict", () => {
 
     const result = resolveBaselineConflict(conflictContent);
 
-    expect(result.version).toBe(1);
+    expect(result.version).toBe(BASELINE_VERSION);
   });
 
   it("should throw error for malformed conflict markers", () => {
     const conflictContent = [
       "{",
-      '  "version": 1,',
+      `  "version": ${BASELINE_VERSION},`,
       "<<<<<<< HEAD",
       '  "checks": {}',
       "  // Missing =======",
@@ -227,7 +399,7 @@ describe("resolveBaselineConflict", () => {
   it("should throw error for missing conflict markers", () => {
     const conflictContent = [
       "{",
-      '  "version": 1,',
+      `  "version": ${BASELINE_VERSION},`,
       '  "checks": {}',
       "}",
     ].join("\n");
@@ -240,7 +412,7 @@ describe("resolveBaselineConflict", () => {
   it("should throw error for invalid JSON in ours section", () => {
     const conflictContent = [
       "{",
-      '  "version": 1,',
+      `  "version": ${BASELINE_VERSION},`,
       "<<<<<<< HEAD",
       '  "checks": { invalid json }',
       "=======",
@@ -257,7 +429,7 @@ describe("resolveBaselineConflict", () => {
   it("should throw error for invalid JSON in theirs section", () => {
     const conflictContent = [
       "{",
-      '  "version": 1,',
+      `  "version": ${BASELINE_VERSION},`,
       "<<<<<<< HEAD",
       '  "checks": {}',
       "=======",
@@ -272,16 +444,25 @@ describe("resolveBaselineConflict", () => {
   });
 
   it("should merge when one side has empty checks", () => {
+    const item1 = {
+      code: "no-unused-vars",
+      column: 1,
+      file: "src/a.ts",
+      id: "error1-id",
+      line: 10,
+      message: "error1",
+    };
+
     const conflictContent = [
       "{",
-      '  "version": 1,',
+      `  "version": ${BASELINE_VERSION},`,
       "<<<<<<< HEAD",
       '  "checks": {}',
       "=======",
       '  "checks": {',
       '    "eslint": {',
       '      "type": "items",',
-      '      "items": ["error1"]',
+      `      "items": [${JSON.stringify(item1)}]`,
       "    }",
       "  }",
       ">>>>>>> feature",
@@ -290,25 +471,51 @@ describe("resolveBaselineConflict", () => {
 
     const result = resolveBaselineConflict(conflictContent);
 
-    expect(result.checks.eslint?.items).toStrictEqual(["error1"]);
+    expect(result.checks.eslint?.items).toHaveLength(1);
+    expect(result.checks.eslint?.items?.[0]?.id).toBe("error1-id");
   });
 
-  it("should deduplicate items from both sides", () => {
+  it("should deduplicate items from both sides by ID", () => {
+    const item1 = {
+      code: "no-unused-vars",
+      column: 1,
+      file: "src/a.ts",
+      id: "error1-id",
+      line: 10,
+      message: "error1",
+    };
+    const item2 = {
+      code: "no-undef",
+      column: 1,
+      file: "src/b.ts",
+      id: "error2-id",
+      line: 20,
+      message: "error2",
+    };
+    const item3 = {
+      code: "semi",
+      column: 1,
+      file: "src/c.ts",
+      id: "error3-id",
+      line: 30,
+      message: "error3",
+    };
+
     const conflictContent = [
       "{",
-      '  "version": 1,',
+      `  "version": ${BASELINE_VERSION},`,
       "<<<<<<< HEAD",
       '  "checks": {',
       '    "eslint": {',
       '      "type": "items",',
-      '      "items": ["error1", "error1", "error2"]',
+      `      "items": [${JSON.stringify(item1)}, ${JSON.stringify(item1)}, ${JSON.stringify(item2)}]`,
       "    }",
       "  }",
       "=======",
       '  "checks": {',
       '    "eslint": {',
       '      "type": "items",',
-      '      "items": ["error2", "error2", "error3"]',
+      `      "items": [${JSON.stringify(item2)}, ${JSON.stringify(item2)}, ${JSON.stringify(item3)}]`,
       "    }",
       "  }",
       ">>>>>>> feature",
@@ -317,17 +524,17 @@ describe("resolveBaselineConflict", () => {
 
     const result = resolveBaselineConflict(conflictContent);
 
-    expect(result.checks.eslint?.items).toStrictEqual([
-      "error1",
-      "error2",
-      "error3",
-    ]);
+    expect(result.checks.eslint?.items).toHaveLength(3);
+
+    const ids = result.checks.eslint?.items?.map((i) => i.id).toSorted();
+
+    expect(ids).toStrictEqual(["error1-id", "error2-id", "error3-id"]);
   });
 
   it("should include JSON parse error details in thrown error", () => {
     const conflictContent = [
       "{",
-      '  "version": 1,',
+      `  "version": ${BASELINE_VERSION},`,
       "<<<<<<< HEAD",
       '  "checks": { invalid json }',
       "=======",
@@ -351,7 +558,7 @@ describe("resolveBaselineConflict", () => {
 
     const conflictContent = [
       "{",
-      '  "version": 1,',
+      `  "version": ${BASELINE_VERSION},`,
       "<<<<<<< HEAD",
       '  "checks": {}',
       "=======",
@@ -370,19 +577,36 @@ describe("resolveBaselineConflict", () => {
   });
 
   it("should default to 'items' type when both sides are missing type", () => {
+    const item1 = {
+      code: "no-unused-vars",
+      column: 1,
+      file: "src/a.ts",
+      id: "error1-id",
+      line: 10,
+      message: "error1",
+    };
+    const item2 = {
+      code: "no-undef",
+      column: 1,
+      file: "src/b.ts",
+      id: "error2-id",
+      line: 20,
+      message: "error2",
+    };
+
     const conflictContent = [
       "{",
-      '  "version": 1,',
+      `  "version": ${BASELINE_VERSION},`,
       "<<<<<<< HEAD",
       '  "checks": {',
       '    "eslint": {',
-      '      "items": ["error1"]',
+      `      "items": [${JSON.stringify(item1)}]`,
       "    }",
       "  }",
       "=======",
       '  "checks": {',
       '    "eslint": {',
-      '      "items": ["error2"]',
+      `      "items": [${JSON.stringify(item2)}]`,
       "    }",
       "  }",
       ">>>>>>> feature",
@@ -392,37 +616,72 @@ describe("resolveBaselineConflict", () => {
     const result = resolveBaselineConflict(conflictContent);
 
     expect(result.checks.eslint?.type).toBe("items");
-    expect(result.checks.eslint?.items).toStrictEqual(["error1", "error2"]);
+    expect(result.checks.eslint?.items).toHaveLength(2);
+
+    const ids = result.checks.eslint?.items?.map((i) => i.id).toSorted();
+
+    expect(ids).toStrictEqual(["error1-id", "error2-id"]);
   });
 
   it("should merge multiple conflict blocks with different checks", () => {
+    const eslintItem1 = {
+      code: "no-unused-vars",
+      column: 1,
+      file: "src/a.ts",
+      id: "eslint-error1-id",
+      line: 10,
+      message: "error1",
+    };
+    const eslintItem2 = {
+      code: "no-undef",
+      column: 1,
+      file: "src/b.ts",
+      id: "eslint-error2-id",
+      line: 20,
+      message: "error2",
+    };
+    const tsItem1 = {
+      code: "TS2304",
+      column: 1,
+      file: "src/c.ts",
+      id: "ts-error1-id",
+      line: 30,
+      message: "ts-error1",
+    };
+    const tsItem2 = {
+      code: "TS2345",
+      column: 1,
+      file: "src/d.ts",
+      id: "ts-error2-id",
+      line: 40,
+      message: "ts-error2",
+    };
+
     const conflictContent = [
       "{",
-      '  "version": 1,',
+      `  "version": ${BASELINE_VERSION},`,
       "<<<<<<< HEAD",
       '  "checks": {',
       '    "eslint": {',
       '      "type": "items",',
-      '      "items": ["error1"]',
-      "    }",
+      `      "items": [${JSON.stringify(eslintItem1)}]`,
       "=======",
       '  "checks": {',
       '    "eslint": {',
       '      "type": "items",',
-      '      "items": ["error2"]',
-      "    }",
+      `      "items": [${JSON.stringify(eslintItem2)}]`,
       ">>>>>>> feature",
       ",",
       "<<<<<<< HEAD",
       '    "typescript": {',
       '      "type": "items",',
-      '      "items": ["ts-error1"]',
+      `      "items": [${JSON.stringify(tsItem1)}]`,
       "    }",
       "  }",
       "=======",
       '    "typescript": {',
       '      "type": "items",',
-      '      "items": ["ts-error2"]',
+      `      "items": [${JSON.stringify(tsItem2)}]`,
       "    }",
       "  }",
       ">>>>>>> feature",
@@ -431,53 +690,108 @@ describe("resolveBaselineConflict", () => {
 
     const result = resolveBaselineConflict(conflictContent);
 
-    expect(result.checks.eslint?.items).toStrictEqual(["error1", "error2"]);
-    expect(result.checks.typescript?.items).toStrictEqual([
-      "ts-error1",
-      "ts-error2",
-    ]);
+    expect(result.checks.eslint?.items).toHaveLength(2);
+
+    const eslintIds = result.checks.eslint?.items?.map((i) => i.id).toSorted();
+
+    expect(eslintIds).toStrictEqual(["eslint-error1-id", "eslint-error2-id"]);
+
+    expect(result.checks.typescript?.items).toHaveLength(2);
+
+    const tsIds = result.checks.typescript?.items?.map((i) => i.id).toSorted();
+
+    expect(tsIds).toStrictEqual(["ts-error1-id", "ts-error2-id"]);
   });
 
   it("should merge three conflict blocks", () => {
+    const eslintItem1 = {
+      code: "no-unused-vars",
+      column: 1,
+      file: "src/a.ts",
+      id: "eslint-error1-id",
+      line: 10,
+      message: "error1",
+    };
+    const eslintItem2 = {
+      code: "no-undef",
+      column: 1,
+      file: "src/b.ts",
+      id: "eslint-error2-id",
+      line: 20,
+      message: "error2",
+    };
+    const tsItem1 = {
+      code: "TS2304",
+      column: 1,
+      file: "src/c.ts",
+      id: "ts-error1-id",
+      line: 30,
+      message: "ts-error1",
+    };
+    const tsItem2 = {
+      code: "TS2345",
+      column: 1,
+      file: "src/d.ts",
+      id: "ts-error2-id",
+      line: 40,
+      message: "ts-error2",
+    };
+    const customItem1 = {
+      code: "custom-rule",
+      column: 1,
+      file: "src/e.ts",
+      id: "custom-error1-id",
+      line: 50,
+      message: "custom-error1",
+    };
+    const customItem2 = {
+      code: "custom-rule",
+      column: 1,
+      file: "src/f.ts",
+      id: "custom-error2-id",
+      line: 60,
+      message: "custom-error2",
+    };
+
     const conflictContent = [
       "{",
-      '  "version": 1,',
+      `  "version": ${BASELINE_VERSION},`,
       "<<<<<<< HEAD",
       '  "checks": {',
       '    "eslint": {',
       '      "type": "items",',
-      '      "items": ["error1"]',
+      `      "items": [${JSON.stringify(eslintItem1)}]`,
       "    }",
       "=======",
       '  "checks": {',
       '    "eslint": {',
       '      "type": "items",',
-      '      "items": ["error2"]',
+      `      "items": [${JSON.stringify(eslintItem2)}]`,
       "    }",
       ">>>>>>> feature",
       ",",
       "<<<<<<< HEAD",
       '    "typescript": {',
       '      "type": "items",',
-      '      "items": ["ts-error1"]',
+      `      "items": [${JSON.stringify(tsItem1)}]`,
       "    }",
       "=======",
       '    "typescript": {',
       '      "type": "items",',
-      '      "items": ["ts-error2"]',
+      `      "items": [${JSON.stringify(tsItem2)}]`,
       "    }",
       ">>>>>>> feature",
       ",",
       "<<<<<<< HEAD",
       '    "custom": {',
       '      "type": "items",',
-      '      "items": ["custom-error1"]',
+      `      "items": [${JSON.stringify(customItem1)}]`,
       "    }",
       "  }",
       "=======",
       '    "custom": {',
       '      "type": "items",',
-      '      "items": ["custom-error2"]',
+      `      "items": [${JSON.stringify(customItem2)}]`,
       "    }",
       "  }",
       ">>>>>>> feature",
@@ -486,31 +800,72 @@ describe("resolveBaselineConflict", () => {
 
     const result = resolveBaselineConflict(conflictContent);
 
-    expect(result.checks.eslint?.items).toStrictEqual(["error1", "error2"]);
-    expect(result.checks.typescript?.items).toStrictEqual([
-      "ts-error1",
-      "ts-error2",
-    ]);
-    expect(result.checks.custom?.items).toStrictEqual([
-      "custom-error1",
-      "custom-error2",
-    ]);
+    expect(result.checks.eslint?.items).toHaveLength(2);
+
+    const eslintIds = result.checks.eslint?.items?.map((i) => i.id).toSorted();
+
+    expect(eslintIds).toStrictEqual(["eslint-error1-id", "eslint-error2-id"]);
+
+    expect(result.checks.typescript?.items).toHaveLength(2);
+
+    const tsIds = result.checks.typescript?.items?.map((i) => i.id).toSorted();
+
+    expect(tsIds).toStrictEqual(["ts-error1-id", "ts-error2-id"]);
+
+    expect(result.checks.custom?.items).toHaveLength(2);
+
+    const customIds = result.checks.custom?.items?.map((i) => i.id).toSorted();
+
+    expect(customIds).toStrictEqual(["custom-error1-id", "custom-error2-id"]);
   });
 
   it("should merge multiple conflict blocks without outer JSON structure", () => {
+    const eslintItem1 = {
+      code: "no-unused-vars",
+      column: 1,
+      file: "src/a.ts",
+      id: "eslint-error1-id",
+      line: 10,
+      message: "error1",
+    };
+    const eslintItem2 = {
+      code: "no-undef",
+      column: 1,
+      file: "src/b.ts",
+      id: "eslint-error2-id",
+      line: 20,
+      message: "error2",
+    };
+    const tsItem1 = {
+      code: "TS2304",
+      column: 1,
+      file: "src/c.ts",
+      id: "ts-error1-id",
+      line: 30,
+      message: "ts-error1",
+    };
+    const tsItem2 = {
+      code: "TS2345",
+      column: 1,
+      file: "src/d.ts",
+      id: "ts-error2-id",
+      line: 40,
+      message: "ts-error2",
+    };
+
     const conflictContent = [
       "<<<<<<< HEAD",
       '  "checks": {',
       '    "eslint": {',
       '      "type": "items",',
-      '      "items": ["error1"]',
+      `      "items": [${JSON.stringify(eslintItem1)}]`,
       "    }",
       "  }",
       "=======",
       '  "checks": {',
       '    "eslint": {',
       '      "type": "items",',
-      '      "items": ["error2"]',
+      `      "items": [${JSON.stringify(eslintItem2)}]`,
       "    }",
       "  }",
       ">>>>>>> feature",
@@ -519,14 +874,14 @@ describe("resolveBaselineConflict", () => {
       '  "checks": {',
       '    "typescript": {',
       '      "type": "items",',
-      '      "items": ["ts-error1"]',
+      `      "items": [${JSON.stringify(tsItem1)}]`,
       "    }",
       "  }",
       "=======",
       '  "checks": {',
       '    "typescript": {',
       '      "type": "items",',
-      '      "items": ["ts-error2"]',
+      `      "items": [${JSON.stringify(tsItem2)}]`,
       "    }",
       "  }",
       ">>>>>>> feature",
@@ -534,28 +889,68 @@ describe("resolveBaselineConflict", () => {
 
     const result = resolveBaselineConflict(conflictContent);
 
-    expect(result.checks.eslint?.items).toStrictEqual(["error1", "error2"]);
-    expect(result.checks.typescript?.items).toStrictEqual([
-      "ts-error1",
-      "ts-error2",
-    ]);
+    expect(result.checks.eslint?.items).toHaveLength(2);
+
+    const eslintIds = result.checks.eslint?.items?.map((i) => i.id).toSorted();
+
+    expect(eslintIds).toStrictEqual(["eslint-error1-id", "eslint-error2-id"]);
+
+    expect(result.checks.typescript?.items).toHaveLength(2);
+
+    const tsIds = result.checks.typescript?.items?.map((i) => i.id).toSorted();
+
+    expect(tsIds).toStrictEqual(["ts-error1-id", "ts-error2-id"]);
+
     expect(result.version).toBe(BASELINE_VERSION);
   });
 
   it("should merge when the same check appears in multiple conflict blocks", () => {
+    const itemA = {
+      code: "no-unused-vars",
+      column: 1,
+      file: "src/a.ts",
+      id: "a-id",
+      line: 10,
+      message: "a",
+    };
+    const itemB = {
+      code: "no-undef",
+      column: 1,
+      file: "src/b.ts",
+      id: "b-id",
+      line: 20,
+      message: "b",
+    };
+    const itemC = {
+      code: "semi",
+      column: 1,
+      file: "src/c.ts",
+      id: "c-id",
+      line: 30,
+      message: "c",
+    };
+    const itemD = {
+      code: "quotes",
+      column: 1,
+      file: "src/d.ts",
+      id: "d-id",
+      line: 40,
+      message: "d",
+    };
+
     const conflictContent = [
       "<<<<<<< HEAD",
       '  "checks": {',
       '    "eslint": {',
       '      "type": "items",',
-      '      "items": ["a"]',
+      `      "items": [${JSON.stringify(itemA)}]`,
       "    }",
       "  }",
       "=======",
       '  "checks": {',
       '    "eslint": {',
       '      "type": "items",',
-      '      "items": ["b"]',
+      `      "items": [${JSON.stringify(itemB)}]`,
       "    }",
       "  }",
       ">>>>>>> feature",
@@ -564,14 +959,14 @@ describe("resolveBaselineConflict", () => {
       '  "checks": {',
       '    "eslint": {',
       '      "type": "items",',
-      '      "items": ["c"]',
+      `      "items": [${JSON.stringify(itemC)}]`,
       "    }",
       "  }",
       "=======",
       '  "checks": {',
       '    "eslint": {',
       '      "type": "items",',
-      '      "items": ["d"]',
+      `      "items": [${JSON.stringify(itemD)}]`,
       "    }",
       "  }",
       ">>>>>>> feature",
@@ -579,24 +974,61 @@ describe("resolveBaselineConflict", () => {
 
     const result = resolveBaselineConflict(conflictContent);
 
-    expect(result.checks.eslint?.items).toStrictEqual(["a", "b", "c", "d"]);
+    expect(result.checks.eslint?.items).toHaveLength(4);
+
+    const ids = result.checks.eslint?.items?.map((i) => i.id).toSorted();
+
+    expect(ids).toStrictEqual(["a-id", "b-id", "c-id", "d-id"]);
     expect(result.version).toBe(BASELINE_VERSION);
   });
 
   it("should merge conflict blocks that are check entries inside checks", () => {
+    const eslintItemA = {
+      code: "no-unused-vars",
+      column: 1,
+      file: "src/a.ts",
+      id: "a-id",
+      line: 10,
+      message: "a",
+    };
+    const eslintItemB = {
+      code: "no-undef",
+      column: 1,
+      file: "src/b.ts",
+      id: "b-id",
+      line: 20,
+      message: "b",
+    };
+    const tsItemX = {
+      code: "TS2304",
+      column: 1,
+      file: "src/x.ts",
+      id: "x-id",
+      line: 30,
+      message: "x",
+    };
+    const tsItemY = {
+      code: "TS2345",
+      column: 1,
+      file: "src/y.ts",
+      id: "y-id",
+      line: 40,
+      message: "y",
+    };
+
     const conflictContent = [
       "{",
-      '  "version": 1,',
+      `  "version": ${BASELINE_VERSION},`,
       '  "checks": {',
       "<<<<<<< HEAD",
-      '    "eslint": { "type": "items", "items": ["a"] },',
+      `    "eslint": { "type": "items", "items": [${JSON.stringify(eslintItemA)}] },`,
       "=======",
-      '    "eslint": { "type": "items", "items": ["b"] },',
+      `    "eslint": { "type": "items", "items": [${JSON.stringify(eslintItemB)}] },`,
       ">>>>>>> feature",
       "<<<<<<< HEAD",
-      '    "typescript": { "type": "items", "items": ["x"] }',
+      `    "typescript": { "type": "items", "items": [${JSON.stringify(tsItemX)}] }`,
       "=======",
-      '    "typescript": { "type": "items", "items": ["y"] }',
+      `    "typescript": { "type": "items", "items": [${JSON.stringify(tsItemY)}] }`,
       ">>>>>>> feature",
       "  }",
       "}",
@@ -604,8 +1036,17 @@ describe("resolveBaselineConflict", () => {
 
     const result = resolveBaselineConflict(conflictContent);
 
-    expect(result.checks.eslint?.items).toStrictEqual(["a", "b"]);
-    expect(result.checks.typescript?.items).toStrictEqual(["x", "y"]);
+    expect(result.checks.eslint?.items).toHaveLength(2);
+
+    const eslintIds = result.checks.eslint?.items?.map((i) => i.id).toSorted();
+
+    expect(eslintIds).toStrictEqual(["a-id", "b-id"]);
+
+    expect(result.checks.typescript?.items).toHaveLength(2);
+
+    const tsIds = result.checks.typescript?.items?.map((i) => i.id).toSorted();
+
+    expect(tsIds).toStrictEqual(["x-id", "y-id"]);
   });
 
   it("should throw error for fragments with no close braces", () => {
@@ -618,7 +1059,7 @@ describe("resolveBaselineConflict", () => {
     ].join("\n");
 
     expect(() => resolveBaselineConflict(conflictContent)).toThrowError(
-      "Failed to parse baseline during conflict resolution: Expected ',' or ']' after array element in JSON at position 60 (line 4 column 3)",
+      /Failed to parse baseline during conflict resolution/,
     );
   });
 });

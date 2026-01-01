@@ -120,6 +120,7 @@ export class MejoraRunner {
 
         if (
           comparison.hasImprovement ||
+          comparison.hasPositionChanges ||
           options.force ||
           comparison.isInitial
         ) {

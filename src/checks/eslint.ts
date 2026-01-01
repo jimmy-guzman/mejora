@@ -1,24 +1,10 @@
 import { relative } from "pathe";
 
-import type { ESLintCheckConfig } from "@/types";
+import type { DiagnosticItem, ESLintCheckConfig } from "@/types";
 
+import { assignIds, sortByLocation } from "@/checks/utils";
 import { createCacheKey, ensureCacheDir } from "@/utils/cache";
-
-type Item = `${string}:${number}:${number} - ${string}`;
-
-const createItem = ({
-  column,
-  cwd,
-  filePath,
-  line,
-  ruleId,
-}: {
-  column: number;
-  cwd: string;
-  filePath: string;
-  line: number;
-  ruleId: string;
-}) => `${relative(cwd, filePath)}:${line}:${column} - ${ruleId}` as const;
+import { hash } from "@/utils/hash";
 
 // TODO: what about version
 export async function validateEslintDeps() {
@@ -31,8 +17,8 @@ export async function validateEslintDeps() {
 
 export async function runEslintCheck(config: ESLintCheckConfig) {
   const { ESLint } = await import("eslint");
-  const cwd = process.cwd();
 
+  const cwd = process.cwd();
   const cacheDir = await ensureCacheDir(cwd, "eslint");
   const cacheKey = createCacheKey(config);
 
@@ -44,20 +30,32 @@ export async function runEslintCheck(config: ESLintCheckConfig) {
   });
 
   const results = await eslint.lintFiles(config.files);
-  const items: Item[] = [];
+
+  const rawItems: (Omit<DiagnosticItem, "id"> & { signature: string })[] = [];
 
   for (const { filePath, messages } of results) {
-    for (const { column, line, ruleId } of messages) {
-      if (ruleId) {
-        const item = createItem({ column, cwd, filePath, line, ruleId });
+    const file = relative(cwd, filePath);
 
-        items.push(item);
-      }
+    for (const { column, line, message, ruleId } of messages) {
+      if (!ruleId) continue;
+
+      const signature = hash(`${file} - ${ruleId}: ${message}`);
+
+      rawItems.push({
+        code: ruleId,
+        column,
+        file,
+        line,
+        message,
+        signature,
+      });
     }
   }
 
+  const items = assignIds(rawItems);
+
   return {
-    items: items.toSorted(),
+    items: items.toSorted(sortByLocation),
     type: "items" as const,
   };
 }

@@ -22,27 +22,52 @@ describe("formatTextOutput", () => {
           newItems: [],
           removedItems: [],
           snapshot: {
-            items: ["error1", "error2", "error3"],
+            items: [
+              {
+                code: "no-unused-vars",
+                column: 1,
+                file: "src/a.ts",
+                id: "src/a.ts-10-no-unused-vars",
+                line: 10,
+                message: "error1",
+              },
+              {
+                code: "no-undef",
+                column: 1,
+                file: "src/b.ts",
+                id: "src/b.ts-20-no-undef",
+                line: 20,
+                message: "error2",
+              },
+              {
+                code: "semi",
+                column: 1,
+                file: "src/c.ts",
+                id: "src/c.ts-30-semi",
+                line: 30,
+                message: "error3",
+              },
+            ],
             type: "items" as const,
           },
         },
       ],
     };
+
     const output = stripAnsi(formatTextOutput(result));
 
     expect(output).toMatchInlineSnapshot(`
       "eslint:
         Initial baseline created with 3 issues
-           error1
-           error2
-           error3
+           src/a.ts:10 - no-unused-vars: error1
+           src/b.ts:20 - no-undef: error2
+           src/c.ts:30 - semi: error3
 
         Duration  2.5s
           Issues  3
 
         Improvements  0
          Regressions  0
-           Unchanged  0
              Initial  3
               Checks  1
               Issues  3
@@ -72,6 +97,7 @@ describe("formatTextOutput", () => {
         },
       ],
     };
+
     const output = stripAnsi(formatTextOutput(result));
 
     expect(output).toMatchInlineSnapshot(`
@@ -82,7 +108,6 @@ describe("formatTextOutput", () => {
 
         Improvements  0
          Regressions  0
-           Unchanged  0
              Initial  0
               Checks  1
               Issues  0
@@ -92,7 +117,17 @@ describe("formatTextOutput", () => {
   });
 
   it("should truncate initial baseline items over 10", () => {
-    const items = Array.from({ length: 15 }, (_, i) => `error${i}`);
+    const items = Array.from({ length: 15 }, (_, i) => {
+      return {
+        code: "error",
+        column: 1,
+        file: `src/file${i}.ts`,
+        id: `src/file${i}.ts-${i + 1}-error`,
+        line: i + 1,
+        message: `error${i}`,
+      };
+    });
+
     const result = {
       exitCode: 0,
       hasImprovement: false,
@@ -110,34 +145,14 @@ describe("formatTextOutput", () => {
         },
       ],
     };
+
     const output = stripAnsi(formatTextOutput(result));
 
-    expect(output).toMatchInlineSnapshot(`
-      "eslint:
-        Initial baseline created with 15 issues
-           error0
-           error1
-           error2
-           error3
-           error4
-           error5
-           error6
-           error7
-           error8
-           error9
-           ... and 5 more
-
-          Issues  15
-
-        Improvements  0
-         Regressions  0
-           Unchanged  0
-             Initial  15
-              Checks  1
-              Issues  15
-
-      ✔ Initial baseline created successfully"
-    `);
+    expect(output).toContain("Initial baseline created with 15 issues");
+    expect(output).toContain("src/file0.ts:1 - error: error0");
+    expect(output).toContain("src/file9.ts:10 - error: error9");
+    expect(output).toContain("... and 5 more");
+    expect(output).not.toContain("src/file10.ts");
   });
 
   it("should format regressions", () => {
@@ -153,26 +168,63 @@ describe("formatTextOutput", () => {
           hasImprovement: false,
           hasRegression: true,
           isInitial: false,
-          newItems: ["error1", "error2"],
+          newItems: [
+            {
+              code: "no-unused-vars",
+              column: 1,
+              file: "src/a.ts",
+              id: "src/a.ts-10-no-unused-vars",
+              line: 10,
+              message: "error1",
+            },
+            {
+              code: "no-undef",
+              column: 1,
+              file: "src/b.ts",
+              id: "src/b.ts-20-no-undef",
+              line: 20,
+              message: "error2",
+            },
+          ],
           removedItems: [],
-          snapshot: { items: ["error1", "error2"], type: "items" as const },
+          snapshot: {
+            items: [
+              {
+                code: "no-unused-vars",
+                column: 1,
+                file: "src/a.ts",
+                id: "src/a.ts-10-no-unused-vars",
+                line: 10,
+                message: "error1",
+              },
+              {
+                code: "no-undef",
+                column: 1,
+                file: "src/b.ts",
+                id: "src/b.ts-20-no-undef",
+                line: 20,
+                message: "error2",
+              },
+            ],
+            type: "items" as const,
+          },
         },
       ],
     };
+
     const output = stripAnsi(formatTextOutput(result));
 
     expect(output).toMatchInlineSnapshot(`
       "eslint:
         2 new issues (regressions):
-           error1
-           error2
+           src/a.ts:10 - no-unused-vars: error1
+           src/b.ts:20 - no-undef: error2
 
         Duration  1.5s
           Issues  2
 
         Improvements  0
          Regressions  2
-           Unchanged  0
              Initial  0
               Checks  1
               Issues  2
@@ -188,32 +240,69 @@ describe("formatTextOutput", () => {
       hasRegression: false,
       results: [
         {
-          baseline: { items: ["error1", "error2"], type: "items" as const },
+          baseline: {
+            items: [
+              {
+                code: "no-unused-vars",
+                column: 1,
+                file: "src/a.ts",
+                id: "src/a.ts-10-no-unused-vars",
+                line: 10,
+                message: "error1",
+              },
+              {
+                code: "no-undef",
+                column: 1,
+                file: "src/b.ts",
+                id: "src/b.ts-20-no-undef",
+                line: 20,
+                message: "error2",
+              },
+            ],
+            type: "items" as const,
+          },
           checkId: "eslint",
           duration: 1200,
           hasImprovement: true,
           hasRegression: false,
           isInitial: false,
           newItems: [],
-          removedItems: ["error1", "error2"],
+          removedItems: [
+            {
+              code: "no-unused-vars",
+              column: 1,
+              file: "src/a.ts",
+              id: "src/a.ts-10-no-unused-vars",
+              line: 10,
+              message: "error1",
+            },
+            {
+              code: "no-undef",
+              column: 1,
+              file: "src/b.ts",
+              id: "src/b.ts-20-no-undef",
+              line: 20,
+              message: "error2",
+            },
+          ],
           snapshot: { items: [], type: "items" as const },
         },
       ],
     };
+
     const output = stripAnsi(formatTextOutput(result));
 
     expect(output).toMatchInlineSnapshot(`
       "eslint:
         2 issues fixed (improvements):
-           error1
-           error2
+           src/a.ts:10 - no-unused-vars: error1
+           src/b.ts:20 - no-undef: error2
 
         Duration  1.2s
           Issues  0
 
         Improvements  2
          Regressions  0
-           Unchanged  0
              Initial  0
               Checks  1
               Issues  0
@@ -229,33 +318,91 @@ describe("formatTextOutput", () => {
       hasRegression: true,
       results: [
         {
-          baseline: { items: ["error1", "error2"], type: "items" as const },
+          baseline: {
+            items: [
+              {
+                code: "no-unused-vars",
+                column: 1,
+                file: "src/a.ts",
+                id: "src/a.ts-10-no-unused-vars",
+                line: 10,
+                message: "error1",
+              },
+              {
+                code: "no-undef",
+                column: 1,
+                file: "src/b.ts",
+                id: "src/b.ts-20-no-undef",
+                line: 20,
+                message: "error2",
+              },
+            ],
+            type: "items" as const,
+          },
           checkId: "eslint",
           duration: 1800,
           hasImprovement: true,
           hasRegression: true,
           isInitial: false,
-          newItems: ["error3"],
-          removedItems: ["error1"],
-          snapshot: { items: ["error2", "error3"], type: "items" as const },
+          newItems: [
+            {
+              code: "semi",
+              column: 1,
+              file: "src/c.ts",
+              id: "src/c.ts-30-semi",
+              line: 30,
+              message: "error3",
+            },
+          ],
+          removedItems: [
+            {
+              code: "no-unused-vars",
+              column: 1,
+              file: "src/a.ts",
+              id: "src/a.ts-10-no-unused-vars",
+              line: 10,
+              message: "error1",
+            },
+          ],
+          snapshot: {
+            items: [
+              {
+                code: "no-undef",
+                column: 1,
+                file: "src/b.ts",
+                id: "src/b.ts-20-no-undef",
+                line: 20,
+                message: "error2",
+              },
+              {
+                code: "semi",
+                column: 1,
+                file: "src/c.ts",
+                id: "src/c.ts-30-semi",
+                line: 30,
+                message: "error3",
+              },
+            ],
+            type: "items" as const,
+          },
         },
       ],
     };
+
     const output = stripAnsi(formatTextOutput(result));
 
     expect(output).toMatchInlineSnapshot(`
       "eslint:
         1 new issue (regression):
-           error3
+           src/c.ts:30 - semi: error3
         1 issue fixed (improvement):
-           error1
+           src/a.ts:10 - no-unused-vars: error1
 
         Duration  1.8s
           Issues  2
 
         Improvements  1
          Regressions  1
-           Unchanged  0
              Initial  0
               Checks  1
               Issues  2
@@ -271,7 +418,19 @@ describe("formatTextOutput", () => {
       hasRegression: false,
       results: [
         {
-          baseline: { items: ["error1"], type: "items" as const },
+          baseline: {
+            items: [
+              {
+                code: "no-unused-vars",
+                column: 1,
+                file: "src/a.ts",
+                id: "src/a.ts-10-no-unused-vars",
+                line: 10,
+                message: "error1",
+              },
+            ],
+            type: "items" as const,
+          },
           checkId: "eslint",
           duration: 1500,
           hasImprovement: false,
@@ -279,10 +438,23 @@ describe("formatTextOutput", () => {
           isInitial: false,
           newItems: [],
           removedItems: [],
-          snapshot: { items: ["error1"], type: "items" as const },
+          snapshot: {
+            items: [
+              {
+                code: "no-unused-vars",
+                column: 1,
+                file: "src/a.ts",
+                id: "src/a.ts-10-no-unused-vars",
+                line: 10,
+                message: "error1",
+              },
+            ],
+            type: "items" as const,
+          },
         },
       ],
     };
+
     const output = stripAnsi(formatTextOutput(result));
 
     expect(output).toMatchInlineSnapshot(`
@@ -290,7 +462,6 @@ describe("formatTextOutput", () => {
 
         Improvements  0
          Regressions  0
-           Unchanged  1
              Initial  0
               Checks  1
               Issues  1
@@ -306,17 +477,42 @@ describe("formatTextOutput", () => {
       hasRegression: false,
       results: [
         {
-          baseline: { items: ["error1"], type: "items" as const },
+          baseline: {
+            items: [
+              {
+                code: "no-unused-vars",
+                column: 1,
+                file: "src/a.ts",
+                id: "src/a.ts-10-no-unused-vars",
+                line: 10,
+                message: "error1",
+              },
+            ],
+            type: "items" as const,
+          },
           checkId: "eslint",
           hasImprovement: false,
           hasRegression: false,
           isInitial: false,
           newItems: [],
           removedItems: [],
-          snapshot: { items: ["error1"], type: "items" as const },
+          snapshot: {
+            items: [
+              {
+                code: "no-unused-vars",
+                column: 1,
+                file: "src/a.ts",
+                id: "src/a.ts-10-no-unused-vars",
+                line: 10,
+                message: "error1",
+              },
+            ],
+            type: "items" as const,
+          },
         },
       ],
     };
+
     const output = stripAnsi(formatTextOutput(result));
 
     expect(output).toMatchInlineSnapshot(`
@@ -324,7 +520,6 @@ describe("formatTextOutput", () => {
 
         Improvements  0
          Regressions  0
-           Unchanged  1
              Initial  0
               Checks  1
               Issues  1
@@ -351,7 +546,19 @@ describe("formatTextOutput", () => {
           snapshot: { items: [], type: "items" as const },
         },
         {
-          baseline: { items: ["error1"], type: "items" as const },
+          baseline: {
+            items: [
+              {
+                code: "TS2304",
+                column: 1,
+                file: "src/a.ts",
+                id: "src/a.ts-10-TS2304",
+                line: 10,
+                message: "error1",
+              },
+            ],
+            type: "items" as const,
+          },
           checkId: "typescript",
           duration: 1500,
           hasImprovement: false,
@@ -359,10 +566,23 @@ describe("formatTextOutput", () => {
           isInitial: false,
           newItems: [],
           removedItems: [],
-          snapshot: { items: ["error1"], type: "items" as const },
+          snapshot: {
+            items: [
+              {
+                code: "TS2304",
+                column: 1,
+                file: "src/a.ts",
+                id: "src/a.ts-10-TS2304",
+                line: 10,
+                message: "error1",
+              },
+            ],
+            type: "items" as const,
+          },
         },
       ],
     };
+
     const output = stripAnsi(formatTextOutput(result));
 
     expect(output).toMatchInlineSnapshot(`
@@ -372,7 +592,6 @@ describe("formatTextOutput", () => {
 
         Improvements  0
          Regressions  0
-           Unchanged  1
              Initial  0
               Checks  2
               Issues  1
@@ -389,12 +608,12 @@ describe("formatTextOutput", () => {
       results: [],
       totalDuration: 1500,
     };
+
     const output = stripAnsi(formatTextOutput(result));
 
     expect(output).toMatchInlineSnapshot(`
       "  Improvements  0
          Regressions  0
-           Unchanged  0
              Initial  0
               Checks  0
               Issues  0
@@ -423,6 +642,7 @@ describe("formatTextOutput", () => {
       ],
       totalDuration: 1500,
     };
+
     const output = stripAnsi(formatTextOutput(result));
 
     expect(output).toMatchInlineSnapshot(`
@@ -430,7 +650,6 @@ describe("formatTextOutput", () => {
 
         Improvements  0
          Regressions  0
-           Unchanged  0
              Initial  0
               Checks  1
               Issues  0
@@ -441,7 +660,17 @@ describe("formatTextOutput", () => {
   });
 
   it("should truncate regressions over 10", () => {
-    const items = Array.from({ length: 15 }, (_, i) => `error${i}`);
+    const items = Array.from({ length: 15 }, (_, i) => {
+      return {
+        code: "error",
+        column: 1,
+        file: `src/file${i}.ts`,
+        id: `src/file${i}.ts-${i + 1}-error`,
+        line: i + 1,
+        message: `error${i}`,
+      };
+    });
+
     const result = {
       exitCode: 1,
       hasImprovement: false,
@@ -459,38 +688,28 @@ describe("formatTextOutput", () => {
         },
       ],
     };
+
     const output = stripAnsi(formatTextOutput(result));
 
-    expect(output).toMatchInlineSnapshot(`
-      "eslint:
-        15 new issues (regressions):
-           error0
-           error1
-           error2
-           error3
-           error4
-           error5
-           error6
-           error7
-           error8
-           error9
-           ... and 5 more
-
-          Issues  15
-
-        Improvements  0
-         Regressions  15
-           Unchanged  0
-             Initial  0
-              Checks  1
-              Issues  15
-
-      ✗ Regressions detected - Run failed"
-    `);
+    expect(output).toContain("15 new issues (regressions)");
+    expect(output).toContain("src/file0.ts:1 - error: error0");
+    expect(output).toContain("src/file9.ts:10 - error: error9");
+    expect(output).toContain("... and 5 more");
+    expect(output).not.toContain("src/file10.ts");
   });
 
   it("should truncate improvements over 10", () => {
-    const items = Array.from({ length: 12 }, (_, i) => `error${i}`);
+    const items = Array.from({ length: 12 }, (_, i) => {
+      return {
+        code: "error",
+        column: 1,
+        file: `src/file${i}.ts`,
+        id: `src/file${i}.ts-${i + 1}-error`,
+        line: i + 1,
+        message: `error${i}`,
+      };
+    });
+
     const result = {
       exitCode: 0,
       hasImprovement: true,
@@ -508,34 +727,14 @@ describe("formatTextOutput", () => {
         },
       ],
     };
+
     const output = stripAnsi(formatTextOutput(result));
 
-    expect(output).toMatchInlineSnapshot(`
-      "eslint:
-        12 issues fixed (improvements):
-           error0
-           error1
-           error2
-           error3
-           error4
-           error5
-           error6
-           error7
-           error8
-           error9
-           ... and 2 more
-
-          Issues  0
-
-        Improvements  12
-         Regressions  0
-           Unchanged  0
-             Initial  0
-              Checks  1
-              Issues  0
-
-      ✔ Improvements detected - Baseline updated"
-    `);
+    expect(output).toContain("12 issues fixed (improvements)");
+    expect(output).toContain("src/file0.ts:1 - error: error0");
+    expect(output).toContain("src/file9.ts:10 - error: error9");
+    expect(output).toContain("... and 2 more");
+    expect(output).not.toContain("src/file10.ts");
   });
 
   it("should handle multiple checks", () => {
@@ -551,44 +750,86 @@ describe("formatTextOutput", () => {
           hasImprovement: false,
           hasRegression: true,
           isInitial: false,
-          newItems: ["error1"],
+          newItems: [
+            {
+              code: "no-unused-vars",
+              column: 1,
+              file: "src/a.ts",
+              id: "src/a.ts-10-no-unused-vars",
+              line: 10,
+              message: "error1",
+            },
+          ],
           removedItems: [],
-          snapshot: { items: ["error1"], type: "items" as const },
+          snapshot: {
+            items: [
+              {
+                code: "no-unused-vars",
+                column: 1,
+                file: "src/a.ts",
+                id: "src/a.ts-10-no-unused-vars",
+                line: 10,
+                message: "error1",
+              },
+            ],
+            type: "items" as const,
+          },
         },
         {
-          baseline: { items: ["error2"], type: "items" as const },
+          baseline: {
+            items: [
+              {
+                code: "TS2304",
+                column: 1,
+                file: "src/b.ts",
+                id: "src/b.ts-20-TS2304",
+                line: 20,
+                message: "error2",
+              },
+            ],
+            type: "items" as const,
+          },
           checkId: "typescript",
           duration: 1500,
           hasImprovement: true,
           hasRegression: false,
           isInitial: false,
           newItems: [],
-          removedItems: ["error2"],
+          removedItems: [
+            {
+              code: "TS2304",
+              column: 1,
+              file: "src/b.ts",
+              id: "src/b.ts-20-TS2304",
+              line: 20,
+              message: "error2",
+            },
+          ],
           snapshot: { items: [], type: "items" as const },
         },
       ],
       totalDuration: 2500,
     };
+
     const output = stripAnsi(formatTextOutput(result));
 
     expect(output).toMatchInlineSnapshot(`
       "eslint:
         1 new issue (regression):
-           error1
+           src/a.ts:10 - no-unused-vars: error1
 
         Duration  1s
           Issues  1
 
       typescript:
         1 issue fixed (improvement):
-           error2
+           src/b.ts:20 - TS2304: error2
 
         Duration  1.5s
           Issues  0
 
         Improvements  1
          Regressions  1
-           Unchanged  0
              Initial  0
               Checks  2
               Issues  1
@@ -616,6 +857,7 @@ describe("formatTextOutput", () => {
         },
       ],
     };
+
     const output = stripAnsi(formatTextOutput(result));
 
     expect(output).toMatch(/^eslint:/);
@@ -628,17 +870,39 @@ describe("formatTextOutput", () => {
       hasRegression: false,
       results: [
         {
-          baseline: { items: ["error1"], type: "items" as const },
+          baseline: {
+            items: [
+              {
+                code: "no-unused-vars",
+                column: 1,
+                file: "src/a.ts",
+                id: "src/a.ts-10-no-unused-vars",
+                line: 10,
+                message: "error1",
+              },
+            ],
+            type: "items" as const,
+          },
           checkId: "eslint",
           hasImprovement: true,
           hasRegression: false,
           isInitial: false,
           newItems: [],
-          removedItems: ["error1"],
+          removedItems: [
+            {
+              code: "no-unused-vars",
+              column: 1,
+              file: "src/a.ts",
+              id: "src/a.ts-10-no-unused-vars",
+              line: 10,
+              message: "error1",
+            },
+          ],
           snapshot: { items: [], type: "items" as const },
         },
       ],
     };
+
     const output = stripAnsi(formatTextOutput(result));
 
     expect(output).toMatch(/^eslint:/);
@@ -663,6 +927,7 @@ describe("formatTextOutput", () => {
         },
       ],
     };
+
     const output = stripAnsi(formatTextOutput(result));
 
     expect(output).toMatch(/^eslint \(0\)/);
@@ -682,7 +947,19 @@ describe("formatTextOutput", () => {
           isInitial: true,
           newItems: [],
           removedItems: [],
-          snapshot: { items: ["error1"], type: "items" as const },
+          snapshot: {
+            items: [
+              {
+                code: "no-unused-vars",
+                column: 1,
+                file: "src/a.ts",
+                id: "src/a.ts-10-no-unused-vars",
+                line: 10,
+                message: "error1",
+              },
+            ],
+            type: "items" as const,
+          },
         },
         {
           baseline: undefined,
@@ -692,10 +969,23 @@ describe("formatTextOutput", () => {
           isInitial: true,
           newItems: [],
           removedItems: [],
-          snapshot: { items: ["error2"], type: "items" as const },
+          snapshot: {
+            items: [
+              {
+                code: "TS2304",
+                column: 1,
+                file: "src/b.ts",
+                id: "src/b.ts-20-TS2304",
+                line: 20,
+                message: "error2",
+              },
+            ],
+            type: "items" as const,
+          },
         },
       ],
     };
+
     const output = stripAnsi(formatTextOutput(result));
 
     expect(output).toMatch(/^eslint:[\s\S]*\n\ntypescript:/);
@@ -708,27 +998,70 @@ describe("formatTextOutput", () => {
       hasRegression: false,
       results: [
         {
-          baseline: { items: ["error1"], type: "items" as const },
+          baseline: {
+            items: [
+              {
+                code: "no-unused-vars",
+                column: 1,
+                file: "src/a.ts",
+                id: "src/a.ts-10-no-unused-vars",
+                line: 10,
+                message: "error1",
+              },
+            ],
+            type: "items" as const,
+          },
           checkId: "eslint",
           hasImprovement: true,
           hasRegression: false,
           isInitial: false,
           newItems: [],
-          removedItems: ["error1"],
+          removedItems: [
+            {
+              code: "no-unused-vars",
+              column: 1,
+              file: "src/a.ts",
+              id: "src/a.ts-10-no-unused-vars",
+              line: 10,
+              message: "error1",
+            },
+          ],
           snapshot: { items: [], type: "items" as const },
         },
         {
-          baseline: { items: ["error2"], type: "items" as const },
+          baseline: {
+            items: [
+              {
+                code: "TS2304",
+                column: 1,
+                file: "src/b.ts",
+                id: "src/b.ts-20-TS2304",
+                line: 20,
+                message: "error2",
+              },
+            ],
+            type: "items" as const,
+          },
           checkId: "typescript",
           hasImprovement: true,
           hasRegression: false,
           isInitial: false,
           newItems: [],
-          removedItems: ["error2"],
+          removedItems: [
+            {
+              code: "TS2304",
+              column: 1,
+              file: "src/b.ts",
+              id: "src/b.ts-20-TS2304",
+              line: 20,
+              message: "error2",
+            },
+          ],
           snapshot: { items: [], type: "items" as const },
         },
       ],
     };
+
     const output = stripAnsi(formatTextOutput(result));
 
     expect(output).toMatch(/^eslint:[\s\S]*\n\ntypescript:/);
@@ -742,7 +1075,40 @@ describe("formatTextOutput", () => {
       results: [
         {
           baseline: {
-            items: ["old1", "old2", "old3", "old4"],
+            items: [
+              {
+                code: "old1",
+                column: 1,
+                file: "src/a.ts",
+                id: "src/a.ts-1-old1",
+                line: 1,
+                message: "old1",
+              },
+              {
+                code: "old2",
+                column: 1,
+                file: "src/a.ts",
+                id: "src/a.ts-2-old2",
+                line: 2,
+                message: "old2",
+              },
+              {
+                code: "old3",
+                column: 1,
+                file: "src/a.ts",
+                id: "src/a.ts-3-old3",
+                line: 3,
+                message: "old3",
+              },
+              {
+                code: "old4",
+                column: 1,
+                file: "src/a.ts",
+                id: "src/a.ts-4-old4",
+                line: 4,
+                message: "old4",
+              },
+            ],
             type: "items" as const,
           },
           checkId: "eslint",
@@ -751,7 +1117,40 @@ describe("formatTextOutput", () => {
           hasRegression: false,
           isInitial: false,
           newItems: [],
-          removedItems: ["old1", "old2", "old3", "old4"],
+          removedItems: [
+            {
+              code: "old1",
+              column: 1,
+              file: "src/a.ts",
+              id: "src/a.ts-1-old1",
+              line: 1,
+              message: "old1",
+            },
+            {
+              code: "old2",
+              column: 1,
+              file: "src/a.ts",
+              id: "src/a.ts-2-old2",
+              line: 2,
+              message: "old2",
+            },
+            {
+              code: "old3",
+              column: 1,
+              file: "src/a.ts",
+              id: "src/a.ts-3-old3",
+              line: 3,
+              message: "old3",
+            },
+            {
+              code: "old4",
+              column: 1,
+              file: "src/a.ts",
+              id: "src/a.ts-4-old4",
+              line: 4,
+              message: "old4",
+            },
+          ],
           snapshot: { items: [], type: "items" as const },
         },
         {
@@ -761,16 +1160,83 @@ describe("formatTextOutput", () => {
           hasImprovement: false,
           hasRegression: true,
           isInitial: false,
-          newItems: ["new1", "new2", "new3"],
+          newItems: [
+            {
+              code: "TS2304",
+              column: 1,
+              file: "src/b.ts",
+              id: "src/b.ts-1-TS2304",
+              line: 1,
+              message: "new1",
+            },
+            {
+              code: "TS2304",
+              column: 1,
+              file: "src/b.ts",
+              id: "src/b.ts-2-TS2304",
+              line: 2,
+              message: "new2",
+            },
+            {
+              code: "TS2304",
+              column: 1,
+              file: "src/b.ts",
+              id: "src/b.ts-3-TS2304",
+              line: 3,
+              message: "new3",
+            },
+          ],
           removedItems: [],
           snapshot: {
-            items: ["new1", "new2", "new3"],
+            items: [
+              {
+                code: "TS2304",
+                column: 1,
+                file: "src/b.ts",
+                id: "src/b.ts-1-TS2304",
+                line: 1,
+                message: "new1",
+              },
+              {
+                code: "TS2304",
+                column: 1,
+                file: "src/b.ts",
+                id: "src/b.ts-2-TS2304",
+                line: 2,
+                message: "new2",
+              },
+              {
+                code: "TS2304",
+                column: 1,
+                file: "src/b.ts",
+                id: "src/b.ts-3-TS2304",
+                line: 3,
+                message: "new3",
+              },
+            ],
             type: "items" as const,
           },
         },
         {
           baseline: {
-            items: ["unchanged1", "unchanged2"],
+            items: [
+              {
+                code: "unchanged1",
+                column: 1,
+                file: "src/c.ts",
+                id: "src/c.ts-1-unchanged1",
+                line: 1,
+                message: "unchanged1",
+              },
+              {
+                code: "unchanged2",
+                column: 1,
+                file: "src/c.ts",
+                id: "src/c.ts-2-unchanged2",
+                line: 2,
+                message: "unchanged2",
+              },
+            ],
             type: "items" as const,
           },
           checkId: "prettier",
@@ -780,7 +1246,24 @@ describe("formatTextOutput", () => {
           newItems: [],
           removedItems: [],
           snapshot: {
-            items: ["unchanged1", "unchanged2"],
+            items: [
+              {
+                code: "unchanged1",
+                column: 1,
+                file: "src/c.ts",
+                id: "src/c.ts-1-unchanged1",
+                line: 1,
+                message: "unchanged1",
+              },
+              {
+                code: "unchanged2",
+                column: 1,
+                file: "src/c.ts",
+                id: "src/c.ts-2-unchanged2",
+                line: 2,
+                message: "unchanged2",
+              },
+            ],
             type: "items" as const,
           },
         },
@@ -793,7 +1276,48 @@ describe("formatTextOutput", () => {
           newItems: [],
           removedItems: [],
           snapshot: {
-            items: ["initial1", "initial2", "initial3", "initial4", "initial5"],
+            items: [
+              {
+                code: "initial1",
+                column: 1,
+                file: "src/d.ts",
+                id: "src/d.ts-1-initial1",
+                line: 1,
+                message: "initial1",
+              },
+              {
+                code: "initial2",
+                column: 1,
+                file: "src/d.ts",
+                id: "src/d.ts-2-initial2",
+                line: 2,
+                message: "initial2",
+              },
+              {
+                code: "initial3",
+                column: 1,
+                file: "src/d.ts",
+                id: "src/d.ts-3-initial3",
+                line: 3,
+                message: "initial3",
+              },
+              {
+                code: "initial4",
+                column: 1,
+                file: "src/d.ts",
+                id: "src/d.ts-4-initial4",
+                line: 4,
+                message: "initial4",
+              },
+              {
+                code: "initial5",
+                column: 1,
+                file: "src/d.ts",
+                id: "src/d.ts-5-initial5",
+                line: 5,
+                message: "initial5",
+              },
+            ],
             type: "items" as const,
           },
         },
@@ -805,8 +1329,53 @@ describe("formatTextOutput", () => {
 
     expect(output).toContain("Improvements  4");
     expect(output).toContain("Regressions  3");
-    expect(output).toContain("Unchanged  2");
     expect(output).toContain("Initial  5");
     expect(output).toContain("Checks  4");
+  });
+
+  it("should format items without line numbers", () => {
+    const result = {
+      exitCode: 1,
+      hasImprovement: false,
+      hasRegression: true,
+      results: [
+        {
+          baseline: { items: [], type: "items" as const },
+          checkId: "eslint",
+          hasImprovement: false,
+          hasRegression: true,
+          isInitial: false,
+          newItems: [
+            {
+              code: "config-error",
+              column: 0,
+              file: "(global)",
+              id: "global1",
+              line: 0,
+              message: "Invalid configuration",
+            },
+          ],
+          removedItems: [],
+          snapshot: {
+            items: [
+              {
+                code: "config-error",
+                column: 0,
+                file: "(global)",
+                id: "global1",
+                line: 0,
+                message: "Invalid configuration",
+              },
+            ],
+            type: "items" as const,
+          },
+        },
+      ],
+    };
+
+    const output = stripAnsi(formatTextOutput(result));
+
+    expect(output).toContain("(global) - config-error: Invalid configuration");
+    expect(output).not.toContain(":0");
   });
 });

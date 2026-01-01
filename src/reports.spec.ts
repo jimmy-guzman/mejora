@@ -10,7 +10,7 @@ describe("generateMarkdownReport", () => {
       checks: {
         eslint: { items: [], type: "items" as const },
       },
-      version: 1,
+      version: 2,
     };
 
     const result = generateMarkdownReport(baseline, "/project/.mejora");
@@ -29,11 +29,20 @@ describe("generateMarkdownReport", () => {
     const baseline = {
       checks: {
         eslint: {
-          items: ["/project/src/index.ts:10 - 'foo' is never used"],
+          items: [
+            {
+              code: "no-unused-vars",
+              column: 1,
+              file: "src/index.ts",
+              id: "abc123",
+              line: 10,
+              message: "'foo' is never used",
+            },
+          ],
           type: "items" as const,
         },
       },
-      version: 1,
+      version: 2,
     };
 
     const result = generateMarkdownReport(baseline, "/project/.mejora");
@@ -45,7 +54,7 @@ describe("generateMarkdownReport", () => {
 
       ### [src/index.ts](../src/index.ts) (1)
 
-      - [Line 10](../src/index.ts#L10) - 'foo' is never used
+      - [Line 10](../src/index.ts#L10) - no-unused-vars: 'foo' is never used
       "
     `);
   });
@@ -54,11 +63,20 @@ describe("generateMarkdownReport", () => {
     const baseline = {
       checks: {
         typescript: {
-          items: ["/project/src/types.ts - Type error"],
+          items: [
+            {
+              code: "2304",
+              column: 0,
+              file: "src/types.ts",
+              id: "def456",
+              line: 0,
+              message: "Type error",
+            },
+          ],
           type: "items" as const,
         },
       },
-      version: 1,
+      version: 2,
     };
 
     const result = generateMarkdownReport(baseline, "/project/.mejora");
@@ -70,7 +88,7 @@ describe("generateMarkdownReport", () => {
 
       ### [src/types.ts](../src/types.ts) (1)
 
-      - [src/types.ts](../src/types.ts) - Type error
+      - [src/types.ts](../src/types.ts) - 2304: Type error
       "
     `);
   });
@@ -79,15 +97,33 @@ describe("generateMarkdownReport", () => {
     const baseline = {
       checks: {
         eslint: {
-          items: ["/project/src/a.ts:1 - error a"],
+          items: [
+            {
+              code: "error-a",
+              column: 1,
+              file: "src/a.ts",
+              id: "abc1",
+              line: 1,
+              message: "error a",
+            },
+          ],
           type: "items" as const,
         },
         typescript: {
-          items: ["/project/src/b.ts:2 - error b"],
+          items: [
+            {
+              code: "2304",
+              column: 1,
+              file: "src/b.ts",
+              id: "abc2",
+              line: 2,
+              message: "error b",
+            },
+          ],
           type: "items" as const,
         },
       },
-      version: 1,
+      version: 2,
     };
 
     const result = generateMarkdownReport(baseline, "/project/.mejora");
@@ -99,13 +135,13 @@ describe("generateMarkdownReport", () => {
 
       ### [src/a.ts](../src/a.ts) (1)
 
-      - [Line 1](../src/a.ts#L1) - error a
+      - [Line 1](../src/a.ts#L1) - error-a: error a
 
       ## typescript (1 issue)
 
       ### [src/b.ts](../src/b.ts) (1)
 
-      - [Line 2](../src/b.ts#L2) - error b
+      - [Line 2](../src/b.ts#L2) - 2304: error b
       "
     `);
   });
@@ -115,7 +151,7 @@ describe("generateMarkdownReport", () => {
       checks: {
         eslint: { items: [], type: "items" as const },
       },
-      version: 1,
+      version: 2,
     };
 
     const result = generateMarkdownReport(baseline, "/project/.mejora");
@@ -129,13 +165,27 @@ describe("generateMarkdownReport", () => {
       checks: {
         eslint: {
           items: [
-            "/project/src/valid.ts:10 - valid error",
-            " - invalid item without path",
+            {
+              code: "some-error",
+              column: 1,
+              file: "src/valid.ts",
+              id: "valid1",
+              line: 10,
+              message: "valid error",
+            },
+            {
+              code: "unknown",
+              column: 0,
+              file: "",
+              id: "invalid1",
+              line: 0,
+              message: "invalid item without path",
+            },
           ],
           type: "items" as const,
         },
       },
-      version: 1,
+      version: 2,
     };
 
     const result = generateMarkdownReport(baseline, "/project/.mejora");
@@ -147,35 +197,11 @@ describe("generateMarkdownReport", () => {
 
       ### [src/valid.ts](../src/valid.ts) (1)
 
-      - [Line 10](../src/valid.ts#L10) - valid error
+      - [Line 10](../src/valid.ts#L10) - some-error: valid error
 
       ### Other Issues (1)
 
-      -  - invalid item without path
-      "
-    `);
-  });
-
-  it("should not add description separator when item has no description", () => {
-    const baseline = {
-      checks: {
-        eslint: {
-          items: ["/project/src/index.ts:10"],
-          type: "items" as const,
-        },
-      },
-      version: 1,
-    };
-    const result = generateMarkdownReport(baseline, "/project/.mejora");
-
-    expect(result).toMatchInlineSnapshot(`
-      "# Mejora Baseline
-
-      ## eslint (1 issue)
-
-      ### [src/index.ts](../src/index.ts) (1)
-
-      - [Line 10](../src/index.ts#L10)
+      - unknown: invalid item without path
       "
     `);
   });
@@ -185,14 +211,35 @@ describe("generateMarkdownReport", () => {
       checks: {
         eslint: {
           items: [
-            "/project/src/index.ts:10 - error 1",
-            "/project/src/index.ts:20 - error 2",
-            "/project/src/utils.ts:5 - error 3",
+            {
+              code: "error-1",
+              column: 1,
+              file: "src/index.ts",
+              id: "item1",
+              line: 10,
+              message: "error 1",
+            },
+            {
+              code: "error-2",
+              column: 1,
+              file: "src/index.ts",
+              id: "item2",
+              line: 20,
+              message: "error 2",
+            },
+            {
+              code: "error-3",
+              column: 1,
+              file: "src/utils.ts",
+              id: "item3",
+              line: 5,
+              message: "error 3",
+            },
           ],
           type: "items" as const,
         },
       },
-      version: 1,
+      version: 2,
     };
 
     const result = generateMarkdownReport(baseline, "/project/.mejora");
@@ -204,12 +251,12 @@ describe("generateMarkdownReport", () => {
 
       ### [src/index.ts](../src/index.ts) (2)
 
-      - [Line 10](../src/index.ts#L10) - error 1
-      - [Line 20](../src/index.ts#L20) - error 2
+      - [Line 10](../src/index.ts#L10) - error-1: error 1
+      - [Line 20](../src/index.ts#L20) - error-2: error 2
 
       ### [src/utils.ts](../src/utils.ts) (1)
 
-      - [Line 5](../src/utils.ts#L5) - error 3
+      - [Line 5](../src/utils.ts#L5) - error-3: error 3
       "
     `);
   });
@@ -220,11 +267,20 @@ describe("generateMarkdownReport", () => {
     const baseline = {
       checks: {
         eslint: {
-          items: [String.raw`C:\project\src\index.ts:10 - 'foo' is never used`],
+          items: [
+            {
+              code: "no-unused-vars",
+              column: 1,
+              file: "src/index.ts",
+              id: "win1",
+              line: 10,
+              message: "'foo' is never used",
+            },
+          ],
           type: "items" as const,
         },
       },
-      version: 1,
+      version: 2,
     };
 
     const result = generateMarkdownReport(
@@ -239,7 +295,7 @@ describe("generateMarkdownReport", () => {
 
       ### [src/index.ts](../src/index.ts) (1)
 
-      - [Line 10](../src/index.ts#L10) - 'foo' is never used
+      - [Line 10](../src/index.ts#L10) - no-unused-vars: 'foo' is never used
       "
     `);
   });
@@ -250,11 +306,20 @@ describe("generateMarkdownReport", () => {
     const baseline = {
       checks: {
         typescript: {
-          items: [String.raw`D:\code\app\types.ts - Type error`],
+          items: [
+            {
+              code: "2304",
+              column: 0,
+              file: "types.ts",
+              id: "win2",
+              line: 0,
+              message: "Type error",
+            },
+          ],
           type: "items" as const,
         },
       },
-      version: 1,
+      version: 2,
     };
 
     const result = generateMarkdownReport(
@@ -269,7 +334,7 @@ describe("generateMarkdownReport", () => {
 
       ### [types.ts](../types.ts) (1)
 
-      - [types.ts](../types.ts) - Type error
+      - [types.ts](../types.ts) - 2304: Type error
       "
     `);
   });
@@ -281,14 +346,35 @@ describe("generateMarkdownReport", () => {
       checks: {
         eslint: {
           items: [
-            String.raw`C:\project\src\index.ts:10 - error 1`,
-            String.raw`C:\project\src\index.ts:20 - error 2`,
-            String.raw`C:\project\src\utils.ts:5 - error 3`,
+            {
+              code: "error-1",
+              column: 1,
+              file: "src/index.ts",
+              id: "win3",
+              line: 10,
+              message: "error 1",
+            },
+            {
+              code: "error-2",
+              column: 1,
+              file: "src/index.ts",
+              id: "win4",
+              line: 20,
+              message: "error 2",
+            },
+            {
+              code: "error-3",
+              column: 1,
+              file: "src/utils.ts",
+              id: "win5",
+              line: 5,
+              message: "error 3",
+            },
           ],
           type: "items" as const,
         },
       },
-      version: 1,
+      version: 2,
     };
 
     const result = generateMarkdownReport(
@@ -303,12 +389,12 @@ describe("generateMarkdownReport", () => {
 
       ### [src/index.ts](../src/index.ts) (2)
 
-      - [Line 10](../src/index.ts#L10) - error 1
-      - [Line 20](../src/index.ts#L20) - error 2
+      - [Line 10](../src/index.ts#L10) - error-1: error 1
+      - [Line 20](../src/index.ts#L20) - error-2: error 2
 
       ### [src/utils.ts](../src/utils.ts) (1)
 
-      - [Line 5](../src/utils.ts#L5) - error 3
+      - [Line 5](../src/utils.ts#L5) - error-3: error 3
       "
     `);
   });
@@ -320,13 +406,27 @@ describe("generateMarkdownReport", () => {
       checks: {
         eslint: {
           items: [
-            "/project/src/unix.ts:10 - unix error",
-            String.raw`C:\project\src\windows.ts:20 - windows error`,
+            {
+              code: "unix-error",
+              column: 1,
+              file: "src/unix.ts",
+              id: "unix1",
+              line: 10,
+              message: "unix error",
+            },
+            {
+              code: "windows-error",
+              column: 1,
+              file: "src/windows.ts",
+              id: "win6",
+              line: 20,
+              message: "windows error",
+            },
           ],
           type: "items" as const,
         },
       },
-      version: 1,
+      version: 2,
     };
 
     const result = generateMarkdownReport(baseline, "/project/.mejora");
@@ -342,12 +442,20 @@ describe("generateMarkdownReport", () => {
       checks: {
         typescript: {
           items: [
-            "/project/src/form.tsx:71 - TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'string | FormikErrors<ItemGroupUploadFormikRow>'.",
+            {
+              code: "7053",
+              column: 1,
+              file: "src/form.tsx",
+              id: "html1",
+              line: 71,
+              message:
+                "Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'string | FormikErrors<ItemGroupUploadFormikRow>'.",
+            },
           ],
           type: "items" as const,
         },
       },
-      version: 1,
+      version: 2,
     };
 
     const result = generateMarkdownReport(baseline, "/project/.mejora");
@@ -359,7 +467,7 @@ describe("generateMarkdownReport", () => {
 
       ### [src/form.tsx](../src/form.tsx) (1)
 
-      - [Line 71](../src/form.tsx#L71) - TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'string | FormikErrors&lt;ItemGroupUploadFormikRow&gt;'.
+      - [Line 71](../src/form.tsx#L71) - 7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'string | FormikErrors&lt;ItemGroupUploadFormikRow&gt;'.
       "
     `);
 
@@ -373,12 +481,20 @@ describe("generateMarkdownReport", () => {
       checks: {
         typescript: {
           items: [
-            "/project/src/test.ts:125 - The types returned by '[Symbol.iterator]().next(...)' are incompatible.",
+            {
+              code: "2345",
+              column: 1,
+              file: "src/test.ts",
+              id: "bracket1",
+              line: 125,
+              message:
+                "The types returned by '[Symbol.iterator]().next(...)' are incompatible.",
+            },
           ],
           type: "items" as const,
         },
       },
-      version: 1,
+      version: 2,
     };
 
     const result = generateMarkdownReport(baseline, "/project/.mejora");
@@ -390,7 +506,7 @@ describe("generateMarkdownReport", () => {
 
       ### [src/test.ts](../src/test.ts) (1)
 
-      - [Line 125](../src/test.ts#L125) - The types returned by '&#91;Symbol.iterator&#93;().next(...)' are incompatible.
+      - [Line 125](../src/test.ts#L125) - 2345: The types returned by '&#91;Symbol.iterator&#93;().next(...)' are incompatible.
       "
     `);
 
@@ -404,17 +520,40 @@ describe("generateMarkdownReport", () => {
       checks: {
         eslint: {
           items: [
-            "/project/src/a.ts:1 - error a",
-            "/project/src/b.ts:2 - error b",
+            {
+              code: "error-a",
+              column: 1,
+              file: "src/a.ts",
+              id: "multi1",
+              line: 1,
+              message: "error a",
+            },
+            {
+              code: "error-b",
+              column: 1,
+              file: "src/b.ts",
+              id: "multi2",
+              line: 2,
+              message: "error b",
+            },
           ],
           type: "items" as const,
         },
         typescript: {
-          items: ["/project/src/c.ts:3 - error c"],
+          items: [
+            {
+              code: "2304",
+              column: 1,
+              file: "src/c.ts",
+              id: "multi3",
+              line: 3,
+              message: "error c",
+            },
+          ],
           type: "items" as const,
         },
       },
-      version: 1,
+      version: 2,
     };
 
     const result = generateMarkdownReport(baseline, "/project/.mejora");
@@ -428,17 +567,17 @@ describe("generateMarkdownReport", () => {
 
       ### [src/a.ts](../src/a.ts) (1)
 
-      - [Line 1](../src/a.ts#L1) - error a
+      - [Line 1](../src/a.ts#L1) - error-a: error a
 
       ### [src/b.ts](../src/b.ts) (1)
 
-      - [Line 2](../src/b.ts#L2) - error b
+      - [Line 2](../src/b.ts#L2) - error-b: error b
 
       ## typescript (1 issue)
 
       ### [src/c.ts](../src/c.ts) (1)
 
-      - [Line 3](../src/c.ts#L3) - error c
+      - [Line 3](../src/c.ts#L3) - 2304: error c
       "
     `);
   });
@@ -448,15 +587,43 @@ describe("generateMarkdownReport", () => {
       checks: {
         eslint: {
           items: [
-            " - unparsable item",
-            "/project/src/zebra.ts:10 - last alphabetically",
-            " - another unparsable",
-            "/project/src/aardvark.ts:5 - first alphabetically",
+            {
+              code: "unknown",
+              column: 0,
+              file: "",
+              id: "unparsable",
+              line: 0,
+              message: "unparsable item",
+            },
+            {
+              code: "last",
+              column: 1,
+              file: "src/zebra.ts",
+              id: "zebra1",
+              line: 10,
+              message: "last alphabetically",
+            },
+            {
+              code: "unknown",
+              column: 0,
+              file: "",
+              id: "unparsable",
+              line: 0,
+              message: "another unparsable",
+            },
+            {
+              code: "first",
+              column: 1,
+              file: "src/aardvark.ts",
+              id: "aardvark1",
+              line: 5,
+              message: "first alphabetically",
+            },
           ],
           type: "items" as const,
         },
       },
-      version: 1,
+      version: 2,
     };
 
     const result = generateMarkdownReport(baseline, "/project/.mejora");
@@ -473,11 +640,20 @@ describe("generateMarkdownReport", () => {
     const baseline = {
       checks: {
         eslint: {
-          items: ["/project/src/index.ts:10 - 'foo' is never used"],
+          items: [
+            {
+              code: "no-unused-vars",
+              column: 1,
+              file: "src/index.ts",
+              id: "end1",
+              line: 10,
+              message: "'foo' is never used",
+            },
+          ],
           type: "items" as const,
         },
       },
-      version: 1,
+      version: 2,
     };
 
     const result = generateMarkdownReport(baseline, "/project/.mejora");
@@ -486,17 +662,24 @@ describe("generateMarkdownReport", () => {
     expect(result.endsWith("\n\n")).toBe(false);
   });
 
-  it("should handle file paths with line and column numbers", () => {
+  it("should handle items with line and column numbers", () => {
     const baseline = {
       checks: {
         eslint: {
           items: [
-            "/project/src/index.ts:4:7 - @typescript-eslint/no-unused-vars",
+            {
+              code: "@typescript-eslint/no-unused-vars",
+              column: 7,
+              file: "src/index.ts",
+              id: "col1",
+              line: 4,
+              message: "'foo' is declared but never used",
+            },
           ],
           type: "items" as const,
         },
       },
-      version: 1,
+      version: 2,
     };
     const result = generateMarkdownReport(baseline, "/project/.mejora");
 
@@ -507,11 +690,8 @@ describe("generateMarkdownReport", () => {
 
       ### [src/index.ts](../src/index.ts) (1)
 
-      - [Line 4](../src/index.ts#L4) - @typescript-eslint/no-unused-vars
+      - [Line 4](../src/index.ts#L4) - @typescript-eslint/no-unused-vars: 'foo' is declared but never used
       "
     `);
-
-    expect(result).not.toContain("src/index.ts:4:7");
-    expect(result).not.toContain("src/index.ts:4");
   });
 });

@@ -43,6 +43,7 @@ describe("typescriptCheck", () => {
       overrides: { compilerOptions: { strict: true } },
       tsconfig: "tsconfig.json",
     };
+
     const result = typescriptCheck(config);
 
     expect(result.type).toBe("typescript");
@@ -59,9 +60,7 @@ describe("runTypescriptCheck", () => {
     mockCreateIncrementalCompilerHost.mockReturnValue({
       writeFile: vi.fn(),
     });
-
     mockGetProgram.mockReturnValue({});
-
     mockCreateIncrementalProgram.mockReturnValue({
       emit: vi.fn(),
       getProgram: mockGetProgram,
@@ -156,7 +155,7 @@ describe("runTypescriptCheck", () => {
     );
   });
 
-  it("should extract diagnostics as filepath:line:column - TScode: message", async () => {
+  it("should extract diagnostics as DiagnosticItem objects", async () => {
     const mockFile = {
       fileName: "/test/project/src/file.ts",
       getLineAndCharacterOfPosition: vi.fn().mockReturnValue({
@@ -183,9 +182,15 @@ describe("runTypescriptCheck", () => {
 
     const result = await runTypescriptCheck({ tsconfig: "tsconfig.json" });
 
-    expect(result.items).toStrictEqual([
-      "src/file.ts:1:5 - TS2304: Cannot find name 'foo'.",
-    ]);
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0]).toMatchObject({
+      code: "TS2304",
+      column: 5,
+      file: "src/file.ts",
+      line: 1,
+      message: "Cannot find name 'foo'.",
+    });
+    expect(result.items[0]?.id).toBeDefined();
   });
 
   it("should handle diagnostics without file location", async () => {
@@ -207,12 +212,17 @@ describe("runTypescriptCheck", () => {
 
     const result = await runTypescriptCheck({ tsconfig: "tsconfig.json" });
 
-    expect(result.items).toStrictEqual([
-      "(global) - TS5009: Cannot find the common subdirectory path",
-    ]);
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0]).toMatchObject({
+      code: "TS5009",
+      column: 0,
+      file: "(global)",
+      line: 0,
+      message: "Cannot find the common subdirectory path",
+    });
   });
 
-  it("should sort items", async () => {
+  it("should sort items by ID", async () => {
     const mockFile1 = {
       fileName: "/test/project/zebra.ts",
       getLineAndCharacterOfPosition: vi.fn().mockReturnValue({
@@ -242,8 +252,8 @@ describe("runTypescriptCheck", () => {
 
     const result = await runTypescriptCheck({ tsconfig: "tsconfig.json" });
 
-    expect(result.items[0]).toMatch(/^apple\.ts:/);
-    expect(result.items[1]).toMatch(/^zebra\.ts:/);
+    expect(result.items[0]?.file).toBe("apple.ts");
+    expect(result.items[1]?.file).toBe("zebra.ts");
   });
 
   it("should use custom tsconfig path when provided", async () => {
@@ -327,7 +337,8 @@ describe("runTypescriptCheck", () => {
 
     const result = await runTypescriptCheck({ tsconfig: "tsconfig.json" });
 
-    expect(result.items[0]).toMatch(/:10:20 -/);
+    expect(result.items[0]?.line).toBe(10);
+    expect(result.items[0]?.column).toBe(20);
   });
 
   it("should handle multiline diagnostic messages", async () => {
@@ -357,7 +368,7 @@ describe("runTypescriptCheck", () => {
 
     const result = await runTypescriptCheck({ tsconfig: "tsconfig.json" });
 
-    expect(result.items[0]).toContain("Flattened error message");
+    expect(result.items[0]?.message).toBe("Flattened error message");
     expect(mockFlattenDiagnosticMessageText).toHaveBeenCalledWith(
       { messageText: "Complex error", next: [] },
       "\n",
@@ -421,8 +432,8 @@ describe("runTypescriptCheck", () => {
     const result = await runTypescriptCheck({ tsconfig: "tsconfig.json" });
 
     expect(result.items).toHaveLength(1);
-    expect(result.items[0]).toMatch(/^src\/file\.ts:/);
-    expect(result.items[0]).toContain("error inside");
+    expect(result.items[0]?.file).toBe("src/file.ts");
+    expect(result.items[0]?.message).toBe("error inside");
   });
 
   it("should not include files from sibling directories with similar names", async () => {
@@ -447,7 +458,6 @@ describe("runTypescriptCheck", () => {
       fileNames: [],
       options: {},
     });
-
     mockGetPreEmitDiagnostics.mockReturnValue([
       {
         code: 2304,
@@ -462,7 +472,6 @@ describe("runTypescriptCheck", () => {
         start: 0,
       },
     ]);
-
     mockFlattenDiagnosticMessageText.mockReset();
     mockFlattenDiagnosticMessageText.mockImplementation((msg: unknown) => {
       return typeof msg === "string" ? msg : String(msg);
@@ -471,18 +480,16 @@ describe("runTypescriptCheck", () => {
     const result = await runTypescriptCheck({ tsconfig: "tsconfig.json" });
 
     expect(result.items).toHaveLength(1);
-    expect(result.items[0]).toMatch(/^src\/file\.ts:/);
-    expect(result.items[0]).toContain("error inside");
+    expect(result.items[0]?.file).toBe("src/file.ts");
+    expect(result.items[0]?.message).toBe("error inside");
   });
 
   it("should call emit to enable tsbuildinfo caching", async () => {
     const realWriteFile = vi.fn();
     const host = { writeFile: realWriteFile };
-
     const emit = vi.fn();
 
     mockCreateIncrementalCompilerHost.mockReturnValue(host);
-
     mockCreateIncrementalProgram.mockReturnValue({
       emit,
       getProgram: mockGetProgram,
@@ -511,12 +518,10 @@ describe("runTypescriptCheck", () => {
     const emit = vi.fn();
 
     mockCreateIncrementalCompilerHost.mockReturnValue(host);
-
     mockCreateIncrementalProgram.mockImplementation(
       (args: { host: typeof host; options: { tsBuildInfoFile: string } }) => {
         capturedHost = args.host;
         capturedOptions = args.options;
-
         emit.mockImplementation(() => {
           capturedHost?.writeFile(capturedOptions.tsBuildInfoFile, "testing");
           capturedHost?.writeFile("/test/project/src/file.ts", "NOPE");

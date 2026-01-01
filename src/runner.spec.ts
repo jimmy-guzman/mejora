@@ -39,7 +39,7 @@ BaselineManager.getEntry = vi.fn(
 
 BaselineManager.update = vi.fn(
   (baseline: Baseline | null, checkId: string, entry: BaselineEntry) => {
-    const current = baseline ?? { checks: {}, version: 1 };
+    const current = baseline ?? { checks: {}, version: 2 };
 
     return {
       ...current,
@@ -79,6 +79,7 @@ describe("MejoraRunner", () => {
     vi.mocked(runEslintCheck).mockResolvedValue({ items: [], type: "items" });
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: false,
+      hasPositionChanges: false,
       hasRegression: false,
       isInitial: true,
       newItems: [],
@@ -105,6 +106,7 @@ describe("MejoraRunner", () => {
     });
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: false,
+      hasPositionChanges: false,
       hasRegression: false,
       isInitial: true,
       newItems: [],
@@ -126,6 +128,7 @@ describe("MejoraRunner", () => {
     vi.mocked(runEslintCheck).mockResolvedValue({ items: [], type: "items" });
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: false,
+      hasPositionChanges: false,
       hasRegression: false,
       isInitial: true,
       newItems: [],
@@ -144,15 +147,25 @@ describe("MejoraRunner", () => {
       checks: { check1: { files: ["*.js"], type: "eslint" as const } },
     };
 
+    const newItem = {
+      code: "no-unused-vars",
+      column: 1,
+      file: "new.js",
+      id: "new.js-1-no-unused-vars",
+      line: 1,
+      message: "error",
+    };
+
     vi.mocked(runEslintCheck).mockResolvedValue({
-      items: ["new.js:1:1 - error"],
+      items: [newItem],
       type: "items",
     });
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: false,
+      hasPositionChanges: false,
       hasRegression: true,
       isInitial: false,
-      newItems: ["new.js:1:1 - error"],
+      newItems: [newItem],
       removedItems: [],
     });
 
@@ -168,15 +181,25 @@ describe("MejoraRunner", () => {
       checks: { check1: { files: ["*.js"], type: "eslint" as const } },
     };
 
+    const newItem = {
+      code: "no-unused-vars",
+      column: 1,
+      file: "new.js",
+      id: "new.js-1-no-unused-vars",
+      line: 1,
+      message: "error",
+    };
+
     vi.mocked(runEslintCheck).mockResolvedValue({
-      items: ["new.js:1:1 - error"],
+      items: [newItem],
       type: "items",
     });
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: false,
+      hasPositionChanges: false,
       hasRegression: true,
       isInitial: false,
-      newItems: ["new.js:1:1 - error"],
+      newItems: [newItem],
       removedItems: [],
     });
 
@@ -201,6 +224,7 @@ describe("MejoraRunner", () => {
     vi.mocked(runEslintCheck).mockResolvedValue({ items: [], type: "items" });
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: false,
+      hasPositionChanges: false,
       hasRegression: false,
       isInitial: true,
       newItems: [],
@@ -232,6 +256,7 @@ describe("MejoraRunner", () => {
     });
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: false,
+      hasPositionChanges: false,
       hasRegression: false,
       isInitial: true,
       newItems: [],
@@ -264,17 +289,27 @@ describe("MejoraRunner", () => {
       checks: { check1: { files: ["*.js"], type: "eslint" as const } },
     };
 
+    const item = {
+      code: "no-unused-vars",
+      column: 1,
+      file: "file.js",
+      id: "file.js-1-no-unused-vars",
+      line: 1,
+      message: "error",
+    };
+
     const snapshot = {
-      items: ["file.js:1:1 - error" as const],
+      items: [item],
       type: "items" as const,
     };
 
     vi.mocked(runEslintCheck).mockResolvedValue(snapshot);
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: false,
+      hasPositionChanges: false,
       hasRegression: false,
       isInitial: true,
-      newItems: ["file.js:1:1 - error"],
+      newItems: [item],
       removedItems: [],
     });
 
@@ -291,28 +326,47 @@ describe("MejoraRunner", () => {
       checks: { check1: { files: ["*.js"], type: "eslint" as const } },
     };
 
+    const item1 = {
+      code: "no-unused-vars",
+      column: 1,
+      file: "file1.js",
+      id: "file1.js-1-no-unused-vars",
+      line: 1,
+      message: "error",
+    };
+
+    const item2 = {
+      code: "no-undef",
+      column: 2,
+      file: "file2.js",
+      id: "file2.js-2-no-undef",
+      line: 2,
+      message: "error",
+    };
+
     const existingBaseline = {
       checks: {
         check1: {
-          items: ["file1.js:1:1 - error", "file2.js:2:2 - error"],
+          items: [item1, item2],
           type: "items" as const,
         },
       },
-      version: 1,
+      version: 2,
     };
 
     mockLoad.mockResolvedValue(existingBaseline);
 
     vi.mocked(runEslintCheck).mockResolvedValue({
-      items: ["file2.js:2:2 - error"],
+      items: [item2],
       type: "items",
     });
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: true,
+      hasPositionChanges: false,
       hasRegression: false,
       isInitial: false,
       newItems: [],
-      removedItems: ["file1.js:1:1 - error"],
+      removedItems: [item1],
     });
 
     const runner = new MejoraRunner();
@@ -325,11 +379,11 @@ describe("MejoraRunner", () => {
       expect.objectContaining({
         checks: {
           check1: {
-            items: ["file2.js:2:2 - error"],
+            items: [item2],
             type: "items",
           },
         },
-        version: 1,
+        version: 2,
       }),
       undefined,
     );
@@ -342,15 +396,25 @@ describe("MejoraRunner", () => {
 
     mockLoad.mockResolvedValue(null);
 
+    const item = {
+      code: "no-unused-vars",
+      column: 1,
+      file: "file.js",
+      id: "file.js-1-no-unused-vars",
+      line: 1,
+      message: "error",
+    };
+
     vi.mocked(runEslintCheck).mockResolvedValue({
-      items: ["file.js:1:1 - error"],
+      items: [item],
       type: "items",
     });
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: false,
+      hasPositionChanges: false,
       hasRegression: false,
       isInitial: true,
-      newItems: ["file.js:1:1 - error"],
+      newItems: [item],
       removedItems: [],
     });
 
@@ -362,11 +426,11 @@ describe("MejoraRunner", () => {
       expect.objectContaining({
         checks: {
           check1: {
-            items: ["file.js:1:1 - error"],
+            items: [item],
             type: "items",
           },
         },
-        version: 1,
+        version: 2,
       }),
       undefined,
     );
@@ -377,28 +441,47 @@ describe("MejoraRunner", () => {
       checks: { check1: { files: ["*.js"], type: "eslint" as const } },
     };
 
+    const item1 = {
+      code: "no-unused-vars",
+      column: 1,
+      file: "file1.js",
+      id: "file1.js-1-no-unused-vars",
+      line: 1,
+      message: "error",
+    };
+
+    const item2 = {
+      code: "no-undef",
+      column: 2,
+      file: "file2.js",
+      id: "file2.js-2-no-undef",
+      line: 2,
+      message: "error",
+    };
+
     const existingBaseline = {
       checks: {
         check1: {
-          items: ["file1.js:1:1 - error", "file2.js:2:2 - error"],
+          items: [item1, item2],
           type: "items" as const,
         },
       },
-      version: 1,
+      version: 2,
     };
 
     mockLoad.mockResolvedValue(existingBaseline);
 
     vi.mocked(runEslintCheck).mockResolvedValue({
-      items: ["file2.js:2:2 - error"],
+      items: [item2],
       type: "items",
     });
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: true,
+      hasPositionChanges: false,
       hasRegression: false,
       isInitial: false,
       newItems: [],
-      removedItems: ["file1.js:1:1 - error"],
+      removedItems: [item1],
     });
 
     const runner = new MejoraRunner();
@@ -409,11 +492,11 @@ describe("MejoraRunner", () => {
       expect.objectContaining({
         checks: {
           check1: {
-            items: ["file2.js:2:2 - error"],
+            items: [item2],
             type: "items",
           },
         },
-        version: 1,
+        version: 2,
       }),
       undefined,
     );
@@ -426,15 +509,34 @@ describe("MejoraRunner", () => {
 
     mockLoad.mockResolvedValue(null);
 
+    const item1 = {
+      code: "no-unused-vars",
+      column: 1,
+      file: "file1.js",
+      id: "file1.js-1-no-unused-vars",
+      line: 1,
+      message: "error",
+    };
+
+    const item2 = {
+      code: "no-undef",
+      column: 2,
+      file: "file2.js",
+      id: "file2.js-2-no-undef",
+      line: 2,
+      message: "error",
+    };
+
     vi.mocked(runEslintCheck).mockResolvedValue({
-      items: ["file1.js:1:1 - error", "file2.js:2:2 - error"],
+      items: [item1, item2],
       type: "items",
     });
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: false,
+      hasPositionChanges: false,
       hasRegression: true,
       isInitial: true,
-      newItems: ["file1.js:1:1 - error", "file2.js:2:2 - error"],
+      newItems: [item1, item2],
       removedItems: [],
     });
 
@@ -445,11 +547,11 @@ describe("MejoraRunner", () => {
       expect.objectContaining({
         checks: {
           check1: {
-            items: ["file1.js:1:1 - error", "file2.js:2:2 - error"],
+            items: [item1, item2],
             type: "items",
           },
         },
-        version: 1,
+        version: 2,
       }),
       undefined,
     );
@@ -499,6 +601,7 @@ describe("MejoraRunner", () => {
     vi.mocked(runEslintCheck).mockResolvedValue({ items: [], type: "items" });
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: false,
+      hasPositionChanges: false,
       hasRegression: false,
       isInitial: true,
       newItems: [],
@@ -531,6 +634,7 @@ describe("MejoraRunner", () => {
     vi.mocked(runEslintCheck).mockResolvedValue({ items: [], type: "items" });
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: false,
+      hasPositionChanges: false,
       hasRegression: false,
       isInitial: true,
       newItems: [],
@@ -608,24 +712,34 @@ describe("MejoraRunner", () => {
   });
 
   it("should not save baseline when no changes detected", async () => {
+    const item = {
+      code: "no-unused-vars",
+      column: 1,
+      file: "file.js",
+      id: "file.js-1-no-unused-vars",
+      line: 1,
+      message: "error",
+    };
+
     const existingBaseline = {
       checks: {
         check1: {
-          items: ["file.js:1:1 - error"],
+          items: [item],
           type: "items" as const,
         },
       },
-      version: 1,
+      version: 2,
     };
 
     mockLoad.mockResolvedValue(existingBaseline);
 
     vi.mocked(runEslintCheck).mockResolvedValue({
-      items: ["file.js:1:1 - error"],
+      items: [item],
       type: "items",
     });
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: false,
+      hasPositionChanges: false,
       hasRegression: false,
       isInitial: false,
       newItems: [],
@@ -652,6 +766,7 @@ describe("MejoraRunner", () => {
       vi.mocked(runEslintCheck).mockResolvedValue({ items: [], type: "items" });
       vi.mocked(compareSnapshots).mockReturnValue({
         hasImprovement: false,
+        hasPositionChanges: false,
         hasRegression: false,
         isInitial: true,
         newItems: [],
@@ -677,6 +792,7 @@ describe("MejoraRunner", () => {
       vi.mocked(runEslintCheck).mockResolvedValue({ items: [], type: "items" });
       vi.mocked(compareSnapshots).mockReturnValue({
         hasImprovement: false,
+        hasPositionChanges: false,
         hasRegression: false,
         isInitial: true,
         newItems: [],
@@ -702,6 +818,7 @@ describe("MejoraRunner", () => {
       vi.mocked(runEslintCheck).mockResolvedValue({ items: [], type: "items" });
       vi.mocked(compareSnapshots).mockReturnValue({
         hasImprovement: false,
+        hasPositionChanges: false,
         hasRegression: false,
         isInitial: true,
         newItems: [],
@@ -739,6 +856,7 @@ describe("MejoraRunner", () => {
       vi.mocked(runEslintCheck).mockResolvedValue({ items: [], type: "items" });
       vi.mocked(compareSnapshots).mockReturnValue({
         hasImprovement: false,
+        hasPositionChanges: false,
         hasRegression: false,
         isInitial: true,
         newItems: [],
@@ -775,6 +893,7 @@ describe("MejoraRunner", () => {
       vi.mocked(runEslintCheck).mockResolvedValue({ items: [], type: "items" });
       vi.mocked(compareSnapshots).mockReturnValue({
         hasImprovement: false,
+        hasPositionChanges: false,
         hasRegression: false,
         isInitial: true,
         newItems: [],
@@ -842,6 +961,7 @@ describe("MejoraRunner", () => {
       vi.mocked(validateEslintDeps).mockResolvedValue(undefined);
       vi.mocked(compareSnapshots).mockReturnValue({
         hasImprovement: false,
+        hasPositionChanges: false,
         hasRegression: false,
         isInitial: true,
         newItems: [],
@@ -869,6 +989,7 @@ describe("MejoraRunner", () => {
       vi.mocked(runEslintCheck).mockResolvedValue({ items: [], type: "items" });
       vi.mocked(compareSnapshots).mockReturnValue({
         hasImprovement: false,
+        hasPositionChanges: false,
         hasRegression: false,
         isInitial: true,
         newItems: [],

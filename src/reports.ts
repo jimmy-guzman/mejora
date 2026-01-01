@@ -1,6 +1,6 @@
 import { relative } from "pathe";
 
-import type { Baseline } from "./types";
+import type { Baseline, DiagnosticItem } from "./types";
 
 import { plural } from "./utils/text";
 
@@ -14,30 +14,11 @@ function escapeHtml(text: string) {
     .replaceAll("]", "&#93;");
 }
 
-function parsePathWithLocation(pathWithLocation?: string) {
-  if (!pathWithLocation) return { filePath: undefined, line: undefined };
-
-  const match = /^(.+?):(\d+)(?::\d+)?$/.exec(pathWithLocation);
-
-  if (match) {
-    return { filePath: match[1], line: match[2] };
-  }
-
-  return { filePath: pathWithLocation, line: undefined };
-}
-
-function parseItem(item: string) {
-  const [pathWithLocation, ...rest] = item.split(" - ");
-  const description = rest.join(" - ");
-
-  return { description, pathWithLocation };
-}
-
 function createRelativePath(filePath: string, cwd: string) {
   return relative(cwd, filePath);
 }
 
-function createHref(filePath: string, baselineDir: string, line?: string) {
+function createHref(filePath: string, baselineDir: string, line?: number) {
   const href = relative(baselineDir, filePath);
 
   return line ? `${href}#L${line}` : href;
@@ -48,30 +29,22 @@ function createMarkdownLink(text: string, href: string) {
 }
 
 function formatItemLine(
-  item: string,
-  filePath: string,
+  item: DiagnosticItem,
   cwd: string,
   baselineDir: string,
 ) {
-  const { description, pathWithLocation } = parseItem(item);
-  const { line } = parsePathWithLocation(pathWithLocation);
-
-  const displayPath = createRelativePath(filePath, cwd);
-  const href = createHref(filePath, baselineDir, line);
-  const linkText = line ? `Line ${line}` : displayPath;
+  const displayPath = createRelativePath(item.file, cwd);
+  const href = createHref(item.file, baselineDir, item.line);
+  const linkText = item.line ? `Line ${item.line}` : displayPath;
   const link = createMarkdownLink(linkText, href);
-  const suffix = description ? ` - ${escapeHtml(description)}` : "";
 
-  return `- ${link}${suffix}\n`;
+  const description = `${item.code}: ${escapeHtml(item.message)}`;
+
+  return `- ${link} - ${description}\n`;
 }
 
-function groupItemsByFile(items: string[]) {
-  const grouped = Object.groupBy(items, (item) => {
-    const { pathWithLocation } = parseItem(item);
-    const { filePath = UNPARSABLE } = parsePathWithLocation(pathWithLocation);
-
-    return filePath;
-  });
+function groupItemsByFile(items: DiagnosticItem[]) {
+  const grouped = Object.groupBy(items, (item) => item.file || UNPARSABLE);
 
   return Object.entries(grouped)
     .map(([filePath, items = []]) => ({ filePath, items }))
@@ -84,11 +57,11 @@ function groupItemsByFile(items: string[]) {
     });
 }
 
-function formatUnparsableSection(items: string[]) {
+function formatUnparsableSection(items: DiagnosticItem[]) {
   let section = `\n### Other Issues (${items.length})\n\n`;
 
   for (const item of items) {
-    section += `- ${item}\n`;
+    section += `- ${item.code}: ${escapeHtml(item.message)}\n`;
   }
 
   return `${section}\n`;
@@ -97,7 +70,7 @@ function formatUnparsableSection(items: string[]) {
 function formatFileSection(
   fileGroup: {
     filePath: string;
-    items: string[];
+    items: DiagnosticItem[];
   },
   cwd: string,
   baselineDir: string,
@@ -113,7 +86,7 @@ function formatFileSection(
   let section = `\n### ${link} (${fileGroup.items.length})\n\n`;
 
   for (const item of fileGroup.items) {
-    section += formatItemLine(item, fileGroup.filePath, cwd, baselineDir);
+    section += formatItemLine(item, cwd, baselineDir);
   }
 
   return `${section}\n`;
@@ -121,7 +94,7 @@ function formatFileSection(
 
 function formatCheckSection(
   checkId: string,
-  items: string[],
+  items: DiagnosticItem[],
   cwd: string,
   baselineDir: string,
 ) {

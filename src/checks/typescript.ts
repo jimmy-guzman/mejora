@@ -1,8 +1,10 @@
 import { relative, resolve, sep } from "pathe";
 
-import type { TypeScriptCheckConfig } from "@/types";
+import type { DiagnosticItem, TypeScriptCheckConfig } from "@/types";
 
+import { assignIds, sortByLocation } from "@/checks/utils";
 import { createCacheKey, ensureCacheDir } from "@/utils/cache";
+import { hash } from "@/utils/hash";
 
 export async function validateTypescriptDeps() {
   try {
@@ -13,26 +15,6 @@ export async function validateTypescriptDeps() {
     );
   }
 }
-
-const createItem = ({
-  character,
-  code,
-  cwd,
-  fileName,
-  line,
-  message,
-}: {
-  character: number;
-  code: number;
-  cwd: string;
-  fileName: string;
-  line: number;
-  message: string;
-}) => {
-  const filePath = relative(cwd, fileName);
-
-  return `${filePath}:${line + 1}:${character + 1} - TS${code}: ${message}` as const;
-};
 
 export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
   const {
@@ -134,42 +116,47 @@ export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
     );
   });
 
-  const items: string[] = [];
+  const rawItems: (Omit<DiagnosticItem, "id"> & { signature: string })[] = [];
 
   for (const diagnostic of workspaceDiagnostics) {
+    const message = flattenDiagnosticMessageText(diagnostic.messageText, "\n");
+    const tsCode = `TS${diagnostic.code}`;
+
     if (diagnostic.file && diagnostic.start !== undefined) {
       const { character, line } = diagnostic.file.getLineAndCharacterOfPosition(
         diagnostic.start,
       );
-      const message = flattenDiagnosticMessageText(
-        diagnostic.messageText,
-        "\n",
-      );
 
-      const item = createItem({
-        character,
-        code: diagnostic.code,
-        cwd,
-        fileName: diagnostic.file.fileName,
-        line,
+      const file = relative(cwd, diagnostic.file.fileName);
+      const signature = hash(`${file} - ${tsCode}: ${message}`);
+
+      rawItems.push({
+        code: tsCode,
+        column: character + 1,
+        file,
+        line: line + 1,
         message,
+        signature,
       });
-
-      items.push(item);
     } else {
-      const message = flattenDiagnosticMessageText(
-        diagnostic.messageText,
-        "\n",
-      );
+      const file = "(global)";
+      const signature = hash(`${file} - ${tsCode}: ${message}`);
 
-      const item = `(global) - TS${diagnostic.code}: ${message}` as const;
-
-      items.push(item);
+      rawItems.push({
+        code: tsCode,
+        column: 0,
+        file,
+        line: 0,
+        message,
+        signature,
+      });
     }
   }
 
+  const items = assignIds(rawItems);
+
   return {
-    items: items.toSorted(),
+    items: items.toSorted(sortByLocation),
     type: "items" as const,
   };
 }

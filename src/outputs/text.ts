@@ -1,4 +1,4 @@
-import type { CheckResult, RunResult } from "@/types";
+import type { CheckResult, DiagnosticItem, RunResult } from "@/types";
 
 import { blue, bold, dim, gray, green, red } from "@/utils/colors";
 import { duration } from "@/utils/duration";
@@ -8,12 +8,21 @@ import { average } from "./average";
 
 const MAX_ITEMS_TO_DISPLAY = 10;
 
-function formatItemList(items: string[], maxItems = MAX_ITEMS_TO_DISPLAY) {
+function formatItem(item: DiagnosticItem) {
+  const location = item.line > 0 ? `${item.file}:${item.line}` : item.file;
+
+  return `${location} - ${item.code}: ${item.message}`;
+}
+
+function formatItemList(
+  items: DiagnosticItem[],
+  maxItems = MAX_ITEMS_TO_DISPLAY,
+) {
   const lines: string[] = [];
   const itemsToShow = items.slice(0, maxItems);
 
   for (const item of itemsToShow) {
-    lines.push(`     ${dim(item)}`);
+    lines.push(`     ${dim(formatItem(item))}`);
   }
 
   const remainingCount = items.length - maxItems;
@@ -144,7 +153,6 @@ function formatSummary(result: RunResult) {
     totalInitial: 0,
     totalIssues: 0,
     totalRegressions: 0,
-    totalUnchanged: 0,
   };
 
   for (const check of result.results) {
@@ -167,16 +175,11 @@ function formatSummary(result: RunResult) {
     if (hasRegression) {
       acc.totalRegressions += check.newItems.length;
     }
-
-    if (!hasImprovement && !hasRegression) {
-      acc.totalUnchanged += issueCount;
-    }
   }
 
   const summaryLines = [
     `  ${dim("Improvements")}  ${green(acc.totalImprovements)}`,
     `   ${dim("Regressions")}  ${red(acc.totalRegressions)}`,
-    `     ${dim("Unchanged")}  ${acc.totalUnchanged}`,
     `       ${dim("Initial")}  ${blue(acc.totalInitial)}`,
     `        ${dim("Checks")}  ${result.results.length}`,
     `        ${dim("Issues")}  ${bold(acc.totalIssues)}`,

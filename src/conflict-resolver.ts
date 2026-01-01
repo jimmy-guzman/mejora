@@ -1,4 +1,4 @@
-import type { Baseline, BaselineEntry } from "./types";
+import type { Baseline, BaselineEntry, DiagnosticItem } from "./types";
 
 import { BASELINE_VERSION } from "./constants";
 
@@ -123,19 +123,19 @@ function collectAllCheckIds(baselines: Baseline[]) {
 }
 
 function mergeCheckItems(baselines: Baseline[], checkId: string) {
-  const allItems = new Set<string>();
+  const itemsById = new Map<string, DiagnosticItem>();
 
   for (const baseline of baselines) {
     const check = baseline.checks[checkId];
 
     if (check?.items) {
       for (const item of check.items) {
-        allItems.add(item);
+        itemsById.set(item.id, item);
       }
     }
   }
 
-  return [...allItems].toSorted();
+  return [...itemsById.values()].toSorted((a, b) => a.id.localeCompare(b.id));
 }
 
 function mergeBaselines(baselines: Baseline[]) {
@@ -149,7 +149,6 @@ function mergeBaselines(baselines: Baseline[]) {
   for (const checkId of checkIds) {
     merged.checks[checkId] = {
       items: mergeCheckItems(baselines, checkId),
-      // TODO: consider preserving original entry type during merge.
       type: "items",
     };
   }
@@ -162,6 +161,7 @@ function mergeBaselines(baselines: Baseline[]) {
  * Takes the raw file content containing Git conflict markers and returns a merged baseline.
  *
  * Supports multiple conflict blocks in a single file, merging all sections together.
+ * Items are merged by their stable ID, making the merge robust to line number changes.
  *
  * @param content - File content containing Git conflict markers (<<<<<<< ======= >>>>>>>)
  *
