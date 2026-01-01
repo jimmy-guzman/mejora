@@ -1,3 +1,17 @@
+## [1.6.2](https://github.com/jimmy-guzman/mejora/compare/v1.6.1...v1.6.2) (2026-01-01)
+
+
+### Bug Fixes
+
+* 🐛 show actual counts in summary ([462fcb0](https://github.com/jimmy-guzman/mejora/commit/462fcb07e2c798157b974528e354ee9f9f737570))
+* 🐛 use actual issue counts in json summary ([45e0ab4](https://github.com/jimmy-guzman/mejora/commit/45e0ab4d56babe46f659c164e6d8a4391f793e3a))
+
+
+### Performance Improvements
+
+* ⚡️ reduce iterations & allocations in json output ([2d4aee5](https://github.com/jimmy-guzman/mejora/commit/2d4aee5b2c9a128b99576ec3c19fe698c13618db))
+* ⚡️ reduce iterations & allocations in text output ([ad175c8](https://github.com/jimmy-guzman/mejora/commit/ad175c8d4bd2e89a12b2105d593785459fa6a7e2))
+
 ## [1.6.1](https://github.com/jimmy-guzman/mejora/compare/v1.6.0...v1.6.1) (2026-01-01)
 
 
