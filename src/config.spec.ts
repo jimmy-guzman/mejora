@@ -9,6 +9,7 @@ import { defineConfig, loadConfig } from "./config";
 
 describe("config", () => {
   let testDir: string;
+
   const originalCwd = process.cwd();
 
   beforeEach(() => {

@@ -19,7 +19,9 @@ function categorizeResults(results: CheckResult[]) {
       initial.push(r);
     } else {
       if (r.hasImprovement) improvements.push(r);
+
       if (r.hasRegression) regressions.push(r);
+
       if (!r.hasImprovement && !r.hasRegression) unchanged.push(r);
     }
   }

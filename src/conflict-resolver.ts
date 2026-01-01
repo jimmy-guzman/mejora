@@ -26,10 +26,10 @@ function balanceBraces(json: string) {
 
   for (const char of json) {
     if (char === "{") openCount++;
+
     if (char === "}") closeCount++;
   }
 
-  // Only fixes brace imbalance; other errors are handled by JSON.parse().
   if (openCount === closeCount) {
     return json;
   }

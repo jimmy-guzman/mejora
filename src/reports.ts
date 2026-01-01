@@ -77,6 +77,7 @@ function groupItemsByFile(items: string[]) {
     .map(([filePath, items = []]) => ({ filePath, items }))
     .toSorted((a, b) => {
       if (a.filePath === UNPARSABLE) return 1;
+
       if (b.filePath === UNPARSABLE) return -1;
 
       return a.filePath.localeCompare(b.filePath);
@@ -126,6 +127,7 @@ function formatCheckSection(
 ) {
   const issueCount = items.length;
   const issueText = plural(issueCount, "issue");
+
   let section = `\n## ${checkId} (${issueCount} ${issueText})\n\n`;
 
   if (items.length === 0) {
@@ -150,6 +152,7 @@ export function generateMarkdownReport(
   baselineDir: string,
 ) {
   const cwd = process.cwd();
+
   let markdown = "# Mejora Baseline\n";
 
   for (const [checkId, { items = [] }] of Object.entries(baseline.checks)) {
