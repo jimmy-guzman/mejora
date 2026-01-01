@@ -34,10 +34,11 @@ export async function runEslintCheck(config: ESLintCheckConfig) {
   const cwd = process.cwd();
 
   const cacheDir = await ensureCacheDir(cwd, "eslint");
+  const cacheKey = createCacheKey(config);
 
   const eslint = new ESLint({
     cache: true,
-    cacheLocation: `${cacheDir}/${createCacheKey(config)}`,
+    cacheLocation: `${cacheDir}/${cacheKey}.eslintcache`,
     concurrency: "auto",
     overrideConfig: config.overrides,
   });
