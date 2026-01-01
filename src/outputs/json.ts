@@ -1,42 +1,84 @@
 import type { RunResult } from "@/types";
 
-import { average, categorize, sum } from "./utils";
+import { average } from "./utils";
 
 export function formatJsonOutput(result: RunResult) {
-  const { improvements, initial, regressions, unchanged } = categorize(
-    result.results,
-  );
+  const { results, totalDuration } = result;
+  const checksRun = results.length;
+
+  const improvementChecks: string[] = [];
+  const regressionChecks: string[] = [];
+  const initialChecks: string[] = [];
+  const unchangedChecks: string[] = [];
+
+  let improvements = 0;
+  let regressions = 0;
+  let initial = 0;
+  let unchanged = 0;
+  let totalIssues = 0;
+
+  const checks = Array.from({ length: checksRun });
+
+  for (let i = 0; i < checksRun; i++) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- checked by loop condition
+    const check = results[i]!;
+    const issues = check.snapshot.items.length;
+
+    totalIssues += issues;
+
+    if (check.isInitial) {
+      initial++;
+      initialChecks.push(check.checkId);
+    } else {
+      const { hasImprovement, hasRegression } = check;
+
+      if (hasImprovement) {
+        improvements++;
+        improvementChecks.push(check.checkId);
+      }
+
+      if (hasRegression) {
+        regressions++;
+        regressionChecks.push(check.checkId);
+      }
+
+      if (!hasImprovement && !hasRegression) {
+        unchanged++;
+        unchangedChecks.push(check.checkId);
+      }
+    }
+
+    checks[i] = {
+      checkId: check.checkId,
+      duration: check.duration,
+      hasImprovement: check.hasImprovement,
+      hasRegression: check.hasRegression,
+      isInitial: check.isInitial,
+      newItems: check.newItems,
+      removedItems: check.removedItems,
+      totalIssues: issues,
+    };
+  }
 
   const output = {
-    checks: result.results.map((check) => {
-      return {
-        checkId: check.checkId,
-        duration: check.duration,
-        hasImprovement: check.hasImprovement,
-        hasRegression: check.hasRegression,
-        isInitial: check.isInitial,
-        newItems: check.newItems,
-        removedItems: check.removedItems,
-        totalIssues: check.snapshot.items.length || 0,
-      };
-    }),
+    checks,
     exitCode: result.exitCode,
     hasImprovement: result.hasImprovement,
     hasRegression: result.hasRegression,
     summary: {
-      avgDuration: average(result.totalDuration, result.results.length),
-      checksRun: result.results.length,
-      improvementChecks: improvements.map((r) => r.checkId),
-      improvements: improvements.length,
-      initial: initial.length,
-      initialChecks: initial.map((r) => r.checkId),
-      regressionChecks: regressions.map((r) => r.checkId),
-      regressions: regressions.length,
-      totalIssues: sum(result.results, (r) => r.snapshot.items),
-      unchanged: unchanged.length,
-      unchangedChecks: unchanged.map((r) => r.checkId),
+      avgDuration: average(totalDuration, checksRun),
+      checksRun,
+      improvementChecks,
+      improvements,
+      initial,
+      initialChecks,
+      regressionChecks,
+      regressions,
+      totalIssues,
+      unchanged,
+      unchangedChecks,
     },
-    totalDuration: result.totalDuration,
+    totalDuration,
   };
 
   return JSON.stringify(output, null, 2);
