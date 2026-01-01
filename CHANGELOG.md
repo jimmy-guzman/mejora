@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/jimmy-guzman/mejora/compare/v1.5.6...v1.6.0) (2026-01-01)
+
+
+### Features
+
+* ✨ use TypeScript incremental caching ([#34](https://github.com/jimmy-guzman/mejora/issues/34)) ([30be71e](https://github.com/jimmy-guzman/mejora/commit/30be71ef090a065bd891d50439ed1776ea32a8c7))
+
 ## [1.5.6](https://github.com/jimmy-guzman/mejora/compare/v1.5.5...v1.5.6) (2025-12-31)
 
 
