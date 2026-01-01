@@ -2,7 +2,7 @@ import { relative, resolve, sep } from "pathe";
 
 import type { TypeScriptCheckConfig } from "@/types";
 
-import { ensureCacheDir, makeCacheKey } from "@/utils/cache";
+import { createCacheKey, ensureCacheDir } from "@/utils/cache";
 
 export async function validateTypescriptDeps() {
   try {
@@ -81,7 +81,7 @@ export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
 
   const cacheDir = await ensureCacheDir(cwd, "typescript");
 
-  const cacheKey = makeCacheKey({
+  const cacheKey = createCacheKey({
     configPath,
     overrides: config.overrides?.compilerOptions ?? {},
     parsedOptions: parseResult.options,
