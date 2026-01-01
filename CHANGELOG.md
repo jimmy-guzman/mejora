@@ -1,3 +1,15 @@
+## [1.6.1](https://github.com/jimmy-guzman/mejora/compare/v1.6.0...v1.6.1) (2026-01-01)
+
+
+### Bug Fixes
+
+* 🐛 unambiguous eslint cache location ([872e356](https://github.com/jimmy-guzman/mejora/commit/872e356c8fab5cd8c83f7e0f0a2eccac8292ed6d))
+
+
+### Performance Improvements
+
+* ⚡️ a tiny more performant cache key ([de7a211](https://github.com/jimmy-guzman/mejora/commit/de7a211dd445eed460c21592a6fa0c279ef60528))
+
 # [1.6.0](https://github.com/jimmy-guzman/mejora/compare/v1.5.6...v1.6.0) (2026-01-01)
 
 
