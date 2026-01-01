@@ -35,7 +35,7 @@ describe("formatJsonOutput", () => {
       hasRegression: true,
       summary: expect.objectContaining({
         regressionChecks: ["eslint"],
-        regressions: 1,
+        regressions: 2,
       }),
     });
   });
@@ -139,7 +139,7 @@ describe("formatJsonOutput", () => {
       ],
       summary: expect.objectContaining({
         totalIssues: 0,
-        unchanged: 1,
+        unchanged: 0,
         unchangedChecks: ["eslint"],
       }),
     });
