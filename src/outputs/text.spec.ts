@@ -1,261 +1,9 @@
-import { formatJsonOutput, formatTextOutput } from "./output";
+import { formatTextOutput } from "./text";
 
 function stripAnsi(str: string) {
   // eslint-disable-next-line no-control-regex -- this regex is to remove ANSI escape codes
   return str.replaceAll(/\u001B\[\d+m/g, "");
 }
-
-describe("formatJsonOutput", () => {
-  it("should format result with regressions", () => {
-    const result = {
-      exitCode: 1,
-      hasImprovement: false,
-      hasRegression: true,
-      results: [
-        {
-          baseline: { items: [], type: "items" as const },
-          checkId: "eslint",
-          hasImprovement: false,
-          hasRegression: true,
-          isInitial: false,
-          newItems: ["error1", "error2"],
-          removedItems: [],
-          snapshot: {
-            items: ["error1", "error2"],
-            type: "items" as const,
-          },
-        },
-      ],
-    };
-    const output = formatJsonOutput(result);
-    const parsed = JSON.parse(output);
-
-    expect(parsed).toMatchObject({
-      checks: [
-        expect.objectContaining({
-          newItems: ["error1", "error2"],
-        }),
-      ],
-      exitCode: 1,
-      hasRegression: true,
-      summary: expect.objectContaining({
-        regressionChecks: ["eslint"],
-        regressions: 1,
-      }),
-    });
-  });
-
-  it("should format result with improvements", () => {
-    const result = {
-      exitCode: 0,
-      hasImprovement: true,
-      hasRegression: false,
-      results: [
-        {
-          baseline: { items: ["error1", "error2"], type: "items" as const },
-          checkId: "eslint",
-          hasImprovement: true,
-          hasRegression: false,
-          isInitial: false,
-          newItems: [],
-          removedItems: ["error1"],
-          snapshot: { items: ["error2"], type: "items" as const },
-        },
-      ],
-    };
-    const output = formatJsonOutput(result);
-    const parsed = JSON.parse(output);
-
-    expect(parsed).toMatchObject({
-      checks: [
-        expect.objectContaining({
-          removedItems: ["error1"],
-        }),
-      ],
-      exitCode: 0,
-      hasImprovement: true,
-      summary: expect.objectContaining({
-        improvementChecks: ["eslint"],
-        improvements: 1,
-      }),
-    });
-  });
-
-  it("should format initial baseline", () => {
-    const result = {
-      exitCode: 0,
-      hasImprovement: false,
-      hasRegression: false,
-      results: [
-        {
-          baseline: undefined,
-          checkId: "eslint",
-          hasImprovement: false,
-          hasRegression: false,
-          isInitial: true,
-          newItems: [],
-          removedItems: [],
-          snapshot: { items: ["error1"], type: "items" as const },
-        },
-      ],
-    };
-    const output = formatJsonOutput(result);
-    const parsed = JSON.parse(output);
-
-    expect(parsed).toMatchObject({
-      checks: [
-        expect.objectContaining({
-          isInitial: true,
-        }),
-      ],
-      summary: expect.objectContaining({
-        initial: 1,
-        initialChecks: ["eslint"],
-      }),
-    });
-  });
-
-  it("should handle empty snapshot items", () => {
-    const result = {
-      exitCode: 0,
-      hasImprovement: false,
-      hasRegression: false,
-      results: [
-        {
-          baseline: { items: [], type: "items" as const },
-          checkId: "eslint",
-          hasImprovement: false,
-          hasRegression: false,
-          isInitial: false,
-          newItems: [],
-          removedItems: [],
-          snapshot: { items: [], type: "items" as const },
-        },
-      ],
-    };
-    const output = formatJsonOutput(result);
-    const parsed = JSON.parse(output);
-
-    expect(parsed).toMatchObject({
-      checks: [
-        expect.objectContaining({
-          totalIssues: 0,
-        }),
-      ],
-      summary: expect.objectContaining({
-        totalIssues: 0,
-        unchanged: 1,
-        unchangedChecks: ["eslint"],
-      }),
-    });
-  });
-
-  it("should format multiple checks", () => {
-    const result = {
-      exitCode: 1,
-      hasImprovement: false,
-      hasRegression: true,
-      results: [
-        {
-          baseline: { items: [], type: "items" as const },
-          checkId: "eslint",
-          hasImprovement: false,
-          hasRegression: true,
-          isInitial: false,
-          newItems: ["error1"],
-          removedItems: [],
-          snapshot: { items: ["error1"], type: "items" as const },
-        },
-        {
-          baseline: { items: ["error2"], type: "items" as const },
-          checkId: "typescript",
-          hasImprovement: true,
-          hasRegression: false,
-          isInitial: false,
-          newItems: [],
-          removedItems: ["error2"],
-          snapshot: { items: [], type: "items" as const },
-        },
-      ],
-    };
-    const output = formatJsonOutput(result);
-    const parsed = JSON.parse(output);
-
-    expect(parsed).toMatchObject({
-      checks: expect.arrayContaining([
-        expect.objectContaining({ checkId: "eslint" }),
-        expect.objectContaining({ checkId: "typescript" }),
-      ]),
-      summary: expect.objectContaining({
-        checksRun: 2,
-        improvements: 1,
-        regressions: 1,
-        totalIssues: 1,
-      }),
-    });
-  });
-
-  it("should include avgDuration in JSON summary when totalDuration is present", () => {
-    const result = {
-      exitCode: 0,
-      hasImprovement: false,
-      hasRegression: false,
-      results: [
-        {
-          baseline: { items: [], type: "items" as const },
-          checkId: "eslint",
-          duration: 1000,
-          hasImprovement: false,
-          hasRegression: false,
-          isInitial: false,
-          newItems: [],
-          removedItems: [],
-          snapshot: { items: [], type: "items" as const },
-        },
-        {
-          baseline: { items: [], type: "items" as const },
-          checkId: "typescript",
-          duration: 1500,
-          hasImprovement: false,
-          hasRegression: false,
-          isInitial: false,
-          newItems: [],
-          removedItems: [],
-          snapshot: { items: [], type: "items" as const },
-        },
-      ],
-      totalDuration: 2500,
-    };
-    const output = formatJsonOutput(result);
-    const parsed = JSON.parse(output);
-
-    expect(parsed).toMatchObject({
-      summary: expect.objectContaining({
-        avgDuration: 1250,
-      }),
-    });
-  });
-
-  it("should set avgDuration to undefined in JSON when results array is empty", () => {
-    const result = {
-      exitCode: 0,
-      hasImprovement: false,
-      hasRegression: false,
-      results: [],
-      totalDuration: 1500,
-    };
-    const output = formatJsonOutput(result);
-    const parsed = JSON.parse(output);
-
-    expect(parsed).toMatchObject(
-      expect.objectContaining({
-        summary: expect.not.objectContaining({
-          avgDuration: expect.any(Number),
-        }),
-      }),
-    );
-  });
-});
 
 describe("formatTextOutput", () => {
   it("should format initial baseline with items", () => {
@@ -295,7 +43,7 @@ describe("formatTextOutput", () => {
         Improvements  0
          Regressions  0
            Unchanged  0
-             Initial  1
+             Initial  3
               Checks  1
               Issues  3
 
@@ -335,7 +83,7 @@ describe("formatTextOutput", () => {
         Improvements  0
          Regressions  0
            Unchanged  0
-             Initial  1
+             Initial  0
               Checks  1
               Issues  0
 
@@ -384,7 +132,7 @@ describe("formatTextOutput", () => {
         Improvements  0
          Regressions  0
            Unchanged  0
-             Initial  1
+             Initial  15
               Checks  1
               Issues  15
 
@@ -423,7 +171,7 @@ describe("formatTextOutput", () => {
           Issues  2
 
         Improvements  0
-         Regressions  1
+         Regressions  2
            Unchanged  0
              Initial  0
               Checks  1
@@ -463,7 +211,7 @@ describe("formatTextOutput", () => {
         Duration  1.2s
           Issues  0
 
-        Improvements  1
+        Improvements  2
          Regressions  0
            Unchanged  0
              Initial  0
@@ -624,7 +372,7 @@ describe("formatTextOutput", () => {
 
         Improvements  0
          Regressions  0
-           Unchanged  2
+           Unchanged  1
              Initial  0
               Checks  2
               Issues  1
@@ -682,7 +430,7 @@ describe("formatTextOutput", () => {
 
         Improvements  0
          Regressions  0
-           Unchanged  1
+           Unchanged  0
              Initial  0
               Checks  1
               Issues  0
@@ -731,7 +479,7 @@ describe("formatTextOutput", () => {
           Issues  15
 
         Improvements  0
-         Regressions  1
+         Regressions  15
            Unchanged  0
              Initial  0
               Checks  1
@@ -779,7 +527,7 @@ describe("formatTextOutput", () => {
 
           Issues  0
 
-        Improvements  1
+        Improvements  12
          Regressions  0
            Unchanged  0
              Initial  0
@@ -984,5 +732,81 @@ describe("formatTextOutput", () => {
     const output = stripAnsi(formatTextOutput(result));
 
     expect(output).toMatch(/^eslint:[\s\S]*\n\ntypescript:/);
+  });
+
+  it("should count total issues in summary across all categories, not number of checks", () => {
+    const result = {
+      exitCode: 1,
+      hasImprovement: true,
+      hasRegression: true,
+      results: [
+        {
+          baseline: {
+            items: ["old1", "old2", "old3", "old4"],
+            type: "items" as const,
+          },
+          checkId: "eslint",
+          duration: 339,
+          hasImprovement: true,
+          hasRegression: false,
+          isInitial: false,
+          newItems: [],
+          removedItems: ["old1", "old2", "old3", "old4"],
+          snapshot: { items: [], type: "items" as const },
+        },
+        {
+          baseline: { items: [], type: "items" as const },
+          checkId: "typescript",
+          duration: 514,
+          hasImprovement: false,
+          hasRegression: true,
+          isInitial: false,
+          newItems: ["new1", "new2", "new3"],
+          removedItems: [],
+          snapshot: {
+            items: ["new1", "new2", "new3"],
+            type: "items" as const,
+          },
+        },
+        {
+          baseline: {
+            items: ["unchanged1", "unchanged2"],
+            type: "items" as const,
+          },
+          checkId: "prettier",
+          hasImprovement: false,
+          hasRegression: false,
+          isInitial: false,
+          newItems: [],
+          removedItems: [],
+          snapshot: {
+            items: ["unchanged1", "unchanged2"],
+            type: "items" as const,
+          },
+        },
+        {
+          baseline: undefined,
+          checkId: "markdownlint",
+          hasImprovement: false,
+          hasRegression: false,
+          isInitial: true,
+          newItems: [],
+          removedItems: [],
+          snapshot: {
+            items: ["initial1", "initial2", "initial3", "initial4", "initial5"],
+            type: "items" as const,
+          },
+        },
+      ],
+      totalDuration: 1500,
+    };
+
+    const output = stripAnsi(formatTextOutput(result));
+
+    expect(output).toContain("Improvements  4");
+    expect(output).toContain("Regressions  3");
+    expect(output).toContain("Unchanged  2");
+    expect(output).toContain("Initial  5");
+    expect(output).toContain("Checks  4");
   });
 });
