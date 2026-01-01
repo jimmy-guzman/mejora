@@ -2,10 +2,20 @@ import type { RunResult } from "@/types";
 
 import { average } from "./average";
 
+interface Check {
+  checkId: string;
+  duration: number | undefined;
+  hasImprovement: boolean;
+  hasRegression: boolean;
+  isInitial: boolean;
+  newItems: string[];
+  removedItems: string[];
+  totalIssues: number;
+}
+
 export function formatJsonOutput(result: RunResult) {
   const { results, totalDuration } = result;
   const checksRun = results.length;
-
   const improvementChecks: string[] = [];
   const regressionChecks: string[] = [];
   const initialChecks: string[] = [];
@@ -17,38 +27,34 @@ export function formatJsonOutput(result: RunResult) {
   let unchanged = 0;
   let totalIssues = 0;
 
-  const checks = Array.from({ length: checksRun });
+  const checks: Check[] = [];
 
-  for (let i = 0; i < checksRun; i++) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- checked by loop condition
-    const check = results[i]!;
+  for (const check of results) {
     const issues = check.snapshot.items.length;
 
     totalIssues += issues;
 
     if (check.isInitial) {
-      initial++;
+      initial += issues;
       initialChecks.push(check.checkId);
     } else {
-      const { hasImprovement, hasRegression } = check;
-
-      if (hasImprovement) {
-        improvements++;
+      if (check.hasImprovement) {
+        improvements += check.removedItems.length;
         improvementChecks.push(check.checkId);
       }
 
-      if (hasRegression) {
-        regressions++;
+      if (check.hasRegression) {
+        regressions += check.newItems.length;
         regressionChecks.push(check.checkId);
       }
 
-      if (!hasImprovement && !hasRegression) {
-        unchanged++;
+      if (!check.hasImprovement && !check.hasRegression) {
+        unchanged += issues;
         unchangedChecks.push(check.checkId);
       }
     }
 
-    checks[i] = {
+    checks.push({
       checkId: check.checkId,
       duration: check.duration,
       hasImprovement: check.hasImprovement,
@@ -57,7 +63,7 @@ export function formatJsonOutput(result: RunResult) {
       newItems: check.newItems,
       removedItems: check.removedItems,
       totalIssues: issues,
-    };
+    });
   }
 
   const output = {

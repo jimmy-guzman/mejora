@@ -200,11 +200,8 @@ function formatSummary(result: RunResult) {
 export function formatTextOutput(result: RunResult) {
   const lines: string[] = [];
 
-  for (let i = 0; i < result.results.length; i++) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- checked by loop condition
-    const check = result.results[i]!;
-
-    lines.push(...formatCheckResult(check, i === 0));
+  for (const [index, check] of result.results.entries()) {
+    lines.push(...formatCheckResult(check, index === 0));
   }
 
   if (lines.length > 0) {
