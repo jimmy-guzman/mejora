@@ -1,4 +1,11 @@
-import { makeCacheKey } from "./cache";
+import { mkdir } from "node:fs/promises";
+
+import { resolve } from "pathe";
+
+import { ensureCacheDir, makeCacheKey } from "./cache";
+
+vi.mock("node:fs/promises");
+vi.mock("pathe");
 
 describe("makeCacheKey", () => {
   it("should be stable for the same input", () => {
@@ -63,5 +70,88 @@ describe("makeCacheKey", () => {
     const key2 = makeCacheKey({ files: ["b.ts", "a.ts"] });
 
     expect(key1).not.toBe(key2);
+  });
+});
+
+describe("ensureCacheDir", () => {
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("should create cache directory in node_modules/.cache/mejora", async () => {
+    vi.mocked(resolve).mockReturnValue("/project/node_modules/.cache/mejora");
+    vi.mocked(mkdir).mockResolvedValue(undefined);
+
+    const result = await ensureCacheDir("/project");
+
+    expect(resolve).toHaveBeenCalledWith(
+      "/project",
+      "node_modules",
+      ".cache",
+      "mejora",
+    );
+    expect(mkdir).toHaveBeenCalledWith("/project/node_modules/.cache/mejora", {
+      recursive: true,
+    });
+    expect(result).toBe("/project/node_modules/.cache/mejora");
+  });
+
+  it("should use process.cwd() when no cwd provided", async () => {
+    vi.spyOn(process, "cwd").mockReturnValue("/default/path");
+    vi.mocked(resolve).mockReturnValue(
+      "/default/path/node_modules/.cache/mejora",
+    );
+    vi.mocked(mkdir).mockResolvedValue(undefined);
+
+    await ensureCacheDir();
+
+    expect(resolve).toHaveBeenCalledWith(
+      "/default/path",
+      "node_modules",
+      ".cache",
+      "mejora",
+    );
+  });
+
+  it("should include subpath when provided", async () => {
+    vi.mocked(resolve).mockReturnValue(
+      "/project/node_modules/.cache/mejora/typescript",
+    );
+    vi.mocked(mkdir).mockResolvedValue(undefined);
+
+    const result = await ensureCacheDir("/project", "typescript");
+
+    expect(resolve).toHaveBeenCalledWith(
+      "/project",
+      "node_modules",
+      ".cache",
+      "mejora",
+      "typescript",
+    );
+    expect(mkdir).toHaveBeenCalledWith(
+      "/project/node_modules/.cache/mejora/typescript",
+      { recursive: true },
+    );
+    expect(result).toBe("/project/node_modules/.cache/mejora/typescript");
+  });
+
+  it("should create directory recursively", async () => {
+    vi.mocked(resolve).mockReturnValue("/project/node_modules/.cache/mejora");
+    vi.mocked(mkdir).mockResolvedValue(undefined);
+
+    await ensureCacheDir("/project");
+
+    expect(mkdir).toHaveBeenCalledWith(expect.any(String), { recursive: true });
+  });
+
+  it("should handle mkdir errors", async () => {
+    vi.mocked(resolve).mockReturnValue("/project/node_modules/.cache/mejora");
+    const error = new Error("Permission denied");
+
+    vi.mocked(mkdir).mockRejectedValue(error);
+
+    await expect(ensureCacheDir("/project")).rejects.toThrowError(
+      "Permission denied",
+    );
   });
 });

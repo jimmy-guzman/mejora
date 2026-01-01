@@ -2,6 +2,8 @@ import { relative, resolve, sep } from "pathe";
 
 import type { TypeScriptCheckConfig } from "@/types";
 
+import { ensureCacheDir, makeCacheKey } from "@/utils/cache";
+
 export async function validateTypescriptDeps() {
   try {
     await import("typescript");
@@ -34,14 +36,17 @@ const createItem = ({
 
 export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
   const {
-    createProgram,
+    createIncrementalCompilerHost,
+    createIncrementalProgram,
     findConfigFile,
     flattenDiagnosticMessageText,
     getPreEmitDiagnostics,
     parseJsonConfigFileContent,
     readConfigFile,
     sys,
+    version,
   } = await import("typescript");
+
   const cwd = process.cwd();
 
   const fileExists = sys.fileExists.bind(sys);
@@ -70,16 +75,53 @@ export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
   const parseResult = parseJsonConfigFileContent(
     TSConfig,
     sys,
-    process.cwd(),
+    cwd,
     config.overrides?.compilerOptions,
   );
 
-  const program = createProgram({
-    options: parseResult.options,
+  const cacheDir = await ensureCacheDir(cwd, "typescript");
+
+  const cacheKey = makeCacheKey({
+    configPath,
+    overrides: config.overrides?.compilerOptions ?? {},
+    parsedOptions: parseResult.options,
+    typescriptVersion: version,
+  });
+
+  const tsBuildInfoFile = resolve(cacheDir, `${cacheKey}.tsbuildinfo`);
+
+  const options = {
+    ...parseResult.options,
+    incremental: true,
+    noEmit: true,
+    skipLibCheck: parseResult.options.skipLibCheck ?? true,
+    tsBuildInfoFile,
+  };
+
+  const host = createIncrementalCompilerHost(options, sys);
+
+  const realWriteFile = host.writeFile.bind(host);
+
+  host.writeFile = (fileName, content, ...rest) => {
+    const out = resolve(fileName);
+
+    if (out !== resolve(tsBuildInfoFile)) return;
+
+    realWriteFile(fileName, content, ...rest);
+  };
+
+  const incrementalProgram = createIncrementalProgram({
+    host,
+    options,
+    projectReferences: parseResult.projectReferences ?? [],
     rootNames: parseResult.fileNames,
   });
 
+  const program = incrementalProgram.getProgram();
+
   const diagnostics = getPreEmitDiagnostics(program);
+
+  incrementalProgram.emit();
 
   const workspaceDiagnostics = diagnostics.filter((diagnostic) => {
     if (!diagnostic.file) return true;
@@ -119,6 +161,7 @@ export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
         diagnostic.messageText,
         "\n",
       );
+
       const item = `(global) - TS${diagnostic.code}: ${message}` as const;
 
       items.push(item);
