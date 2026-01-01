@@ -2,7 +2,8 @@
 import { parseArgs } from "node:util";
 
 import { loadConfig } from "./config";
-import { formatJsonOutput, formatTextOutput } from "./output";
+import { formatJsonOutput } from "./outputs/json";
+import { formatTextOutput } from "./outputs/text";
 import { MejoraRunner } from "./runner";
 import { logger } from "./utils/logger";
 
@@ -80,5 +81,6 @@ try {
   } else {
     logger.error(error);
   }
+
   process.exit(2);
 }
