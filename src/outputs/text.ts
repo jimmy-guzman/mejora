@@ -12,7 +12,9 @@ const MAX_ITEMS_TO_DISPLAY = 10;
 const ITEM_INDENT = "     ";
 const MESSAGE_INDENT = `${ITEM_INDENT}  `;
 
-function formatItemArrow(kind: "improvement" | "initial" | "regression") {
+type Kind = "improvement" | "initial" | "regression";
+
+function formatItemArrow(kind: Kind) {
   if (kind === "initial") {
     return dim("→");
   }
@@ -37,10 +39,7 @@ function formatLocation(file: string, line: number, column: number) {
   return `${dirPart}${namePart}${posPart}`;
 }
 
-function formatItem(
-  item: DiagnosticItem,
-  kind: "improvement" | "initial" | "regression",
-) {
+function formatItem(item: DiagnosticItem, kind: Kind) {
   const arrow = formatItemArrow(kind);
   const location = formatLocation(item.file, item.line, item.column);
   const code = dim(item.rule);
@@ -48,14 +47,10 @@ function formatItem(
   return [`${arrow} ${location}  ${code}`, item.message];
 }
 
-function formatItemList(
-  items: DiagnosticItem[],
-  kind: "improvement" | "initial" | "regression",
-  maxItems = MAX_ITEMS_TO_DISPLAY,
-) {
+function formatItemList(items: DiagnosticItem[], kind: Kind) {
   const lines: string[] = [];
 
-  const itemsToShow = items.slice(0, maxItems);
+  const itemsToShow = items.slice(0, MAX_ITEMS_TO_DISPLAY);
 
   for (const item of itemsToShow) {
     const [head, message] = formatItem(item, kind);
