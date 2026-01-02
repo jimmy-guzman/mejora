@@ -83,9 +83,19 @@ function hasRelocation(
   return false;
 }
 
+/**
+ * Creates a keyed lookup for diagnostic items.
+ *
+ * Assumes item IDs are unique within a comparison.
+ * Duplicate IDs will be overwritten (last item wins).
+ */
+function indexItems(items: DiagnosticItem[] = []) {
+  return new Map(items.map((item) => [item.id, item]));
+}
+
 function compareItems(snapshot: ItemsSnapshot, baseline: BaselineEntry) {
-  const currentItems = new Map(snapshot.items.map((item) => [item.id, item]));
-  const baselineItems = new Map(baseline.items?.map((item) => [item.id, item]));
+  const currentItems = indexItems(snapshot.items);
+  const baselineItems = indexItems(baseline.items);
 
   const newItems = findNewItems(currentItems, baselineItems);
   const removedItems = findRemovedItems(currentItems, baselineItems);
@@ -94,6 +104,15 @@ function compareItems(snapshot: ItemsSnapshot, baseline: BaselineEntry) {
   return createComparisonResult(newItems, removedItems, positionChanges);
 }
 
+/**
+ * Compares a snapshot against a baseline entry.
+ *
+ * @param snapshot - Current snapshot to compare.
+ *
+ * @param baseline - Baseline entry to compare against.
+ *
+ * @returns Comparison result.
+ */
 export function compareSnapshots(snapshot: Snapshot, baseline?: BaselineEntry) {
   if (!baseline) {
     return createInitialResult();
