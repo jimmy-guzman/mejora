@@ -21,17 +21,20 @@ export function sortByLocation<T extends HasLocation>(a: T, b: T) {
   return a.column - b.column;
 }
 
+export type DiagnosticSignature = `${string} - ${string}: ${string}`;
+export interface RawDiagnosticItem extends Omit<DiagnosticItem, "id"> {
+  signature: DiagnosticSignature;
+}
+
 /**
- * Assign stable IDs to DiagnosticItem objects based on their signature and relative location.
+ * Assign stable IDs to RawDiagnosticItem objects based on their signature and relative location.
  *
- * @param items  Array of items without IDs but with signatures.
+ * @param items Array of items without IDs but with signatures.
  *
- * @returns  Array of DiagnosticItem objects with assigned IDs.
+ * @returns Array of DiagnosticItem objects with assigned IDs.
  */
-export function assignIds(
-  items: (Omit<DiagnosticItem, "id"> & { signature: string })[],
-) {
-  const groups = new Map<string, typeof items>();
+export function assignStableIds(items: RawDiagnosticItem[]) {
+  const groups = new Map<DiagnosticSignature, typeof items>();
 
   for (const item of items) {
     const group = groups.get(item.signature) ?? [];

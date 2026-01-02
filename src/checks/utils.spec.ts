@@ -1,10 +1,10 @@
 import { hash } from "@/utils/hash";
 
-import { assignIds, sortByLocation } from "./utils";
+import { assignStableIds, sortByLocation } from "./utils";
 
-describe("assignIds", () => {
+describe("assignStableIds", () => {
   it("should assign ids based on relative position within a signature group", () => {
-    const signature = "sig";
+    const signature = "file - code: - message" as const;
 
     const items = [
       {
@@ -25,7 +25,7 @@ describe("assignIds", () => {
       },
     ];
 
-    const result = assignIds(items);
+    const result = assignStableIds(items);
 
     expect(result).toHaveLength(2);
     expect(result[0]?.id).toBe(hash(`${signature}:0`));
@@ -33,7 +33,7 @@ describe("assignIds", () => {
   });
 
   it("should preserve duplicate diagnostics with identical signatures", () => {
-    const signature = "dup";
+    const signature = "file - code: - message" as const;
 
     const items = [
       {
@@ -54,7 +54,7 @@ describe("assignIds", () => {
       },
     ];
 
-    const result = assignIds(items);
+    const result = assignStableIds(items);
 
     expect(result).toHaveLength(2);
     expect(new Set(result.map((item) => item.id)).size).toBe(2);
@@ -68,7 +68,7 @@ describe("assignIds", () => {
         file: "a.ts",
         line: 1,
         message: "a",
-        signature: "sig-a",
+        signature: "a.ts - A: - a" as const,
       },
       {
         code: "B",
@@ -76,20 +76,20 @@ describe("assignIds", () => {
         file: "b.ts",
         line: 1,
         message: "b",
-        signature: "sig-b",
+        signature: "b.ts - B: - b" as const,
       },
     ];
 
-    const result = assignIds(items);
+    const result = assignStableIds(items);
 
     expect(result.map((item) => item.id)).toStrictEqual([
-      hash("sig-a:0"),
-      hash("sig-b:0"),
+      hash("a.ts - A: - a:0"),
+      hash("b.ts - B: - b:0"),
     ]);
   });
 
   it("should assign ids based on sorted location rather than input order", () => {
-    const signature = "sig";
+    const signature = "file - code: - message" as const;
 
     const items = [
       {
@@ -110,7 +110,7 @@ describe("assignIds", () => {
       },
     ];
 
-    const result = assignIds(items);
+    const result = assignStableIds(items);
 
     expect(result[0]?.line).toBe(1);
     expect(result[0]?.id).toBe(hash(`${signature}:0`));
@@ -120,7 +120,7 @@ describe("assignIds", () => {
   });
 
   it("should return DiagnosticItem objects", () => {
-    const signature = "sig";
+    const signature = "file - code: - message" as const;
 
     const items = [
       {
@@ -133,7 +133,7 @@ describe("assignIds", () => {
       },
     ];
 
-    const result = assignIds(items);
+    const result = assignStableIds(items);
 
     const item = result[0];
 

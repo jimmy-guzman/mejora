@@ -1,10 +1,10 @@
 import { relative, resolve, sep } from "pathe";
 
-import type { DiagnosticItem, TypeScriptCheckConfig } from "@/types";
+import type { RawDiagnosticItem } from "@/checks/utils";
+import type { TypeScriptCheckConfig } from "@/types";
 
-import { assignIds, sortByLocation } from "@/checks/utils";
+import { assignStableIds, sortByLocation } from "@/checks/utils";
 import { createCacheKey, ensureCacheDir } from "@/utils/cache";
-import { hash } from "@/utils/hash";
 
 export async function validateTypescriptDeps() {
   try {
@@ -116,7 +116,7 @@ export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
     );
   });
 
-  const rawItems: (Omit<DiagnosticItem, "id"> & { signature: string })[] = [];
+  const rawItems: RawDiagnosticItem[] = [];
 
   for (const diagnostic of workspaceDiagnostics) {
     const message = flattenDiagnosticMessageText(diagnostic.messageText, "\n");
@@ -128,7 +128,7 @@ export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
       );
 
       const file = relative(cwd, diagnostic.file.fileName);
-      const signature = hash(`${file} - ${tsCode}: ${message}`);
+      const signature = `${file} - ${tsCode}: ${message}` as const;
 
       rawItems.push({
         code: tsCode,
@@ -140,7 +140,7 @@ export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
       });
     } else {
       const file = "(global)";
-      const signature = hash(`${file} - ${tsCode}: ${message}`);
+      const signature = `${file} - ${tsCode}: ${message}` as const;
 
       rawItems.push({
         code: tsCode,
@@ -153,7 +153,7 @@ export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
     }
   }
 
-  const items = assignIds(rawItems);
+  const items = assignStableIds(rawItems);
 
   return {
     items: items.toSorted(sortByLocation),

@@ -1,10 +1,10 @@
 import { relative } from "pathe";
 
-import type { DiagnosticItem, ESLintCheckConfig } from "@/types";
+import type { RawDiagnosticItem } from "@/checks/utils";
+import type { ESLintCheckConfig } from "@/types";
 
-import { assignIds, sortByLocation } from "@/checks/utils";
+import { assignStableIds, sortByLocation } from "@/checks/utils";
 import { createCacheKey, ensureCacheDir } from "@/utils/cache";
-import { hash } from "@/utils/hash";
 
 // TODO: what about version
 export async function validateEslintDeps() {
@@ -31,7 +31,7 @@ export async function runEslintCheck(config: ESLintCheckConfig) {
 
   const results = await eslint.lintFiles(config.files);
 
-  const rawItems: (Omit<DiagnosticItem, "id"> & { signature: string })[] = [];
+  const rawItems: RawDiagnosticItem[] = [];
 
   for (const { filePath, messages } of results) {
     const file = relative(cwd, filePath);
@@ -39,7 +39,7 @@ export async function runEslintCheck(config: ESLintCheckConfig) {
     for (const { column, line, message, ruleId } of messages) {
       if (!ruleId) continue;
 
-      const signature = hash(`${file} - ${ruleId}: ${message}`);
+      const signature = `${file} - ${ruleId}: ${message}` as const;
 
       rawItems.push({
         code: ruleId,
@@ -52,7 +52,7 @@ export async function runEslintCheck(config: ESLintCheckConfig) {
     }
   }
 
-  const items = assignIds(rawItems);
+  const items = assignStableIds(rawItems);
 
   return {
     items: items.toSorted(sortByLocation),

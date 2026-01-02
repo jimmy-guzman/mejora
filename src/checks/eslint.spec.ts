@@ -120,7 +120,7 @@ describe("runEslintCheck", () => {
     expect(result.items[1]?.code).toBe("semi");
   });
 
-  it("should sort items by ID", async () => {
+  it("should sort items by file name, line number, and column number", async () => {
     mockLintFiles.mockResolvedValue([
       {
         filePath: "/test/project/zebra.js",
