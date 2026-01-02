@@ -182,23 +182,25 @@ If there is any difference between the committed baseline and the expected resul
 
 ## Merge Conflicts
 
-`mejora` automatically resolves conflicts in both `baseline.json` and `baseline.md`:
+`mejora` can automatically resolve merge conflicts in both `baseline.json` and `baseline.md`.
+
+After merging branches, you may see conflicts like:
 
 ```bash
-# After merging branches with baseline changes
 $ git status
-  both modified:   .mejora/baseline.json
-  both modified:   .mejora/baseline.md
+both modified:   .mejora/baseline.json
+both modified:   .mejora/baseline.md
+```
 
-# Just run mejora - both files are auto-resolved
+Instead of resolving these by hand, simply run `mejora`:
+
+```bash
 $ mejora
 Merge conflict detected in baseline, auto-resolving...
 ✔ Baseline conflict resolved
-
-# Commit the resolved files
-$ git add .mejora/
-$ git commit -m "Merge feature branch"
 ```
+
+`mejora` reconciles both sides of the conflict and regenerates a consistent baseline.
 
 ## Credits
 
