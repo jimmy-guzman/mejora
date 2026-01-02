@@ -1,3 +1,21 @@
+# [2.0.0](https://github.com/jimmy-guzman/mejora/compare/v1.6.2...v2.0.0) (2026-01-02)
+
+
+### Features
+
+* ✨ use stable diagnostic identifiers to prevent baseline churn ([#44](https://github.com/jimmy-guzman/mejora/issues/44)) ([b4155cd](https://github.com/jimmy-guzman/mejora/commit/b4155cd110a30b3e9fd4310cce0962a5d8a9c758))
+
+
+### BREAKING CHANGES
+
+* 💥 `baseline.json` now stores structured diagnostic items instead of strings.
+
+Diagnostics are identified using stable, deterministic identifiers that are resilient to
+line shifts and refactors, while remaining unique for repeated issues. This prevents
+baseline churn caused by formatting or code movement.
+
+Existing baselines must be regenerated.
+
 ## [1.6.2](https://github.com/jimmy-guzman/mejora/compare/v1.6.1...v1.6.2) (2026-01-01)
 
 
