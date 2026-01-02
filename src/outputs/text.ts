@@ -1,36 +1,72 @@
+import { basename, dirname } from "pathe";
+
 import type { CheckResult, DiagnosticItem, RunResult } from "@/types";
 
-import { blue, bold, dim, gray, green, red } from "@/utils/colors";
+import { blue, bold, dim, gray, green, red, underline } from "@/utils/colors";
 import { duration } from "@/utils/duration";
 import { plural } from "@/utils/text";
 
 import { average } from "./average";
 
 const MAX_ITEMS_TO_DISPLAY = 10;
+const ITEM_INDENT = "     ";
+const MESSAGE_INDENT = `${ITEM_INDENT}  `;
 
-function formatItem(item: DiagnosticItem) {
-  if (item.line > 0) {
-    return `${item.file}:${item.line}:${item.column} - ${item.code}: ${item.message}`;
+function formatItemArrow(kind: "improvement" | "initial" | "regression") {
+  if (kind === "initial") {
+    return dim("→");
   }
 
-  return `${item.file} - ${item.code}: ${item.message}`;
+  if (kind === "improvement") {
+    return green("↑");
+  }
+
+  return red("↓");
+}
+
+function formatLocation(file: string, line: number, column: number) {
+  const dir = dirname(file);
+  const name = basename(file);
+
+  const position = line > 0 ? `:${line}:${column > 0 ? column : 1}` : "";
+
+  const dirPart = dir === "." ? "" : dim(`${dir}/`);
+  const namePart = underline(name);
+  const posPart = position ? dim(position) : "";
+
+  return `${dirPart}${namePart}${posPart}`;
+}
+
+function formatItem(
+  item: DiagnosticItem,
+  kind: "improvement" | "initial" | "regression",
+) {
+  const arrow = formatItemArrow(kind);
+  const location = formatLocation(item.file, item.line, item.column);
+  const code = dim(item.code);
+
+  return [`${arrow} ${location}  ${code}`, item.message];
 }
 
 function formatItemList(
   items: DiagnosticItem[],
+  kind: "improvement" | "initial" | "regression",
   maxItems = MAX_ITEMS_TO_DISPLAY,
 ) {
   const lines: string[] = [];
+
   const itemsToShow = items.slice(0, maxItems);
 
   for (const item of itemsToShow) {
-    lines.push(`     ${dim(formatItem(item))}`);
+    const [head, message] = formatItem(item, kind);
+
+    lines.push(`${ITEM_INDENT}${head}`, `${MESSAGE_INDENT}${message}`);
   }
 
-  const remainingCount = items.length - maxItems;
+  const remainingCount = items.length - itemsToShow.length;
 
   if (remainingCount > 0) {
-    lines.push(`     ${dim(`... and ${remainingCount} more`)}`);
+    lines.push(`${ITEM_INDENT}${dim(`... and ${remainingCount} more`)}`);
   }
 
   return lines;
@@ -60,7 +96,7 @@ function formatRegressions(check: CheckResult) {
 
   return [
     `  ${red(count)} new ${plural(count, "issue")} (${plural(count, "regression")}):`,
-    ...formatItemList(check.newItems),
+    ...formatItemList(check.newItems, "regression"),
   ];
 }
 
@@ -71,7 +107,7 @@ function formatImprovements(check: CheckResult) {
 
   return [
     `  ${green(count)} ${plural(count, "issue")} fixed (${plural(count, "improvement")}):`,
-    ...formatItemList(check.removedItems),
+    ...formatItemList(check.removedItems, "improvement"),
   ];
 }
 
@@ -85,7 +121,7 @@ function formatInitialBaseline(check: CheckResult, isFirst: boolean) {
   ];
 
   if (check.snapshot.items.length > 0) {
-    lines.push(...formatItemList(check.snapshot.items));
+    lines.push(...formatItemList(check.snapshot.items, "initial"));
   }
 
   lines.push("", ...formatMetadata(check));

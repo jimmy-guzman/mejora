@@ -22,3 +22,5 @@ export const green = createColor("green");
 export const red = createColor("red");
 
 export const gray = createColor("gray");
+
+export const underline = createColor("underline");
