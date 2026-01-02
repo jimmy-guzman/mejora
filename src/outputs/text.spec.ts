@@ -27,7 +27,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/a.ts",
-                id: "src/a.ts-10-no-unused-vars",
+                id: "abc123def456",
                 line: 10,
                 message: "error1",
                 rule: "no-unused-vars",
@@ -35,7 +35,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/b.ts",
-                id: "src/b.ts-20-no-undef",
+                id: "111aaa222bbb",
                 line: 20,
                 message: "error2",
                 rule: "no-undef",
@@ -43,7 +43,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/c.ts",
-                id: "src/c.ts-30-semi",
+                id: "333ccc444ddd",
                 line: 30,
                 message: "error3",
                 rule: "semi",
@@ -126,7 +126,7 @@ describe("formatTextOutput", () => {
       return {
         column: 1,
         file: `src/file${i}.ts`,
-        id: `src/file${i}.ts-${i + 1}-error`,
+        id: `hash${i.toString().padStart(3, "0")}abc`,
         line: i + 1,
         message: `error${i}`,
         rule: "error",
@@ -179,7 +179,7 @@ describe("formatTextOutput", () => {
             {
               column: 1,
               file: "src/a.ts",
-              id: "src/a.ts-10-no-unused-vars",
+              id: "abc123def456",
               line: 10,
               message: "error1",
               rule: "no-unused-vars",
@@ -187,7 +187,7 @@ describe("formatTextOutput", () => {
             {
               column: 1,
               file: "src/b.ts",
-              id: "src/b.ts-20-no-undef",
+              id: "111aaa222bbb",
               line: 20,
               message: "error2",
               rule: "no-undef",
@@ -199,7 +199,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/a.ts",
-                id: "src/a.ts-10-no-unused-vars",
+                id: "abc123def456",
                 line: 10,
                 message: "error1",
                 rule: "no-unused-vars",
@@ -207,7 +207,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/b.ts",
-                id: "src/b.ts-20-no-undef",
+                id: "111aaa222bbb",
                 line: 20,
                 message: "error2",
                 rule: "no-undef",
@@ -254,7 +254,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/a.ts",
-                id: "src/a.ts-10-no-unused-vars",
+                id: "abc123def456",
                 line: 10,
                 message: "error1",
                 rule: "no-unused-vars",
@@ -262,7 +262,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/b.ts",
-                id: "src/b.ts-20-no-undef",
+                id: "111aaa222bbb",
                 line: 20,
                 message: "error2",
                 rule: "no-undef",
@@ -281,7 +281,7 @@ describe("formatTextOutput", () => {
             {
               column: 1,
               file: "src/a.ts",
-              id: "src/a.ts-10-no-unused-vars",
+              id: "abc123def456",
               line: 10,
               message: "error1",
               rule: "no-unused-vars",
@@ -289,7 +289,7 @@ describe("formatTextOutput", () => {
             {
               column: 1,
               file: "src/b.ts",
-              id: "src/b.ts-20-no-undef",
+              id: "111aaa222bbb",
               line: 20,
               message: "error2",
               rule: "no-undef",
@@ -335,7 +335,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/a.ts",
-                id: "src/a.ts-10-no-unused-vars",
+                id: "abc123def456",
                 line: 10,
                 message: "error1",
                 rule: "no-unused-vars",
@@ -343,7 +343,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/b.ts",
-                id: "src/b.ts-20-no-undef",
+                id: "111aaa222bbb",
                 line: 20,
                 message: "error2",
                 rule: "no-undef",
@@ -361,7 +361,7 @@ describe("formatTextOutput", () => {
             {
               column: 1,
               file: "src/c.ts",
-              id: "src/c.ts-30-semi",
+              id: "333ccc444ddd",
               line: 30,
               message: "error3",
               rule: "semi",
@@ -371,7 +371,7 @@ describe("formatTextOutput", () => {
             {
               column: 1,
               file: "src/a.ts",
-              id: "src/a.ts-10-no-unused-vars",
+              id: "abc123def456",
               line: 10,
               message: "error1",
               rule: "no-unused-vars",
@@ -382,7 +382,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/b.ts",
-                id: "src/b.ts-20-no-undef",
+                id: "111aaa222bbb",
                 line: 20,
                 message: "error2",
                 rule: "no-undef",
@@ -390,7 +390,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/c.ts",
-                id: "src/c.ts-30-semi",
+                id: "333ccc444ddd",
                 line: 30,
                 message: "error3",
                 rule: "semi",
@@ -438,7 +438,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/a.ts",
-                id: "src/a.ts-10-no-unused-vars",
+                id: "abc123def456",
                 line: 10,
                 message: "error1",
                 rule: "no-unused-vars",
@@ -459,7 +459,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/a.ts",
-                id: "src/a.ts-10-no-unused-vars",
+                id: "abc123def456",
                 line: 10,
                 message: "error1",
                 rule: "no-unused-vars",
@@ -498,7 +498,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/a.ts",
-                id: "src/a.ts-10-no-unused-vars",
+                id: "abc123def456",
                 line: 10,
                 message: "error1",
                 rule: "no-unused-vars",
@@ -518,7 +518,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/a.ts",
-                id: "src/a.ts-10-no-unused-vars",
+                id: "abc123def456",
                 line: 10,
                 message: "error1",
                 rule: "no-unused-vars",
@@ -569,7 +569,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/a.ts",
-                id: "src/a.ts-10-TS2304",
+                id: "789xyz012tuv",
                 line: 10,
                 message: "error1",
                 rule: "TS2304",
@@ -590,7 +590,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/a.ts",
-                id: "src/a.ts-10-TS2304",
+                id: "789xyz012tuv",
                 line: 10,
                 message: "error1",
                 rule: "TS2304",
@@ -684,7 +684,7 @@ describe("formatTextOutput", () => {
       return {
         column: 1,
         file: `src/file${i}.ts`,
-        id: `src/file${i}.ts-${i + 1}-error`,
+        id: `hash${i.toString().padStart(3, "0")}abc`,
         line: i + 1,
         message: `error${i}`,
         rule: "error",
@@ -724,7 +724,7 @@ describe("formatTextOutput", () => {
       return {
         column: 1,
         file: `src/file${i}.ts`,
-        id: `src/file${i}.ts-${i + 1}-error`,
+        id: `hash${i.toString().padStart(3, "0")}abc`,
         line: i + 1,
         message: `error${i}`,
         rule: "error",
@@ -812,7 +812,7 @@ describe("formatTextOutput", () => {
             {
               column: 1,
               file: "src/a.ts",
-              id: "src/a.ts-10-no-unused-vars",
+              id: "abc123def456",
               line: 10,
               message: "error1",
               rule: "no-unused-vars",
@@ -824,7 +824,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/a.ts",
-                id: "src/a.ts-10-no-unused-vars",
+                id: "abc123def456",
                 line: 10,
                 message: "error1",
                 rule: "no-unused-vars",
@@ -839,7 +839,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/b.ts",
-                id: "src/b.ts-20-TS2304",
+                id: "789xyz012tuv",
                 line: 20,
                 message: "error2",
                 rule: "TS2304",
@@ -858,7 +858,7 @@ describe("formatTextOutput", () => {
             {
               column: 1,
               file: "src/b.ts",
-              id: "src/b.ts-20-TS2304",
+              id: "789xyz012tuv",
               line: 20,
               message: "error2",
               rule: "TS2304",
@@ -937,7 +937,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/a.ts",
-                id: "src/a.ts-10-no-unused-vars",
+                id: "abc123def456",
                 line: 10,
                 message: "error1",
                 rule: "no-unused-vars",
@@ -955,7 +955,7 @@ describe("formatTextOutput", () => {
             {
               column: 1,
               file: "src/a.ts",
-              id: "src/a.ts-10-no-unused-vars",
+              id: "abc123def456",
               line: 10,
               message: "error1",
               rule: "no-unused-vars",
@@ -1017,7 +1017,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/a.ts",
-                id: "src/a.ts-10-no-unused-vars",
+                id: "abc123def456",
                 line: 10,
                 message: "error1",
                 rule: "no-unused-vars",
@@ -1040,7 +1040,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/b.ts",
-                id: "src/b.ts-20-TS2304",
+                id: "789xyz012tuv",
                 line: 20,
                 message: "error2",
                 rule: "TS2304",
@@ -1069,7 +1069,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/a.ts",
-                id: "src/a.ts-10-no-unused-vars",
+                id: "abc123def456",
                 line: 10,
                 message: "error1",
                 rule: "no-unused-vars",
@@ -1087,7 +1087,7 @@ describe("formatTextOutput", () => {
             {
               column: 1,
               file: "src/a.ts",
-              id: "src/a.ts-10-no-unused-vars",
+              id: "abc123def456",
               line: 10,
               message: "error1",
               rule: "no-unused-vars",
@@ -1101,7 +1101,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/b.ts",
-                id: "src/b.ts-20-TS2304",
+                id: "789xyz012tuv",
                 line: 20,
                 message: "error2",
                 rule: "TS2304",
@@ -1119,7 +1119,7 @@ describe("formatTextOutput", () => {
             {
               column: 1,
               file: "src/b.ts",
-              id: "src/b.ts-20-TS2304",
+              id: "789xyz012tuv",
               line: 20,
               message: "error2",
               rule: "TS2304",
@@ -1147,7 +1147,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/a.ts",
-                id: "src/a.ts-1-old1",
+                id: "aaa111",
                 line: 1,
                 message: "old1",
                 rule: "old1",
@@ -1155,7 +1155,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/a.ts",
-                id: "src/a.ts-2-old2",
+                id: "aaa222",
                 line: 2,
                 message: "old2",
                 rule: "old2",
@@ -1163,7 +1163,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/a.ts",
-                id: "src/a.ts-3-old3",
+                id: "aaa333",
                 line: 3,
                 message: "old3",
                 rule: "old3",
@@ -1171,7 +1171,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/a.ts",
-                id: "src/a.ts-4-old4",
+                id: "aaa444",
                 line: 4,
                 message: "old4",
                 rule: "old4",
@@ -1190,7 +1190,7 @@ describe("formatTextOutput", () => {
             {
               column: 1,
               file: "src/a.ts",
-              id: "src/a.ts-1-old1",
+              id: "aaa111",
               line: 1,
               message: "old1",
               rule: "old1",
@@ -1198,7 +1198,7 @@ describe("formatTextOutput", () => {
             {
               column: 1,
               file: "src/a.ts",
-              id: "src/a.ts-2-old2",
+              id: "aaa222",
               line: 2,
               message: "old2",
               rule: "old2",
@@ -1206,7 +1206,7 @@ describe("formatTextOutput", () => {
             {
               column: 1,
               file: "src/a.ts",
-              id: "src/a.ts-3-old3",
+              id: "aaa333",
               line: 3,
               message: "old3",
               rule: "old3",
@@ -1214,7 +1214,7 @@ describe("formatTextOutput", () => {
             {
               column: 1,
               file: "src/a.ts",
-              id: "src/a.ts-4-old4",
+              id: "aaa444",
               line: 4,
               message: "old4",
               rule: "old4",
@@ -1234,7 +1234,7 @@ describe("formatTextOutput", () => {
             {
               column: 1,
               file: "src/b.ts",
-              id: "src/b.ts-1-TS2304",
+              id: "bbb111",
               line: 1,
               message: "new1",
               rule: "TS2304",
@@ -1242,7 +1242,7 @@ describe("formatTextOutput", () => {
             {
               column: 1,
               file: "src/b.ts",
-              id: "src/b.ts-2-TS2304",
+              id: "bbb222",
               line: 2,
               message: "new2",
               rule: "TS2304",
@@ -1250,7 +1250,7 @@ describe("formatTextOutput", () => {
             {
               column: 1,
               file: "src/b.ts",
-              id: "src/b.ts-3-TS2304",
+              id: "bbb333",
               line: 3,
               message: "new3",
               rule: "TS2304",
@@ -1262,7 +1262,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/b.ts",
-                id: "src/b.ts-1-TS2304",
+                id: "bbb111",
                 line: 1,
                 message: "new1",
                 rule: "TS2304",
@@ -1270,7 +1270,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/b.ts",
-                id: "src/b.ts-2-TS2304",
+                id: "bbb222",
                 line: 2,
                 message: "new2",
                 rule: "TS2304",
@@ -1278,7 +1278,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/b.ts",
-                id: "src/b.ts-3-TS2304",
+                id: "bbb333",
                 line: 3,
                 message: "new3",
                 rule: "TS2304",
@@ -1293,7 +1293,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/c.ts",
-                id: "src/c.ts-1-unchanged1",
+                id: "ccc111",
                 line: 1,
                 message: "unchanged1",
                 rule: "unchanged1",
@@ -1301,7 +1301,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/c.ts",
-                id: "src/c.ts-2-unchanged2",
+                id: "ccc222",
                 line: 2,
                 message: "unchanged2",
                 rule: "unchanged2",
@@ -1321,7 +1321,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/c.ts",
-                id: "src/c.ts-1-unchanged1",
+                id: "ccc111",
                 line: 1,
                 message: "unchanged1",
                 rule: "unchanged1",
@@ -1329,7 +1329,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/c.ts",
-                id: "src/c.ts-2-unchanged2",
+                id: "ccc222",
                 line: 2,
                 message: "unchanged2",
                 rule: "unchanged2",
@@ -1352,7 +1352,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/d.ts",
-                id: "src/d.ts-1-initial1",
+                id: "ddd111",
                 line: 1,
                 message: "initial1",
                 rule: "initial1",
@@ -1360,7 +1360,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/d.ts",
-                id: "src/d.ts-2-initial2",
+                id: "ddd222",
                 line: 2,
                 message: "initial2",
                 rule: "initial2",
@@ -1368,7 +1368,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/d.ts",
-                id: "src/d.ts-3-initial3",
+                id: "ddd333",
                 line: 3,
                 message: "initial3",
                 rule: "initial3",
@@ -1376,7 +1376,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/d.ts",
-                id: "src/d.ts-4-initial4",
+                id: "ddd444",
                 line: 4,
                 message: "initial4",
                 rule: "initial4",
@@ -1384,7 +1384,7 @@ describe("formatTextOutput", () => {
               {
                 column: 1,
                 file: "src/d.ts",
-                id: "src/d.ts-5-initial5",
+                id: "ddd555",
                 line: 5,
                 message: "initial5",
                 rule: "initial5",
@@ -1422,7 +1422,7 @@ describe("formatTextOutput", () => {
             {
               column: 0,
               file: "(global)",
-              id: "global1",
+              id: "global1hash",
               line: 0,
               message: "Invalid configuration",
               rule: "config-error",
@@ -1434,7 +1434,7 @@ describe("formatTextOutput", () => {
               {
                 column: 0,
                 file: "(global)",
-                id: "global1",
+                id: "global1hash",
                 line: 0,
                 message: "Invalid configuration",
                 rule: "config-error",
@@ -1487,7 +1487,7 @@ describe("formatTextOutput", () => {
               {
                 column: 0,
                 file: "src/a.ts",
-                id: "src/a.ts-10-no-unused-vars",
+                id: "abc123def456",
                 line: 10,
                 message: "error1",
                 rule: "no-unused-vars",

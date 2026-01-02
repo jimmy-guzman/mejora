@@ -7,7 +7,7 @@ describe("compareSnapshots", () => {
         {
           column: 1,
           file: "src/a.ts",
-          id: "src/a.ts-10-no-unused-vars",
+          id: "abc123def456",
           line: 10,
           message: "error1",
           rule: "no-unused-vars",
@@ -15,7 +15,7 @@ describe("compareSnapshots", () => {
         {
           column: 1,
           file: "src/b.ts",
-          id: "src/b.ts-20-no-undef",
+          id: "111aaa222bbb",
           line: 20,
           message: "error2",
           rule: "no-undef",
@@ -40,7 +40,7 @@ describe("compareSnapshots", () => {
     const error1 = {
       column: 1,
       file: "src/a.ts",
-      id: "src/a.ts-10-no-unused-vars",
+      id: "abc123def456",
       line: 10,
       message: "error1",
       rule: "no-unused-vars",
@@ -48,7 +48,7 @@ describe("compareSnapshots", () => {
     const error2 = {
       column: 1,
       file: "src/b.ts",
-      id: "src/b.ts-20-no-undef",
+      id: "111aaa222bbb",
       line: 20,
       message: "error2",
       rule: "no-undef",
@@ -56,7 +56,7 @@ describe("compareSnapshots", () => {
     const error3 = {
       column: 1,
       file: "src/c.ts",
-      id: "src/c.ts-30-semi",
+      id: "333ccc444ddd",
       line: 30,
       message: "error3",
       rule: "semi",
@@ -84,7 +84,7 @@ describe("compareSnapshots", () => {
     const error1 = {
       column: 1,
       file: "src/a.ts",
-      id: "src/a.ts-10-no-unused-vars",
+      id: "abc123def456",
       line: 10,
       message: "error1",
       rule: "no-unused-vars",
@@ -92,7 +92,7 @@ describe("compareSnapshots", () => {
     const error2 = {
       column: 1,
       file: "src/b.ts",
-      id: "src/b.ts-20-no-undef",
+      id: "111aaa222bbb",
       line: 20,
       message: "error2",
       rule: "no-undef",
@@ -100,7 +100,7 @@ describe("compareSnapshots", () => {
     const error3 = {
       column: 1,
       file: "src/c.ts",
-      id: "src/c.ts-30-semi",
+      id: "333ccc444ddd",
       line: 30,
       message: "error3",
       rule: "semi",
@@ -125,7 +125,7 @@ describe("compareSnapshots", () => {
     const error1 = {
       column: 1,
       file: "src/a.ts",
-      id: "src/a.ts-10-no-unused-vars",
+      id: "abc123def456",
       line: 10,
       message: "error1",
       rule: "no-unused-vars",
@@ -133,7 +133,7 @@ describe("compareSnapshots", () => {
     const error2 = {
       column: 1,
       file: "src/b.ts",
-      id: "src/b.ts-20-no-undef",
+      id: "111aaa222bbb",
       line: 20,
       message: "error2",
       rule: "no-undef",
@@ -141,7 +141,7 @@ describe("compareSnapshots", () => {
     const error3 = {
       column: 1,
       file: "src/c.ts",
-      id: "src/c.ts-30-semi",
+      id: "333ccc444ddd",
       line: 30,
       message: "error3",
       rule: "semi",
@@ -166,7 +166,7 @@ describe("compareSnapshots", () => {
     const error1 = {
       column: 1,
       file: "src/a.ts",
-      id: "src/a.ts-10-no-unused-vars",
+      id: "abc123def456",
       line: 10,
       message: "error1",
       rule: "no-unused-vars",
@@ -174,7 +174,7 @@ describe("compareSnapshots", () => {
     const error2 = {
       column: 1,
       file: "src/b.ts",
-      id: "src/b.ts-20-no-undef",
+      id: "111aaa222bbb",
       line: 20,
       message: "error2",
       rule: "no-undef",
@@ -199,7 +199,7 @@ describe("compareSnapshots", () => {
     const itemC = {
       column: 1,
       file: "src/c.ts",
-      id: "src/c.ts-10-error-c",
+      id: "ccc333",
       line: 10,
       message: "c",
       rule: "error-c",
@@ -207,7 +207,7 @@ describe("compareSnapshots", () => {
     const itemA = {
       column: 1,
       file: "src/a.ts",
-      id: "src/a.ts-10-error-a",
+      id: "aaa111",
       line: 10,
       message: "a",
       rule: "error-a",
@@ -215,7 +215,7 @@ describe("compareSnapshots", () => {
     const itemD = {
       column: 1,
       file: "src/d.ts",
-      id: "src/d.ts-10-error-d",
+      id: "ddd444",
       line: 10,
       message: "d",
       rule: "error-d",
@@ -223,7 +223,7 @@ describe("compareSnapshots", () => {
     const itemB = {
       column: 1,
       file: "src/b.ts",
-      id: "src/b.ts-10-error-b",
+      id: "bbb222",
       line: 10,
       message: "b",
       rule: "error-b",
@@ -242,7 +242,7 @@ describe("compareSnapshots", () => {
     const error1 = {
       column: 1,
       file: "src/a.ts",
-      id: "src/a.ts-10-no-unused-vars",
+      id: "abc123def456",
       line: 10,
       message: "error1",
       rule: "no-unused-vars",
@@ -261,7 +261,7 @@ describe("compareSnapshots", () => {
     const error1 = {
       column: 1,
       file: "src/a.ts",
-      id: "src/a.ts-10-no-unused-vars",
+      id: "abc123def456",
       line: 10,
       message: "error1",
       rule: "no-unused-vars",
@@ -280,7 +280,7 @@ describe("compareSnapshots", () => {
     const error1AtLine50 = {
       column: 1,
       file: "src/a.ts",
-      id: "hash-of-canonical-form",
+      id: "7a8b9c0d1e2f",
       line: 50,
       message: "'foo' is declared but never used",
       rule: "no-unused-vars",
@@ -288,7 +288,7 @@ describe("compareSnapshots", () => {
     const error1AtLine60 = {
       column: 1,
       file: "src/a.ts",
-      id: "hash-of-canonical-form",
+      id: "7a8b9c0d1e2f",
       line: 60,
       message: "'foo' is declared but never used",
       rule: "no-unused-vars",
@@ -310,7 +310,7 @@ describe("compareSnapshots", () => {
     const error1AtLine10 = {
       column: 5,
       file: "src/a.ts",
-      id: "error-id",
+      id: "f1e2d3c4b5a6",
       line: 10,
       message: "unused variable",
       rule: "no-unused-vars",
@@ -318,7 +318,7 @@ describe("compareSnapshots", () => {
     const error1AtLine20 = {
       column: 5,
       file: "src/a.ts",
-      id: "error-id",
+      id: "f1e2d3c4b5a6",
       line: 20,
       message: "unused variable",
       rule: "no-unused-vars",
@@ -338,7 +338,7 @@ describe("compareSnapshots", () => {
     const error1AtCol5 = {
       column: 5,
       file: "src/a.ts",
-      id: "error-id",
+      id: "9z8y7x6w5v4u",
       line: 10,
       message: "unused variable",
       rule: "no-unused-vars",
@@ -346,7 +346,7 @@ describe("compareSnapshots", () => {
     const error1AtCol10 = {
       column: 10,
       file: "src/a.ts",
-      id: "error-id",
+      id: "9z8y7x6w5v4u",
       line: 10,
       message: "unused variable",
       rule: "no-unused-vars",
@@ -366,7 +366,7 @@ describe("compareSnapshots", () => {
     const error1 = {
       column: 5,
       file: "src/a.ts",
-      id: "error-id",
+      id: "3t4r5e6w7q8a",
       line: 10,
       message: "unused variable",
       rule: "no-unused-vars",
@@ -374,7 +374,7 @@ describe("compareSnapshots", () => {
     const error1Moved = {
       column: 15,
       file: "src/a.ts",
-      id: "error-id",
+      id: "3t4r5e6w7q8a",
       line: 20,
       message: "unused variable",
       rule: "no-unused-vars",
@@ -394,7 +394,7 @@ describe("compareSnapshots", () => {
     const error1AtLine10 = {
       column: 5,
       file: "src/a.ts",
-      id: "error1-id",
+      id: "5p6o7i8u9y0t",
       line: 10,
       message: "unused variable",
       rule: "no-unused-vars",
@@ -402,7 +402,7 @@ describe("compareSnapshots", () => {
     const error1AtLine20 = {
       column: 5,
       file: "src/a.ts",
-      id: "error1-id",
+      id: "5p6o7i8u9y0t",
       line: 20,
       message: "unused variable",
       rule: "no-unused-vars",
@@ -410,7 +410,7 @@ describe("compareSnapshots", () => {
     const error2 = {
       column: 1,
       file: "src/b.ts",
-      id: "error2-id",
+      id: "2s3d4f5g6h7j",
       line: 15,
       message: "new error",
       rule: "no-undef",
@@ -434,7 +434,7 @@ describe("compareSnapshots", () => {
     const error1AtLine10 = {
       column: 5,
       file: "src/a.ts",
-      id: "error1-id",
+      id: "8k9l0z1x2c3v",
       line: 10,
       message: "unused variable",
       rule: "no-unused-vars",
@@ -442,7 +442,7 @@ describe("compareSnapshots", () => {
     const error1AtLine20 = {
       column: 5,
       file: "src/a.ts",
-      id: "error1-id",
+      id: "8k9l0z1x2c3v",
       line: 20,
       message: "unused variable",
       rule: "no-unused-vars",
@@ -450,7 +450,7 @@ describe("compareSnapshots", () => {
     const error2 = {
       column: 1,
       file: "src/b.ts",
-      id: "error2-id",
+      id: "4b5n6m7q8w9e",
       line: 15,
       message: "removed error",
       rule: "no-undef",
@@ -474,7 +474,7 @@ describe("compareSnapshots", () => {
     const error1 = {
       column: 5,
       file: "src/a.ts",
-      id: "error1-id",
+      id: "1a2s3d4f5g6h",
       line: 10,
       message: "existing error",
       rule: "no-unused-vars",
@@ -482,7 +482,7 @@ describe("compareSnapshots", () => {
     const error2 = {
       column: 1,
       file: "src/b.ts",
-      id: "error2-id",
+      id: "7j8k9l0p1o2i",
       line: 20,
       message: "new error",
       rule: "no-undef",

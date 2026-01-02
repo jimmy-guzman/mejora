@@ -4,11 +4,9 @@ import { BaselineManager } from "./baseline";
 import { logger } from "./utils/logger";
 
 vi.mock("node:fs/promises");
-
 vi.mock("is-in-ci", () => ({
   default: false,
 }));
-
 vi.mock("./utils/logger");
 
 const mockReadFile = vi.mocked(readFile);
@@ -28,7 +26,7 @@ describe("BaselineManager", () => {
             {
               column: 1,
               file: "src/a.ts",
-              id: "src/a.ts-10-no-unused-vars",
+              id: "abc123def456",
               line: 10,
               message: "error1",
               rule: "no-unused-vars",
@@ -62,7 +60,7 @@ describe("BaselineManager", () => {
             {
               column: 1,
               file: "src/a.ts",
-              id: "src/a.ts-10-no-unused-vars",
+              id: "abc123def456",
               line: 10,
               message: "error1",
               rule: "no-unused-vars",
@@ -75,7 +73,7 @@ describe("BaselineManager", () => {
             {
               column: 1,
               file: "src/b.ts",
-              id: "src/b.ts-20-TS2304",
+              id: "789xyz012tuv",
               line: 20,
               message: "error2",
               rule: "TS2304",
@@ -83,7 +81,7 @@ describe("BaselineManager", () => {
             {
               column: 1,
               file: "src/c.ts",
-              id: "src/c.ts-30-TS2345",
+              id: "fed654cba321",
               line: 30,
               message: "error3",
               rule: "TS2345",
@@ -111,7 +109,7 @@ describe("BaselineManager", () => {
               {
                 column: 1,
                 file: "src/a.ts",
-                id: "src/a.ts-10-no-unused-vars",
+                id: "abc123def456",
                 line: 10,
                 message: "error1",
                 rule: "no-unused-vars",
@@ -130,7 +128,7 @@ describe("BaselineManager", () => {
           {
             column: 1,
             file: "src/a.ts",
-            id: "src/a.ts-10-no-unused-vars",
+            id: "abc123def456",
             line: 10,
             message: "error1",
             rule: "no-unused-vars",
@@ -148,7 +146,7 @@ describe("BaselineManager", () => {
               {
                 column: 1,
                 file: "src/a.ts",
-                id: "src/a.ts-10-no-unused-vars",
+                id: "abc123def456",
                 line: 10,
                 message: "error1",
                 rule: "no-unused-vars",
@@ -181,7 +179,7 @@ describe("BaselineManager", () => {
               {
                 column: 1,
                 file: "src/a.ts",
-                id: "src/a.ts-10-no-unused-vars",
+                id: "abc123def456",
                 line: 10,
                 message: "error1",
                 rule: "no-unused-vars",
@@ -198,7 +196,7 @@ describe("BaselineManager", () => {
           {
             column: 1,
             file: "src/b.ts",
-            id: "src/b.ts-20-TS2304",
+            id: "789xyz012tuv",
             line: 20,
             message: "error2",
             rule: "TS2304",
@@ -216,7 +214,7 @@ describe("BaselineManager", () => {
               {
                 column: 1,
                 file: "src/a.ts",
-                id: "src/a.ts-10-no-unused-vars",
+                id: "abc123def456",
                 line: 10,
                 message: "error1",
                 rule: "no-unused-vars",
@@ -229,7 +227,7 @@ describe("BaselineManager", () => {
               {
                 column: 1,
                 file: "src/b.ts",
-                id: "src/b.ts-20-TS2304",
+                id: "789xyz012tuv",
                 line: 20,
                 message: "error2",
                 rule: "TS2304",
@@ -250,7 +248,7 @@ describe("BaselineManager", () => {
               {
                 column: 1,
                 file: "src/a.ts",
-                id: "src/a.ts-10-no-unused-vars",
+                id: "abc123def456",
                 line: 10,
                 message: "error1",
                 rule: "no-unused-vars",
@@ -267,7 +265,7 @@ describe("BaselineManager", () => {
           {
             column: 1,
             file: "src/b.ts",
-            id: "src/b.ts-20-no-undef",
+            id: "111aaa222bbb",
             line: 20,
             message: "error2",
             rule: "no-undef",
@@ -275,7 +273,7 @@ describe("BaselineManager", () => {
           {
             column: 1,
             file: "src/c.ts",
-            id: "src/c.ts-30-semi",
+            id: "333ccc444ddd",
             line: 30,
             message: "error3",
             rule: "semi",
@@ -293,7 +291,7 @@ describe("BaselineManager", () => {
               {
                 column: 1,
                 file: "src/b.ts",
-                id: "src/b.ts-20-no-undef",
+                id: "111aaa222bbb",
                 line: 20,
                 message: "error2",
                 rule: "no-undef",
@@ -301,7 +299,7 @@ describe("BaselineManager", () => {
               {
                 column: 1,
                 file: "src/c.ts",
-                id: "src/c.ts-30-semi",
+                id: "333ccc444ddd",
                 line: 30,
                 message: "error3",
                 rule: "semi",
@@ -320,7 +318,7 @@ describe("BaselineManager", () => {
           {
             column: 1,
             file: "src/a.ts",
-            id: "src/a.ts-10-no-unused-vars",
+            id: "abc123def456",
             line: 10,
             message: "error1",
             rule: "no-unused-vars",
@@ -338,7 +336,7 @@ describe("BaselineManager", () => {
               {
                 column: 1,
                 file: "src/a.ts",
-                id: "src/a.ts-10-no-unused-vars",
+                id: "abc123def456",
                 line: 10,
                 message: "error1",
                 rule: "no-unused-vars",
@@ -359,7 +357,7 @@ describe("BaselineManager", () => {
               {
                 column: 1,
                 file: "src/a.ts",
-                id: "src/a.ts-10-no-unused-vars",
+                id: "abc123def456",
                 line: 10,
                 message: "error1",
                 rule: "no-unused-vars",
@@ -376,7 +374,7 @@ describe("BaselineManager", () => {
           {
             column: 1,
             file: "src/b.ts",
-            id: "src/b.ts-20-TS2304",
+            id: "789xyz012tuv",
             line: 20,
             message: "error2",
             rule: "TS2304",
@@ -393,7 +391,7 @@ describe("BaselineManager", () => {
             {
               column: 1,
               file: "src/a.ts",
-              id: "src/a.ts-10-no-unused-vars",
+              id: "abc123def456",
               line: 10,
               message: "error1",
               rule: "no-unused-vars",
@@ -408,7 +406,7 @@ describe("BaselineManager", () => {
       const item1 = {
         column: 1,
         file: "src/a.ts",
-        id: "src/a.ts-10-no-unused-vars",
+        id: "abc123def456",
         line: 10,
         message: "error1",
         rule: "no-unused-vars",
@@ -416,7 +414,7 @@ describe("BaselineManager", () => {
       const item2 = {
         column: 1,
         file: "src/b.ts",
-        id: "src/b.ts-20-no-undef",
+        id: "111aaa222bbb",
         line: 20,
         message: "error2",
         rule: "no-undef",
@@ -454,7 +452,7 @@ describe("BaselineManager", () => {
               {
                 column: 1,
                 file: "src/a.ts",
-                id: "src/a.ts-10-no-unused-vars",
+                id: "abc123def456",
                 line: 10,
                 message: "error1",
                 rule: "no-unused-vars",
@@ -471,7 +469,7 @@ describe("BaselineManager", () => {
           {
             column: 1,
             file: "src/b.ts",
-            id: "src/b.ts-20-no-undef",
+            id: "111aaa222bbb",
             line: 20,
             message: "error2",
             rule: "no-undef",
@@ -492,7 +490,7 @@ describe("BaselineManager", () => {
           {
             column: 1,
             file: "src/b.ts",
-            id: "src/b.ts-20-no-undef",
+            id: "111aaa222bbb",
             line: 20,
             message: "error2",
             rule: "no-undef",
@@ -506,7 +504,7 @@ describe("BaselineManager", () => {
       const item1 = {
         column: 1,
         file: "src/a.ts",
-        id: "src/a.ts-10-no-unused-vars",
+        id: "abc123def456",
         line: 10,
         message: "error1",
         rule: "no-unused-vars",
@@ -514,7 +512,7 @@ describe("BaselineManager", () => {
       const item2 = {
         column: 1,
         file: "src/b.ts",
-        id: "src/b.ts-20-no-undef",
+        id: "111aaa222bbb",
         line: 20,
         message: "error2",
         rule: "no-undef",
@@ -552,7 +550,7 @@ describe("BaselineManager", () => {
               {
                 column: 1,
                 file: "src/a.ts",
-                id: "src/a.ts-10-no-unused-vars",
+                id: "abc123def456",
                 line: 10,
                 message: "error1",
                 rule: "no-unused-vars",
@@ -569,7 +567,7 @@ describe("BaselineManager", () => {
           {
             column: 1,
             file: "src/b.ts",
-            id: "src/b.ts-20-TS2304",
+            id: "789xyz012tuv",
             line: 20,
             message: "error2",
             rule: "TS2304",
@@ -593,7 +591,7 @@ describe("BaselineManager", () => {
               {
                 column: 1,
                 file: "src/a.ts",
-                id: "src/a.ts-10-no-unused-vars",
+                id: "abc123def456",
                 line: 10,
                 message: "error1",
                 rule: "no-unused-vars",
@@ -662,7 +660,7 @@ describe("BaselineManager", () => {
       const item1 = {
         column: 1,
         file: "src/a.ts",
-        id: "src/a.ts-10-no-unused-vars",
+        id: "abc123def456",
         line: 10,
         message: "error1",
         rule: "no-unused-vars",
@@ -670,7 +668,7 @@ describe("BaselineManager", () => {
       const item2 = {
         column: 1,
         file: "src/b.ts",
-        id: "src/b.ts-20-no-undef",
+        id: "111aaa222bbb",
         line: 20,
         message: "error2",
         rule: "no-undef",
@@ -678,7 +676,7 @@ describe("BaselineManager", () => {
       const item3 = {
         column: 1,
         file: "src/c.ts",
-        id: "src/c.ts-30-semi",
+        id: "333ccc444ddd",
         line: 30,
         message: "error3",
         rule: "semi",
@@ -734,7 +732,7 @@ describe("BaselineManager", () => {
       const item1 = {
         column: 1,
         file: "src/a.ts",
-        id: "src/a.ts-10-no-unused-vars",
+        id: "abc123def456",
         line: 10,
         message: "error1",
         rule: "no-unused-vars",
@@ -742,7 +740,7 @@ describe("BaselineManager", () => {
       const item2 = {
         column: 1,
         file: "src/b.ts",
-        id: "src/b.ts-20-TS2304",
+        id: "789xyz012tuv",
         line: 20,
         message: "error2",
         rule: "TS2304",
@@ -784,7 +782,7 @@ describe("BaselineManager", () => {
       const item1 = {
         column: 1,
         file: "src/a.ts",
-        id: "same-id-1",
+        id: "aaa111",
         line: 10,
         message: "error1",
         rule: "no-unused-vars",
@@ -792,7 +790,7 @@ describe("BaselineManager", () => {
       const item2 = {
         column: 1,
         file: "src/b.ts",
-        id: "same-id-2",
+        id: "bbb222",
         line: 20,
         message: "error2",
         rule: "no-undef",
@@ -800,18 +798,18 @@ describe("BaselineManager", () => {
       const item3 = {
         column: 1,
         file: "src/c.ts",
-        id: "same-id-3",
+        id: "ccc333",
         line: 30,
         message: "error3",
         rule: "semi",
       };
       const item4 = {
-        code: "quotes",
         column: 1,
         file: "src/d.ts",
-        id: "same-id-4",
+        id: "ddd444",
         line: 40,
         message: "error4",
+        rule: "quotes",
       };
 
       const conflictContent = [
@@ -855,36 +853,36 @@ describe("BaselineManager", () => {
 
     it("should sort merged items by ID", async () => {
       const itemZ = {
-        code: "z-error",
         column: 1,
         file: "src/z.ts",
-        id: "z-id",
+        id: "zzz999",
         line: 10,
         message: "z-error",
+        rule: "z-error",
       };
       const itemA = {
-        code: "a-error",
         column: 1,
         file: "src/a.ts",
-        id: "a-id",
+        id: "aaa111",
         line: 20,
         message: "a-error",
+        rule: "a-error",
       };
       const itemM = {
-        code: "m-error",
         column: 1,
         file: "src/m.ts",
-        id: "m-id",
+        id: "mmm555",
         line: 30,
         message: "m-error",
+        rule: "m-error",
       };
       const itemB = {
-        code: "b-error",
         column: 1,
         file: "src/b.ts",
-        id: "b-id",
+        id: "bbb222",
         line: 40,
         message: "b-error",
+        rule: "b-error",
       };
 
       const conflictContent = [
@@ -923,7 +921,7 @@ describe("BaselineManager", () => {
 
       const ids = result?.checks.eslint?.items?.map((i) => i.id);
 
-      expect(ids).toStrictEqual(["a-id", "b-id", "m-id", "z-id"]);
+      expect(ids).toStrictEqual(["aaa111", "bbb222", "mmm555", "zzz999"]);
     });
 
     it("should throw error for malformed conflict markers", async () => {
@@ -982,7 +980,7 @@ describe("BaselineManager", () => {
               {
                 column: 1,
                 file: "src/a.ts",
-                id: "src/a.ts-10-no-unused-vars",
+                id: "abc123def456",
                 line: 10,
                 message: "error1",
                 rule: "no-unused-vars",
@@ -1019,7 +1017,7 @@ describe("BaselineManager", () => {
               {
                 column: 1,
                 file: "src/a.ts",
-                id: "src/a.ts-10-no-unused-vars",
+                id: "abc123def456",
                 line: 10,
                 message: "error1",
                 rule: "no-unused-vars",
@@ -1047,7 +1045,7 @@ describe("BaselineManager", () => {
               {
                 column: 1,
                 file: "src/a.ts",
-                id: "src/a.ts-10-no-unused-vars",
+                id: "abc123def456",
                 line: 10,
                 message: "error1",
                 rule: "no-unused-vars",
@@ -1100,7 +1098,7 @@ describe("BaselineManager", () => {
               {
                 column: 1,
                 file: "src/a.ts",
-                id: "src/a.ts-10-no-unused-vars",
+                id: "abc123def456",
                 line: 10,
                 message: "error1",
                 rule: "no-unused-vars",
@@ -1108,7 +1106,7 @@ describe("BaselineManager", () => {
               {
                 column: 1,
                 file: "src/b.ts",
-                id: "src/b.ts-20-no-undef",
+                id: "111aaa222bbb",
                 line: 20,
                 message: "error2",
                 rule: "no-undef",
@@ -1160,6 +1158,7 @@ describe("BaselineManager", () => {
       };
 
       mockReadFile.mockResolvedValue(JSON.stringify(baseline));
+
       await manager.load();
 
       expect(mockReadFile).toHaveBeenCalledWith(
@@ -1177,6 +1176,7 @@ describe("BaselineManager", () => {
       };
 
       mockReadFile.mockResolvedValue(JSON.stringify(baseline));
+
       await manager.load();
 
       expect(mockReadFile).toHaveBeenCalledWith(customPath, "utf8");
@@ -1193,7 +1193,6 @@ describe("BaselineManager", () => {
       vi.doMock("is-in-ci", () => ({
         default: true,
       }));
-
       vi.resetModules();
 
       const { BaselineManager: CIBaselineManager } = await import("./baseline");
@@ -1205,7 +1204,7 @@ describe("BaselineManager", () => {
               {
                 column: 1,
                 file: "src/a.ts",
-                id: "src/a.ts-10-no-unused-vars",
+                id: "abc123def456",
                 line: 10,
                 message: "error1",
                 rule: "no-unused-vars",
@@ -1229,7 +1228,6 @@ describe("BaselineManager", () => {
       vi.doMock("is-in-ci", () => ({
         default: true,
       }));
-
       vi.resetModules();
 
       const { BaselineManager: CIBaselineManager } = await import("./baseline");
@@ -1241,7 +1239,7 @@ describe("BaselineManager", () => {
               {
                 column: 1,
                 file: "src/a.ts",
-                id: "src/a.ts-10-no-unused-vars",
+                id: "abc123def456",
                 line: 10,
                 message: "error1",
                 rule: "no-unused-vars",

@@ -1,15 +1,18 @@
 import type { BaselineEntry } from "@/types";
 
-export const areEntriesEqual = (
-  newEntry: BaselineEntry,
-  existingEntry?: BaselineEntry,
+/**
+ * Compares two baseline entries for equivalence ignoring order.
+ */
+export const areBaselineEntriesEquivalent = (
+  newBaselineEntry: BaselineEntry,
+  existingBaselineEntry?: BaselineEntry,
 ) => {
-  if (!existingEntry) {
+  if (!existingBaselineEntry) {
     return false;
   }
 
-  const entryItems = newEntry.items ?? [];
-  const existingItems = existingEntry.items ?? [];
+  const entryItems = newBaselineEntry.items ?? [];
+  const existingItems = existingBaselineEntry.items ?? [];
 
   if (entryItems.length !== existingItems.length) {
     return false;

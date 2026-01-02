@@ -5,7 +5,7 @@ describe("formatJsonOutput", () => {
     const error1 = {
       column: 1,
       file: "src/a.ts",
-      id: "src/a.ts-10-no-unused-vars",
+      id: "abc123def456",
       line: 10,
       message: "error1",
       rule: "no-unused-vars",
@@ -13,7 +13,7 @@ describe("formatJsonOutput", () => {
     const error2 = {
       column: 1,
       file: "src/b.ts",
-      id: "src/b.ts-20-no-undef",
+      id: "111aaa222bbb",
       line: 20,
       message: "error2",
       rule: "no-undef",
@@ -62,7 +62,7 @@ describe("formatJsonOutput", () => {
     const error1 = {
       column: 1,
       file: "src/a.ts",
-      id: "src/a.ts-10-no-unused-vars",
+      id: "abc123def456",
       line: 10,
       message: "error1",
       rule: "no-unused-vars",
@@ -70,7 +70,7 @@ describe("formatJsonOutput", () => {
     const error2 = {
       column: 1,
       file: "src/b.ts",
-      id: "src/b.ts-20-no-undef",
+      id: "111aaa222bbb",
       line: 20,
       message: "error2",
       rule: "no-undef",
@@ -116,7 +116,7 @@ describe("formatJsonOutput", () => {
     const error1 = {
       column: 1,
       file: "src/a.ts",
-      id: "src/a.ts-10-no-unused-vars",
+      id: "abc123def456",
       line: 10,
       message: "error1",
       rule: "no-unused-vars",
@@ -196,7 +196,7 @@ describe("formatJsonOutput", () => {
     const error1 = {
       column: 1,
       file: "src/a.ts",
-      id: "src/a.ts-10-no-unused-vars",
+      id: "abc123def456",
       line: 10,
       message: "error1",
       rule: "no-unused-vars",
@@ -204,7 +204,7 @@ describe("formatJsonOutput", () => {
     const error2 = {
       column: 1,
       file: "src/b.ts",
-      id: "src/b.ts-20-TS2304",
+      id: "789xyz012tuv",
       line: 20,
       message: "error2",
       rule: "TS2304",
@@ -323,7 +323,7 @@ describe("formatJsonOutput", () => {
     const itemA = {
       column: 1,
       file: "src/a.ts",
-      id: "src/a.ts-10-no-unused-vars",
+      id: "abc123def456",
       line: 10,
       message: "a",
       rule: "no-unused-vars",
@@ -331,7 +331,7 @@ describe("formatJsonOutput", () => {
     const itemB = {
       column: 1,
       file: "src/b.ts",
-      id: "src/b.ts-20-no-undef",
+      id: "111aaa222bbb",
       line: 20,
       message: "b",
       rule: "no-undef",
@@ -378,7 +378,7 @@ describe("formatJsonOutput", () => {
     const itemA = {
       column: 1,
       file: "src/a.ts",
-      id: "src/a.ts-10-no-unused-vars",
+      id: "abc123def456",
       line: 10,
       message: "a",
       rule: "no-unused-vars",
@@ -386,7 +386,7 @@ describe("formatJsonOutput", () => {
     const itemB = {
       column: 1,
       file: "src/b.ts",
-      id: "src/b.ts-20-no-undef",
+      id: "111aaa222bbb",
       line: 20,
       message: "b",
       rule: "no-undef",

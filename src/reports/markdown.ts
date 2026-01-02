@@ -1,8 +1,8 @@
 import { relative } from "pathe";
 
-import type { Baseline, DiagnosticItem } from "./types";
+import type { Baseline, DiagnosticItem } from "../types";
 
-import { plural } from "./utils/text";
+import { plural } from "../utils/text";
 
 const UNPARSABLE = "__unparsable__";
 
@@ -120,13 +120,24 @@ function normalizeMarkdown(markdown: string) {
   return `${markdown.replaceAll(/\n{3,}/g, "\n\n").trimEnd()}\n`;
 }
 
+/**
+ * Generates a Markdown report from the given baseline.
+ *
+ * @param baseline - The baseline data containing checks and their diagnostic items.
+ *
+ * @param baselineDir - The directory where the baseline is stored. Used to create relative links.
+ *
+ * @returns The generated Markdown report.
+ */
 export function generateMarkdownReport(
   baseline: Baseline,
   baselineDir: string,
 ) {
   const cwd = process.cwd();
 
-  let markdown = "# Mejora Baseline\n";
+  let markdown =
+    "# Mejora Baseline\n\n" +
+    "This file represents the current accepted state of the codebase.\n";
 
   for (const [checkId, { items = [] }] of Object.entries(baseline.checks)) {
     markdown += formatCheckSection(checkId, items, cwd, baselineDir);

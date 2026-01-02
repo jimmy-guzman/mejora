@@ -1,4 +1,4 @@
-import { generateMarkdownReport } from "./reports";
+import { generateMarkdownReport } from "./markdown";
 
 describe("generateMarkdownReport", () => {
   beforeEach(() => {
@@ -17,6 +17,8 @@ describe("generateMarkdownReport", () => {
 
     expect(result).toMatchInlineSnapshot(`
       "# Mejora Baseline
+
+      This file represents the current accepted state of the codebase.
 
       ## eslint (0 issues)
 
@@ -49,6 +51,8 @@ describe("generateMarkdownReport", () => {
 
     expect(result).toMatchInlineSnapshot(`
       "# Mejora Baseline
+
+      This file represents the current accepted state of the codebase.
 
       ## eslint (1 issue)
 
@@ -83,6 +87,8 @@ describe("generateMarkdownReport", () => {
 
     expect(result).toMatchInlineSnapshot(`
       "# Mejora Baseline
+
+      This file represents the current accepted state of the codebase.
 
       ## typescript (1 issue)
 
@@ -130,6 +136,8 @@ describe("generateMarkdownReport", () => {
 
     expect(result).toMatchInlineSnapshot(`
       "# Mejora Baseline
+
+      This file represents the current accepted state of the codebase.
 
       ## eslint (1 issue)
 
@@ -193,6 +201,8 @@ describe("generateMarkdownReport", () => {
     expect(result).toMatchInlineSnapshot(`
       "# Mejora Baseline
 
+      This file represents the current accepted state of the codebase.
+
       ## eslint (2 issues)
 
       ### [src/valid.ts](../src/valid.ts) (1)
@@ -247,6 +257,8 @@ describe("generateMarkdownReport", () => {
     expect(result).toMatchInlineSnapshot(`
       "# Mejora Baseline
 
+      This file represents the current accepted state of the codebase.
+
       ## eslint (3 issues)
 
       ### [src/index.ts](../src/index.ts) (2)
@@ -291,6 +303,8 @@ describe("generateMarkdownReport", () => {
     expect(result).toMatchInlineSnapshot(`
       "# Mejora Baseline
 
+      This file represents the current accepted state of the codebase.
+
       ## eslint (1 issue)
 
       ### [src/index.ts](../src/index.ts) (1)
@@ -329,6 +343,8 @@ describe("generateMarkdownReport", () => {
 
     expect(result).toMatchInlineSnapshot(`
       "# Mejora Baseline
+
+      This file represents the current accepted state of the codebase.
 
       ## typescript (1 issue)
 
@@ -384,6 +400,8 @@ describe("generateMarkdownReport", () => {
 
     expect(result).toMatchInlineSnapshot(`
       "# Mejora Baseline
+
+      This file represents the current accepted state of the codebase.
 
       ## eslint (3 issues)
 
@@ -463,6 +481,8 @@ describe("generateMarkdownReport", () => {
     expect(result).toMatchInlineSnapshot(`
       "# Mejora Baseline
 
+      This file represents the current accepted state of the codebase.
+
       ## typescript (1 issue)
 
       ### [src/form.tsx](../src/form.tsx) (1)
@@ -501,6 +521,8 @@ describe("generateMarkdownReport", () => {
 
     expect(result).toMatchInlineSnapshot(`
       "# Mejora Baseline
+
+      This file represents the current accepted state of the codebase.
 
       ## typescript (1 issue)
 
@@ -562,6 +584,8 @@ describe("generateMarkdownReport", () => {
 
     expect(result).toMatchInlineSnapshot(`
       "# Mejora Baseline
+
+      This file represents the current accepted state of the codebase.
 
       ## eslint (2 issues)
 
@@ -685,6 +709,8 @@ describe("generateMarkdownReport", () => {
 
     expect(result).toMatchInlineSnapshot(`
       "# Mejora Baseline
+
+      This file represents the current accepted state of the codebase.
 
       ## eslint (1 issue)
 
