@@ -1062,4 +1062,205 @@ describe("resolveBaselineConflict", () => {
       /Failed to parse baseline during conflict resolution/,
     );
   });
+
+  it("should merge conflict blocks and union items by id", () => {
+    const content = [
+      "<<<<<<< HEAD",
+      `"eslint": { "type": "items", "items": [{ "id": "a", "file": "a", "line": 1, "column": 1, "message": "m", "rule": "r" }] },`,
+      "=======",
+      `"eslint": { "type": "items", "items": [{ "id": "b", "file": "b", "line": 2, "column": 1, "message": "m", "rule": "r" }] }`,
+      ">>>>>>> branch",
+      "",
+      "<<<<<<< HEAD",
+      `"tsc": { "type": "items", "items": [{ "id": "x", "file": "x", "line": 1, "column": 1, "message": "m", "rule": "TS" }] }`,
+      "=======",
+      `"eslint": { "type": "items", "items": [{ "id": "a", "file": "a2", "line": 99, "column": 1, "message": "m2", "rule": "r" }] }`,
+      ">>>>>>> branch",
+      "",
+    ].join("\n");
+
+    const merged = resolveBaselineConflict(content);
+
+    expect(Object.keys(merged.checks).toSorted()).toStrictEqual([
+      "eslint",
+      "tsc",
+    ]);
+
+    expect(merged.checks.eslint?.items?.map((i) => i.id)).toStrictEqual([
+      "a",
+      "b",
+    ]);
+    expect(merged.checks.tsc?.items?.map((i) => i.id)).toStrictEqual(["x"]);
+  });
+
+  it("should parse full JSON baselines via the direct JSON fast-path", () => {
+    const ours = JSON.stringify(
+      {
+        checks: {
+          eslint: {
+            items: [
+              {
+                column: 1,
+                file: "a",
+                id: "a",
+                line: 1,
+                message: "m",
+                rule: "r",
+              },
+            ],
+            type: "items",
+          },
+        },
+        version: BASELINE_VERSION,
+      },
+      null,
+      2,
+    );
+
+    const theirs = JSON.stringify(
+      {
+        checks: {
+          eslint: {
+            items: [
+              {
+                column: 1,
+                file: "b",
+                id: "b",
+                line: 1,
+                message: "m",
+                rule: "r",
+              },
+            ],
+            type: "items",
+          },
+        },
+        version: BASELINE_VERSION,
+      },
+      null,
+      2,
+    );
+
+    const content = [
+      "<<<<<<< HEAD",
+      ours,
+      "=======",
+      theirs,
+      ">>>>>>> branch",
+      "",
+    ].join("\n");
+
+    const merged = resolveBaselineConflict(content);
+
+    expect(merged.checks.eslint?.items?.map((i) => i.id)).toStrictEqual([
+      "a",
+      "b",
+    ]);
+  });
+
+  it("should throw a wrapped error when a conflict side parses but is not an object", () => {
+    const content = [
+      "<<<<<<< HEAD",
+      "true",
+      "=======",
+      "true",
+      ">>>>>>> branch",
+      "",
+    ].join("\n");
+
+    expect(() => resolveBaselineConflict(content)).toThrowError(
+      /Failed to parse baseline during conflict resolution: Baseline must be an object/,
+    );
+  });
+
+  it("should handle extra closing braces that cannot be removed when the fragment does not end with '}'", () => {
+    // This is intentionally malformed:
+    // - Starts with an extra "}" so closeCount > openCount
+    // - Ends with "]" so removeCloseBraces() hits the `break` branch immediately
+    const ours = `
+} "eslint": { "type": "items", "items": [] ]
+`.trim();
+
+    const theirs = `
+"eslint": { "type": "items", "items": [] }
+`.trim();
+
+    const content = [
+      "<<<<<<< HEAD",
+      ours,
+      "=======",
+      theirs,
+      ">>>>>>> branch",
+      "",
+    ].join("\n");
+
+    expect(() => resolveBaselineConflict(content)).toThrowError(
+      /Failed to parse baseline during conflict resolution:/,
+    );
+  });
+
+  it("should stop removing braces when fragment does not end with a closing brace", () => {
+    // This fragment:
+    // - has MORE closing braces than opening braces
+    // - does NOT end with "}"
+    // - forces removeCloseBraces() to hit the `break` branch
+    const ours = `
+} } "eslint": { "type": "items", "items": [] ]
+`.trim();
+
+    const theirs = `
+"eslint": { "type": "items", "items": [] }
+`.trim();
+
+    const content = [
+      "<<<<<<< HEAD",
+      ours,
+      "=======",
+      theirs,
+      ">>>>>>> branch",
+      "",
+    ].join("\n");
+
+    expect(() => resolveBaselineConflict(content)).toThrowError(
+      /Failed to parse baseline during conflict resolution:/,
+    );
+  });
+
+  it("should skip checks with empty items during merge", () => {
+    const start = `${"<".repeat(7)} ours`;
+    const mid = "=".repeat(7);
+    const end = `${">".repeat(7)} theirs`;
+
+    const content = [
+      start,
+      `{`,
+      `  "checks": {`,
+      `    "eslint": { "type": "items", "items": [] }`,
+      `  }`,
+      `}`,
+      mid,
+      `{`,
+      `  "checks": {`,
+      `    "eslint": {`,
+      `      "type": "items",`,
+      `      "items": [`,
+      `        {`,
+      `          "id": "eslint-1",`,
+      `          "file": "src/a.ts",`,
+      `          "line": 1,`,
+      `          "column": 1,`,
+      `          "code": "no-unused-vars",`,
+      `          "message": "unused"`,
+      `        }`,
+      `      ]`,
+      `    }`,
+      `  }`,
+      `}`,
+      end,
+    ].join("\n");
+
+    const result = resolveBaselineConflict(content);
+
+    expect(result.checks.eslint?.items).toHaveLength(1);
+    expect(result.checks.eslint?.items?.[0]?.id).toBe("eslint-1");
+  });
 });

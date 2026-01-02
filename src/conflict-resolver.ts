@@ -1,70 +1,77 @@
-import type { Baseline, BaselineEntry, DiagnosticItem } from "./types";
+import type { Baseline, DiagnosticItem } from "./types";
 
 import { BASELINE_VERSION } from "./constants";
+
+function tryParseJson(text: string) {
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    return undefined;
+  }
+}
+
+function removeTrailingComma(text: string) {
+  const trimmed = text.trim();
+
+  return trimmed.endsWith(",") ? trimmed.slice(0, -1) : trimmed;
+}
 
 function removeCloseBraces(json: string, count: number) {
   let result = json;
 
-  for (let i = 0; i < count && result.includes("}"); i++) {
-    const lastBraceIndex = result.lastIndexOf("}");
+  for (let i = 0; i < count; i++) {
+    const trimmed = result.trimEnd();
 
-    result = result.slice(0, lastBraceIndex) + result.slice(lastBraceIndex + 1);
+    if (!trimmed.endsWith("}")) break;
+
+    result = trimmed.slice(0, -1);
   }
 
   return result;
 }
 
 function addCloseBraces(json: string, count: number) {
-  const closingBraces = "  }".repeat(count);
-
-  return `${json}\n${closingBraces}`;
+  return `${json}${"\n}".repeat(count)}`;
 }
 
 function balanceBraces(json: string) {
-  let openCount = 0;
-  let closeCount = 0;
+  let delta = 0;
 
   for (const char of json) {
-    if (char === "{") openCount++;
-
-    if (char === "}") closeCount++;
+    if (char === "{") delta++;
+    else if (char === "}") delta--;
   }
 
-  if (openCount === closeCount) {
-    return json;
-  }
+  if (delta === 0) return json;
 
-  const diff = Math.abs(openCount - closeCount);
-
-  if (closeCount > openCount) {
-    return removeCloseBraces(json, diff);
-  }
-
-  return addCloseBraces(json, diff);
-}
-
-function cleanJsonFragment(fragment: string) {
-  const trimmed = fragment.trim();
-  const withoutTrailingComma = trimmed.endsWith(",")
-    ? trimmed.slice(0, -1)
-    : trimmed;
-
-  return balanceBraces(withoutTrailingComma);
+  return delta < 0
+    ? removeCloseBraces(json, -delta)
+    : addCloseBraces(json, delta);
 }
 
 function wrapInBaselineStructure(fragment: string) {
+  const body = removeTrailingComma(fragment);
+
   return `{
   "version": ${BASELINE_VERSION},
-  ${fragment}
+  ${body}
 }`;
 }
 
-function normalizeBaselineStructure(parsed: {
-  checks?: Record<string, BaselineEntry>;
-  version: number;
-}) {
-  if (parsed.checks) {
-    return parsed as Baseline;
+function normalizeBaselineStructure(parsed: unknown) {
+  if (typeof parsed !== "object" || parsed === null) {
+    throw new TypeError("Baseline must be an object");
+  }
+
+  if (
+    "checks" in parsed &&
+    parsed.checks &&
+    typeof parsed.checks === "object"
+  ) {
+    return {
+      checks: parsed.checks as Baseline["checks"],
+      version: BASELINE_VERSION,
+    } satisfies Baseline;
   }
 
   const checks: Record<string, unknown> = {};
@@ -78,16 +85,22 @@ function normalizeBaselineStructure(parsed: {
   return {
     checks: checks as Baseline["checks"],
     version: BASELINE_VERSION,
-  };
+  } satisfies Baseline;
 }
 
-function parseJsonFragment(fragment: string) {
+function parseConflictSide(side: string) {
   try {
-    const cleaned = cleanJsonFragment(fragment);
-    const wrapped = wrapInBaselineStructure(cleaned);
-    const parsed = JSON.parse(wrapped) as Baseline;
+    const trimmed = side.trim();
+    const direct = tryParseJson(trimmed);
 
-    return normalizeBaselineStructure(parsed);
+    if (direct) {
+      return normalizeBaselineStructure(direct);
+    }
+
+    const cleaned = balanceBraces(removeTrailingComma(side));
+    const wrapped = wrapInBaselineStructure(cleaned);
+
+    return normalizeBaselineStructure(JSON.parse(wrapped) as unknown);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
 
@@ -110,50 +123,41 @@ function extractConflictSections(content: string) {
   return matches.map(([, ours = "", theirs = ""]) => ({ ours, theirs }));
 }
 
-function collectAllCheckIds(baselines: Baseline[]) {
-  const checkIds = new Set<string>();
+function mergeBaselines(baselines: Baseline[]) {
+  const itemsByCheck = new Map<string, Map<string, DiagnosticItem>>();
 
   for (const baseline of baselines) {
-    for (const checkId of Object.keys(baseline.checks)) {
-      checkIds.add(checkId);
-    }
-  }
+    for (const [checkId, { items = [] }] of Object.entries(baseline.checks)) {
+      if (items.length === 0) continue;
 
-  return checkIds;
-}
+      let itemsById = itemsByCheck.get(checkId);
 
-function mergeCheckItems(baselines: Baseline[], checkId: string) {
-  const itemsById = new Map<string, DiagnosticItem>();
+      if (!itemsById) {
+        itemsById = new Map<string, DiagnosticItem>();
+        itemsByCheck.set(checkId, itemsById);
+      }
 
-  for (const baseline of baselines) {
-    const check = baseline.checks[checkId];
-
-    if (check?.items) {
-      for (const item of check.items) {
+      for (const item of items) {
         itemsById.set(item.id, item);
       }
     }
   }
 
-  return [...itemsById.values()].toSorted((a, b) => a.id.localeCompare(b.id));
-}
+  const checks: Baseline["checks"] = {};
 
-function mergeBaselines(baselines: Baseline[]) {
-  const merged: Baseline = {
-    checks: {},
-    version: BASELINE_VERSION,
-  };
-
-  const checkIds = collectAllCheckIds(baselines);
-
-  for (const checkId of checkIds) {
-    merged.checks[checkId] = {
-      items: mergeCheckItems(baselines, checkId),
+  for (const [checkId, itemsById] of itemsByCheck) {
+    checks[checkId] = {
+      items: [...itemsById.values()].toSorted((a, b) =>
+        a.id.localeCompare(b.id),
+      ),
       type: "items",
     };
   }
 
-  return merged;
+  return {
+    checks,
+    version: BASELINE_VERSION,
+  } satisfies Baseline;
 }
 
 /**
@@ -171,12 +175,11 @@ function mergeBaselines(baselines: Baseline[]) {
  */
 export function resolveBaselineConflict(content: string) {
   const sections = extractConflictSections(content);
-
-  const allBaselines: Baseline[] = [];
+  const baselines: Baseline[] = [];
 
   for (const { ours, theirs } of sections) {
-    allBaselines.push(parseJsonFragment(ours), parseJsonFragment(theirs));
+    baselines.push(parseConflictSide(ours), parseConflictSide(theirs));
   }
 
-  return mergeBaselines(allBaselines);
+  return mergeBaselines(baselines);
 }

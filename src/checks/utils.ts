@@ -34,14 +34,7 @@ export interface RawDiagnosticItem extends Omit<DiagnosticItem, "id"> {
  * @returns Array of DiagnosticItem objects with assigned IDs.
  */
 export function assignStableIds(items: RawDiagnosticItem[]) {
-  const groups = new Map<DiagnosticSignature, typeof items>();
-
-  for (const item of items) {
-    const group = groups.get(item.signature) ?? [];
-
-    group.push(item);
-    groups.set(item.signature, group);
-  }
+  const groups = Map.groupBy(items, (item) => item.signature);
 
   const result: DiagnosticItem[] = [];
 

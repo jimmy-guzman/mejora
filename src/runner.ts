@@ -22,25 +22,27 @@ export class MejoraRunner {
   }
 
   private static filterChecks(checks: Config["checks"], options: CliOptions) {
-    let filtered = { ...checks };
+    const only = options.only
+      ? MejoraRunner.resolveRegex(options.only, "--only")
+      : null;
 
-    if (options.only) {
-      const pattern = MejoraRunner.resolveRegex(options.only, "--only");
+    const skip = options.skip
+      ? MejoraRunner.resolveRegex(options.skip, "--skip")
+      : null;
 
-      filtered = Object.fromEntries(
-        Object.entries(filtered).filter(([key]) => pattern.test(key)),
-      );
+    if (!only && !skip) {
+      return checks;
     }
 
-    if (options.skip) {
-      const pattern = MejoraRunner.resolveRegex(options.skip, "--skip");
+    return Object.fromEntries(
+      Object.entries(checks).filter(([key]) => {
+        if (only && !only.test(key)) return false;
 
-      filtered = Object.fromEntries(
-        Object.entries(filtered).filter(([key]) => !pattern.test(key)),
-      );
-    }
+        if (skip?.test(key)) return false;
 
-    return filtered;
+        return true;
+      }),
+    );
   }
 
   private static resolveRegex(pattern: string, option: "--only" | "--skip") {

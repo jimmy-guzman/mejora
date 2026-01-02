@@ -31,34 +31,31 @@ function createComparisonResult(
   };
 }
 
-function findNewItems(
-  current: Map<string, DiagnosticItem>,
-  baseline: Map<string, DiagnosticItem>,
-) {
-  const newItems: DiagnosticItem[] = [];
-
-  for (const [id, item] of current) {
-    if (!baseline.has(id)) {
-      newItems.push(item);
-    }
-  }
-
-  return newItems;
+/**
+ * Creates a keyed lookup for diagnostic items.
+ *
+ * Assumes item IDs are unique within a comparison.
+ * Duplicate IDs will be overwritten (last item wins).
+ */
+function indexItems(items: DiagnosticItem[] = []) {
+  return new Map(items.map((item) => [item.id, item]));
 }
 
-function findRemovedItems(
-  current: Map<string, DiagnosticItem>,
-  baseline: Map<string, DiagnosticItem>,
-) {
-  const removedItems: DiagnosticItem[] = [];
+function idsOf(items: Map<string, DiagnosticItem>) {
+  return new Set(items.keys());
+}
 
-  for (const [id, item] of baseline) {
-    if (!current.has(id)) {
-      removedItems.push(item);
-    }
+function pickByIds(items: Map<string, DiagnosticItem>, ids: Set<string>) {
+  const result: DiagnosticItem[] = [];
+
+  for (const id of ids) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- we know the id exists in items
+    const item = items.get(id)!;
+
+    result.push(item);
   }
 
-  return removedItems;
+  return result;
 }
 
 function hasRelocation(
@@ -68,9 +65,7 @@ function hasRelocation(
   for (const [id, currentItem] of current) {
     const baselineItem = baseline.get(id);
 
-    if (!baselineItem) {
-      continue;
-    }
+    if (!baselineItem) continue;
 
     if (
       currentItem.line !== baselineItem.line ||
@@ -83,22 +78,15 @@ function hasRelocation(
   return false;
 }
 
-/**
- * Creates a keyed lookup for diagnostic items.
- *
- * Assumes item IDs are unique within a comparison.
- * Duplicate IDs will be overwritten (last item wins).
- */
-function indexItems(items: DiagnosticItem[] = []) {
-  return new Map(items.map((item) => [item.id, item]));
-}
-
 function compareItems(snapshot: ItemsSnapshot, baseline: BaselineEntry) {
   const currentItems = indexItems(snapshot.items);
   const baselineItems = indexItems(baseline.items);
-
-  const newItems = findNewItems(currentItems, baselineItems);
-  const removedItems = findRemovedItems(currentItems, baselineItems);
+  const currentIds = idsOf(currentItems);
+  const baselineIds = idsOf(baselineItems);
+  const newIds = currentIds.difference(baselineIds);
+  const removedIds = baselineIds.difference(currentIds);
+  const newItems = pickByIds(currentItems, newIds);
+  const removedItems = pickByIds(baselineItems, removedIds);
   const positionChanges = hasRelocation(currentItems, baselineItems);
 
   return createComparisonResult(newItems, removedItems, positionChanges);
