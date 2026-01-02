@@ -98,6 +98,7 @@ export class MejoraRunner {
           duration: checkDuration,
           hasImprovement: comparison.hasImprovement,
           hasRegression: comparison.hasRegression,
+          hasRelocation: comparison.hasRelocation,
           isInitial: comparison.isInitial,
           newItems: comparison.newItems,
           removedItems: comparison.removedItems,
@@ -120,7 +121,7 @@ export class MejoraRunner {
 
         if (
           comparison.hasImprovement ||
-          comparison.hasPositionChanges ||
+          comparison.hasRelocation ||
           options.force ||
           comparison.isInitial
         ) {

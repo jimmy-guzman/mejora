@@ -8,8 +8,8 @@ import type {
 function createInitialResult() {
   return {
     hasImprovement: false,
-    hasPositionChanges: false,
     hasRegression: false,
+    hasRelocation: false,
     isInitial: true,
     newItems: [],
     removedItems: [],
@@ -19,12 +19,12 @@ function createInitialResult() {
 function createComparisonResult(
   newItems: DiagnosticItem[],
   removedItems: DiagnosticItem[],
-  hasPositionChanges: boolean,
+  hasRelocation: boolean,
 ) {
   return {
     hasImprovement: removedItems.length > 0,
-    hasPositionChanges,
     hasRegression: newItems.length > 0,
+    hasRelocation,
     isInitial: false,
     newItems: newItems.toSorted((a, b) => a.id.localeCompare(b.id)),
     removedItems: removedItems.toSorted((a, b) => a.id.localeCompare(b.id)),
@@ -61,7 +61,7 @@ function findRemovedItems(
   return removedItems;
 }
 
-function hasPositionChanges(
+function hasRelocation(
   current: Map<string, DiagnosticItem>,
   baseline: Map<string, DiagnosticItem>,
 ) {
@@ -89,7 +89,7 @@ function compareItems(snapshot: ItemsSnapshot, baseline: BaselineEntry) {
 
   const newItems = findNewItems(currentItems, baselineItems);
   const removedItems = findRemovedItems(currentItems, baselineItems);
-  const positionChanges = hasPositionChanges(currentItems, baselineItems);
+  const positionChanges = hasRelocation(currentItems, baselineItems);
 
   return createComparisonResult(newItems, removedItems, positionChanges);
 }

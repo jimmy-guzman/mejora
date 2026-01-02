@@ -199,6 +199,7 @@ export interface CheckResult {
   duration?: number;
   hasImprovement: boolean;
   hasRegression: boolean;
+  hasRelocation: boolean;
   isInitial: boolean;
   newItems: DiagnosticItem[];
   removedItems: DiagnosticItem[];

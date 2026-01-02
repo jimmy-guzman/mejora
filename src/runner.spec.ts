@@ -79,8 +79,8 @@ describe("MejoraRunner", () => {
     vi.mocked(runEslintCheck).mockResolvedValue({ items: [], type: "items" });
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: false,
-      hasPositionChanges: false,
       hasRegression: false,
+      hasRelocation: false,
       isInitial: true,
       newItems: [],
       removedItems: [],
@@ -106,8 +106,8 @@ describe("MejoraRunner", () => {
     });
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: false,
-      hasPositionChanges: false,
       hasRegression: false,
+      hasRelocation: false,
       isInitial: true,
       newItems: [],
       removedItems: [],
@@ -128,8 +128,8 @@ describe("MejoraRunner", () => {
     vi.mocked(runEslintCheck).mockResolvedValue({ items: [], type: "items" });
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: false,
-      hasPositionChanges: false,
       hasRegression: false,
+      hasRelocation: false,
       isInitial: true,
       newItems: [],
       removedItems: [],
@@ -162,8 +162,8 @@ describe("MejoraRunner", () => {
     });
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: false,
-      hasPositionChanges: false,
       hasRegression: true,
+      hasRelocation: false,
       isInitial: false,
       newItems: [newItem],
       removedItems: [],
@@ -196,8 +196,8 @@ describe("MejoraRunner", () => {
     });
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: false,
-      hasPositionChanges: false,
       hasRegression: true,
+      hasRelocation: false,
       isInitial: false,
       newItems: [newItem],
       removedItems: [],
@@ -224,8 +224,8 @@ describe("MejoraRunner", () => {
     vi.mocked(runEslintCheck).mockResolvedValue({ items: [], type: "items" });
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: false,
-      hasPositionChanges: false,
       hasRegression: false,
+      hasRelocation: false,
       isInitial: true,
       newItems: [],
       removedItems: [],
@@ -256,8 +256,8 @@ describe("MejoraRunner", () => {
     });
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: false,
-      hasPositionChanges: false,
       hasRegression: false,
+      hasRelocation: false,
       isInitial: true,
       newItems: [],
       removedItems: [],
@@ -306,8 +306,8 @@ describe("MejoraRunner", () => {
     vi.mocked(runEslintCheck).mockResolvedValue(snapshot);
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: false,
-      hasPositionChanges: false,
       hasRegression: false,
+      hasRelocation: false,
       isInitial: true,
       newItems: [item],
       removedItems: [],
@@ -362,8 +362,8 @@ describe("MejoraRunner", () => {
     });
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: true,
-      hasPositionChanges: false,
       hasRegression: false,
+      hasRelocation: false,
       isInitial: false,
       newItems: [],
       removedItems: [item1],
@@ -411,8 +411,8 @@ describe("MejoraRunner", () => {
     });
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: false,
-      hasPositionChanges: false,
       hasRegression: false,
+      hasRelocation: false,
       isInitial: true,
       newItems: [item],
       removedItems: [],
@@ -477,8 +477,8 @@ describe("MejoraRunner", () => {
     });
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: true,
-      hasPositionChanges: false,
       hasRegression: false,
+      hasRelocation: false,
       isInitial: false,
       newItems: [],
       removedItems: [item1],
@@ -533,8 +533,8 @@ describe("MejoraRunner", () => {
     });
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: false,
-      hasPositionChanges: false,
       hasRegression: true,
+      hasRelocation: false,
       isInitial: true,
       newItems: [item1, item2],
       removedItems: [],
@@ -601,8 +601,8 @@ describe("MejoraRunner", () => {
     vi.mocked(runEslintCheck).mockResolvedValue({ items: [], type: "items" });
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: false,
-      hasPositionChanges: false,
       hasRegression: false,
+      hasRelocation: false,
       isInitial: true,
       newItems: [],
       removedItems: [],
@@ -634,8 +634,8 @@ describe("MejoraRunner", () => {
     vi.mocked(runEslintCheck).mockResolvedValue({ items: [], type: "items" });
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: false,
-      hasPositionChanges: false,
       hasRegression: false,
+      hasRelocation: false,
       isInitial: true,
       newItems: [],
       removedItems: [],
@@ -739,8 +739,8 @@ describe("MejoraRunner", () => {
     });
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: false,
-      hasPositionChanges: false,
       hasRegression: false,
+      hasRelocation: false,
       isInitial: false,
       newItems: [],
       removedItems: [],
@@ -766,8 +766,8 @@ describe("MejoraRunner", () => {
       vi.mocked(runEslintCheck).mockResolvedValue({ items: [], type: "items" });
       vi.mocked(compareSnapshots).mockReturnValue({
         hasImprovement: false,
-        hasPositionChanges: false,
         hasRegression: false,
+        hasRelocation: false,
         isInitial: true,
         newItems: [],
         removedItems: [],
@@ -792,8 +792,8 @@ describe("MejoraRunner", () => {
       vi.mocked(runEslintCheck).mockResolvedValue({ items: [], type: "items" });
       vi.mocked(compareSnapshots).mockReturnValue({
         hasImprovement: false,
-        hasPositionChanges: false,
         hasRegression: false,
+        hasRelocation: false,
         isInitial: true,
         newItems: [],
         removedItems: [],
@@ -818,8 +818,8 @@ describe("MejoraRunner", () => {
       vi.mocked(runEslintCheck).mockResolvedValue({ items: [], type: "items" });
       vi.mocked(compareSnapshots).mockReturnValue({
         hasImprovement: false,
-        hasPositionChanges: false,
         hasRegression: false,
+        hasRelocation: false,
         isInitial: true,
         newItems: [],
         removedItems: [],
@@ -856,8 +856,8 @@ describe("MejoraRunner", () => {
       vi.mocked(runEslintCheck).mockResolvedValue({ items: [], type: "items" });
       vi.mocked(compareSnapshots).mockReturnValue({
         hasImprovement: false,
-        hasPositionChanges: false,
         hasRegression: false,
+        hasRelocation: false,
         isInitial: true,
         newItems: [],
         removedItems: [],
@@ -893,8 +893,8 @@ describe("MejoraRunner", () => {
       vi.mocked(runEslintCheck).mockResolvedValue({ items: [], type: "items" });
       vi.mocked(compareSnapshots).mockReturnValue({
         hasImprovement: false,
-        hasPositionChanges: false,
         hasRegression: false,
+        hasRelocation: false,
         isInitial: true,
         newItems: [],
         removedItems: [],
@@ -961,8 +961,8 @@ describe("MejoraRunner", () => {
       vi.mocked(validateEslintDeps).mockResolvedValue(undefined);
       vi.mocked(compareSnapshots).mockReturnValue({
         hasImprovement: false,
-        hasPositionChanges: false,
         hasRegression: false,
+        hasRelocation: false,
         isInitial: true,
         newItems: [],
         removedItems: [],
@@ -989,8 +989,8 @@ describe("MejoraRunner", () => {
       vi.mocked(runEslintCheck).mockResolvedValue({ items: [], type: "items" });
       vi.mocked(compareSnapshots).mockReturnValue({
         hasImprovement: false,
-        hasPositionChanges: false,
         hasRegression: false,
+        hasRelocation: false,
         isInitial: true,
         newItems: [],
         removedItems: [],

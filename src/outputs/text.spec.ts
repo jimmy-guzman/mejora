@@ -18,6 +18,7 @@ describe("formatTextOutput", () => {
           duration: 2500,
           hasImprovement: false,
           hasRegression: false,
+          hasRelocation: false,
           isInitial: true,
           newItems: [],
           removedItems: [],
@@ -87,6 +88,7 @@ describe("formatTextOutput", () => {
           checkId: "eslint",
           hasImprovement: false,
           hasRegression: false,
+          hasRelocation: false,
           isInitial: true,
           newItems: [],
           removedItems: [],
@@ -138,6 +140,7 @@ describe("formatTextOutput", () => {
           checkId: "eslint",
           hasImprovement: false,
           hasRegression: false,
+          hasRelocation: false,
           isInitial: true,
           newItems: [],
           removedItems: [],
@@ -167,6 +170,7 @@ describe("formatTextOutput", () => {
           duration: 1500,
           hasImprovement: false,
           hasRegression: true,
+          hasRelocation: false,
           isInitial: false,
           newItems: [
             {
@@ -265,6 +269,7 @@ describe("formatTextOutput", () => {
           duration: 1200,
           hasImprovement: true,
           hasRegression: false,
+          hasRelocation: false,
           isInitial: false,
           newItems: [],
           removedItems: [
@@ -343,6 +348,7 @@ describe("formatTextOutput", () => {
           duration: 1800,
           hasImprovement: true,
           hasRegression: true,
+          hasRelocation: false,
           isInitial: false,
           newItems: [
             {
@@ -435,6 +441,7 @@ describe("formatTextOutput", () => {
           duration: 1500,
           hasImprovement: false,
           hasRegression: false,
+          hasRelocation: false,
           isInitial: false,
           newItems: [],
           removedItems: [],
@@ -493,6 +500,7 @@ describe("formatTextOutput", () => {
           checkId: "eslint",
           hasImprovement: false,
           hasRegression: false,
+          hasRelocation: false,
           isInitial: false,
           newItems: [],
           removedItems: [],
@@ -540,6 +548,7 @@ describe("formatTextOutput", () => {
           duration: 1000,
           hasImprovement: false,
           hasRegression: false,
+          hasRelocation: false,
           isInitial: false,
           newItems: [],
           removedItems: [],
@@ -563,6 +572,7 @@ describe("formatTextOutput", () => {
           duration: 1500,
           hasImprovement: false,
           hasRegression: false,
+          hasRelocation: false,
           isInitial: false,
           newItems: [],
           removedItems: [],
@@ -634,6 +644,7 @@ describe("formatTextOutput", () => {
           duration: 1500,
           hasImprovement: false,
           hasRegression: false,
+          hasRelocation: false,
           isInitial: false,
           newItems: [],
           removedItems: [],
@@ -681,6 +692,7 @@ describe("formatTextOutput", () => {
           checkId: "eslint",
           hasImprovement: false,
           hasRegression: true,
+          hasRelocation: false,
           isInitial: false,
           newItems: items,
           removedItems: [],
@@ -720,6 +732,7 @@ describe("formatTextOutput", () => {
           checkId: "eslint",
           hasImprovement: true,
           hasRegression: false,
+          hasRelocation: false,
           isInitial: false,
           newItems: [],
           removedItems: items,
@@ -749,6 +762,7 @@ describe("formatTextOutput", () => {
           duration: 1000,
           hasImprovement: false,
           hasRegression: true,
+          hasRelocation: false,
           isInitial: false,
           newItems: [
             {
@@ -793,6 +807,7 @@ describe("formatTextOutput", () => {
           duration: 1500,
           hasImprovement: true,
           hasRegression: false,
+          hasRelocation: false,
           isInitial: false,
           newItems: [],
           removedItems: [
@@ -850,6 +865,7 @@ describe("formatTextOutput", () => {
           checkId: "eslint",
           hasImprovement: false,
           hasRegression: false,
+          hasRelocation: false,
           isInitial: true,
           newItems: [],
           removedItems: [],
@@ -886,6 +902,7 @@ describe("formatTextOutput", () => {
           checkId: "eslint",
           hasImprovement: true,
           hasRegression: false,
+          hasRelocation: false,
           isInitial: false,
           newItems: [],
           removedItems: [
@@ -920,6 +937,7 @@ describe("formatTextOutput", () => {
           duration: 1000,
           hasImprovement: false,
           hasRegression: false,
+          hasRelocation: false,
           isInitial: false,
           newItems: [],
           removedItems: [],
@@ -944,6 +962,7 @@ describe("formatTextOutput", () => {
           checkId: "eslint",
           hasImprovement: false,
           hasRegression: false,
+          hasRelocation: false,
           isInitial: true,
           newItems: [],
           removedItems: [],
@@ -966,6 +985,7 @@ describe("formatTextOutput", () => {
           checkId: "typescript",
           hasImprovement: false,
           hasRegression: false,
+          hasRelocation: false,
           isInitial: true,
           newItems: [],
           removedItems: [],
@@ -1014,6 +1034,7 @@ describe("formatTextOutput", () => {
           checkId: "eslint",
           hasImprovement: true,
           hasRegression: false,
+          hasRelocation: false,
           isInitial: false,
           newItems: [],
           removedItems: [
@@ -1045,6 +1066,7 @@ describe("formatTextOutput", () => {
           checkId: "typescript",
           hasImprovement: true,
           hasRegression: false,
+          hasRelocation: false,
           isInitial: false,
           newItems: [],
           removedItems: [
@@ -1115,6 +1137,7 @@ describe("formatTextOutput", () => {
           duration: 339,
           hasImprovement: true,
           hasRegression: false,
+          hasRelocation: false,
           isInitial: false,
           newItems: [],
           removedItems: [
@@ -1159,6 +1182,7 @@ describe("formatTextOutput", () => {
           duration: 514,
           hasImprovement: false,
           hasRegression: true,
+          hasRelocation: false,
           isInitial: false,
           newItems: [
             {
@@ -1242,6 +1266,7 @@ describe("formatTextOutput", () => {
           checkId: "prettier",
           hasImprovement: false,
           hasRegression: false,
+          hasRelocation: false,
           isInitial: false,
           newItems: [],
           removedItems: [],
@@ -1272,6 +1297,7 @@ describe("formatTextOutput", () => {
           checkId: "markdownlint",
           hasImprovement: false,
           hasRegression: false,
+          hasRelocation: false,
           isInitial: true,
           newItems: [],
           removedItems: [],
@@ -1344,6 +1370,7 @@ describe("formatTextOutput", () => {
           checkId: "eslint",
           hasImprovement: false,
           hasRegression: true,
+          hasRelocation: false,
           isInitial: false,
           newItems: [
             {
