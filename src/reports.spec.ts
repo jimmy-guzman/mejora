@@ -31,12 +31,12 @@ describe("generateMarkdownReport", () => {
         eslint: {
           items: [
             {
-              code: "no-unused-vars",
               column: 1,
               file: "src/index.ts",
               id: "abc123",
               line: 10,
               message: "'foo' is never used",
+              rule: "no-unused-vars",
             },
           ],
           type: "items" as const,
@@ -65,12 +65,12 @@ describe("generateMarkdownReport", () => {
         typescript: {
           items: [
             {
-              code: "2304",
               column: 0,
               file: "src/types.ts",
               id: "def456",
               line: 0,
               message: "Type error",
+              rule: "2304",
             },
           ],
           type: "items" as const,
@@ -99,12 +99,12 @@ describe("generateMarkdownReport", () => {
         eslint: {
           items: [
             {
-              code: "error-a",
               column: 1,
               file: "src/a.ts",
               id: "abc1",
               line: 1,
               message: "error a",
+              rule: "error-a",
             },
           ],
           type: "items" as const,
@@ -112,12 +112,12 @@ describe("generateMarkdownReport", () => {
         typescript: {
           items: [
             {
-              code: "2304",
               column: 1,
               file: "src/b.ts",
               id: "abc2",
               line: 2,
               message: "error b",
+              rule: "2304",
             },
           ],
           type: "items" as const,
@@ -166,20 +166,20 @@ describe("generateMarkdownReport", () => {
         eslint: {
           items: [
             {
-              code: "some-error",
               column: 1,
               file: "src/valid.ts",
               id: "valid1",
               line: 10,
               message: "valid error",
+              rule: "some-error",
             },
             {
-              code: "unknown",
               column: 0,
               file: "",
               id: "invalid1",
               line: 0,
               message: "invalid item without path",
+              rule: "unknown",
             },
           ],
           type: "items" as const,
@@ -212,28 +212,28 @@ describe("generateMarkdownReport", () => {
         eslint: {
           items: [
             {
-              code: "error-1",
               column: 1,
               file: "src/index.ts",
               id: "item1",
               line: 10,
               message: "error 1",
+              rule: "error-1",
             },
             {
-              code: "error-2",
               column: 1,
               file: "src/index.ts",
               id: "item2",
               line: 20,
               message: "error 2",
+              rule: "error-2",
             },
             {
-              code: "error-3",
               column: 1,
               file: "src/utils.ts",
               id: "item3",
               line: 5,
               message: "error 3",
+              rule: "error-3",
             },
           ],
           type: "items" as const,
@@ -269,12 +269,12 @@ describe("generateMarkdownReport", () => {
         eslint: {
           items: [
             {
-              code: "no-unused-vars",
               column: 1,
               file: "src/index.ts",
               id: "win1",
               line: 10,
               message: "'foo' is never used",
+              rule: "no-unused-vars",
             },
           ],
           type: "items" as const,
@@ -308,12 +308,12 @@ describe("generateMarkdownReport", () => {
         typescript: {
           items: [
             {
-              code: "2304",
               column: 0,
               file: "types.ts",
               id: "win2",
               line: 0,
               message: "Type error",
+              rule: "2304",
             },
           ],
           type: "items" as const,
@@ -347,28 +347,28 @@ describe("generateMarkdownReport", () => {
         eslint: {
           items: [
             {
-              code: "error-1",
               column: 1,
               file: "src/index.ts",
               id: "win3",
               line: 10,
               message: "error 1",
+              rule: "error-1",
             },
             {
-              code: "error-2",
               column: 1,
               file: "src/index.ts",
               id: "win4",
               line: 20,
               message: "error 2",
+              rule: "error-2",
             },
             {
-              code: "error-3",
               column: 1,
               file: "src/utils.ts",
               id: "win5",
               line: 5,
               message: "error 3",
+              rule: "error-3",
             },
           ],
           type: "items" as const,
@@ -407,20 +407,20 @@ describe("generateMarkdownReport", () => {
         eslint: {
           items: [
             {
-              code: "unix-error",
               column: 1,
               file: "src/unix.ts",
               id: "unix1",
               line: 10,
               message: "unix error",
+              rule: "unix-error",
             },
             {
-              code: "windows-error",
               column: 1,
               file: "src/windows.ts",
               id: "win6",
               line: 20,
               message: "windows error",
+              rule: "windows-error",
             },
           ],
           type: "items" as const,
@@ -443,13 +443,13 @@ describe("generateMarkdownReport", () => {
         typescript: {
           items: [
             {
-              code: "7053",
               column: 1,
               file: "src/form.tsx",
               id: "html1",
               line: 71,
               message:
                 "Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'string | FormikErrors<ItemGroupUploadFormikRow>'.",
+              rule: "7053",
             },
           ],
           type: "items" as const,
@@ -482,13 +482,13 @@ describe("generateMarkdownReport", () => {
         typescript: {
           items: [
             {
-              code: "2345",
               column: 1,
               file: "src/test.ts",
               id: "bracket1",
               line: 125,
               message:
                 "The types returned by '[Symbol.iterator]().next(...)' are incompatible.",
+              rule: "2345",
             },
           ],
           type: "items" as const,
@@ -521,20 +521,20 @@ describe("generateMarkdownReport", () => {
         eslint: {
           items: [
             {
-              code: "error-a",
               column: 1,
               file: "src/a.ts",
               id: "multi1",
               line: 1,
               message: "error a",
+              rule: "error-a",
             },
             {
-              code: "error-b",
               column: 1,
               file: "src/b.ts",
               id: "multi2",
               line: 2,
               message: "error b",
+              rule: "error-b",
             },
           ],
           type: "items" as const,
@@ -542,12 +542,12 @@ describe("generateMarkdownReport", () => {
         typescript: {
           items: [
             {
-              code: "2304",
               column: 1,
               file: "src/c.ts",
               id: "multi3",
               line: 3,
               message: "error c",
+              rule: "2304",
             },
           ],
           type: "items" as const,
@@ -588,36 +588,36 @@ describe("generateMarkdownReport", () => {
         eslint: {
           items: [
             {
-              code: "unknown",
               column: 0,
               file: "",
               id: "unparsable",
               line: 0,
               message: "unparsable item",
+              rule: "unknown",
             },
             {
-              code: "last",
               column: 1,
               file: "src/zebra.ts",
               id: "zebra1",
               line: 10,
               message: "last alphabetically",
+              rule: "last",
             },
             {
-              code: "unknown",
               column: 0,
               file: "",
               id: "unparsable",
               line: 0,
               message: "another unparsable",
+              rule: "unknown",
             },
             {
-              code: "first",
               column: 1,
               file: "src/aardvark.ts",
               id: "aardvark1",
               line: 5,
               message: "first alphabetically",
+              rule: "first",
             },
           ],
           type: "items" as const,
@@ -642,12 +642,12 @@ describe("generateMarkdownReport", () => {
         eslint: {
           items: [
             {
-              code: "no-unused-vars",
               column: 1,
               file: "src/index.ts",
               id: "end1",
               line: 10,
               message: "'foo' is never used",
+              rule: "no-unused-vars",
             },
           ],
           type: "items" as const,
@@ -668,12 +668,12 @@ describe("generateMarkdownReport", () => {
         eslint: {
           items: [
             {
-              code: "@typescript-eslint/no-unused-vars",
               column: 7,
               file: "src/index.ts",
               id: "col1",
               line: 4,
               message: "'foo' is declared but never used",
+              rule: "@typescript-eslint/no-unused-vars",
             },
           ],
           type: "items" as const,

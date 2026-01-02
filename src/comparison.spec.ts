@@ -5,20 +5,20 @@ describe("compareSnapshots", () => {
     const snapshot = {
       items: [
         {
-          code: "no-unused-vars",
           column: 1,
           file: "src/a.ts",
           id: "src/a.ts-10-no-unused-vars",
           line: 10,
           message: "error1",
+          rule: "no-unused-vars",
         },
         {
-          code: "no-undef",
           column: 1,
           file: "src/b.ts",
           id: "src/b.ts-20-no-undef",
           line: 20,
           message: "error2",
+          rule: "no-undef",
         },
       ],
       type: "items" as const,
@@ -38,28 +38,28 @@ describe("compareSnapshots", () => {
 
   it("should detect new items as regressions", () => {
     const error1 = {
-      code: "no-unused-vars",
       column: 1,
       file: "src/a.ts",
       id: "src/a.ts-10-no-unused-vars",
       line: 10,
       message: "error1",
+      rule: "no-unused-vars",
     };
     const error2 = {
-      code: "no-undef",
       column: 1,
       file: "src/b.ts",
       id: "src/b.ts-20-no-undef",
       line: 20,
       message: "error2",
+      rule: "no-undef",
     };
     const error3 = {
-      code: "semi",
       column: 1,
       file: "src/c.ts",
       id: "src/c.ts-30-semi",
       line: 30,
       message: "error3",
+      rule: "semi",
     };
 
     const snapshot = {
@@ -82,28 +82,28 @@ describe("compareSnapshots", () => {
 
   it("should detect removed items as improvements", () => {
     const error1 = {
-      code: "no-unused-vars",
       column: 1,
       file: "src/a.ts",
       id: "src/a.ts-10-no-unused-vars",
       line: 10,
       message: "error1",
+      rule: "no-unused-vars",
     };
     const error2 = {
-      code: "no-undef",
       column: 1,
       file: "src/b.ts",
       id: "src/b.ts-20-no-undef",
       line: 20,
       message: "error2",
+      rule: "no-undef",
     };
     const error3 = {
-      code: "semi",
       column: 1,
       file: "src/c.ts",
       id: "src/c.ts-30-semi",
       line: 30,
       message: "error3",
+      rule: "semi",
     };
 
     const snapshot = { items: [error1], type: "items" as const };
@@ -123,28 +123,28 @@ describe("compareSnapshots", () => {
 
   it("should detect both regressions and improvements", () => {
     const error1 = {
-      code: "no-unused-vars",
       column: 1,
       file: "src/a.ts",
       id: "src/a.ts-10-no-unused-vars",
       line: 10,
       message: "error1",
+      rule: "no-unused-vars",
     };
     const error2 = {
-      code: "no-undef",
       column: 1,
       file: "src/b.ts",
       id: "src/b.ts-20-no-undef",
       line: 20,
       message: "error2",
+      rule: "no-undef",
     };
     const error3 = {
-      code: "semi",
       column: 1,
       file: "src/c.ts",
       id: "src/c.ts-30-semi",
       line: 30,
       message: "error3",
+      rule: "semi",
     };
 
     const snapshot = { items: [error1, error3], type: "items" as const };
@@ -164,20 +164,20 @@ describe("compareSnapshots", () => {
 
   it("should return no changes when items are identical", () => {
     const error1 = {
-      code: "no-unused-vars",
       column: 1,
       file: "src/a.ts",
       id: "src/a.ts-10-no-unused-vars",
       line: 10,
       message: "error1",
+      rule: "no-unused-vars",
     };
     const error2 = {
-      code: "no-undef",
       column: 1,
       file: "src/b.ts",
       id: "src/b.ts-20-no-undef",
       line: 20,
       message: "error2",
+      rule: "no-undef",
     };
 
     const snapshot = { items: [error1, error2], type: "items" as const };
@@ -197,36 +197,36 @@ describe("compareSnapshots", () => {
 
   it("should sort items by ID", () => {
     const itemC = {
-      code: "error-c",
       column: 1,
       file: "src/c.ts",
       id: "src/c.ts-10-error-c",
       line: 10,
       message: "c",
+      rule: "error-c",
     };
     const itemA = {
-      code: "error-a",
       column: 1,
       file: "src/a.ts",
       id: "src/a.ts-10-error-a",
       line: 10,
       message: "a",
+      rule: "error-a",
     };
     const itemD = {
-      code: "error-d",
       column: 1,
       file: "src/d.ts",
       id: "src/d.ts-10-error-d",
       line: 10,
       message: "d",
+      rule: "error-d",
     };
     const itemB = {
-      code: "error-b",
       column: 1,
       file: "src/b.ts",
       id: "src/b.ts-10-error-b",
       line: 10,
       message: "b",
+      rule: "error-b",
     };
 
     const snapshot = { items: [itemC, itemA], type: "items" as const };
@@ -240,12 +240,12 @@ describe("compareSnapshots", () => {
 
   it("should handle empty snapshots", () => {
     const error1 = {
-      code: "no-unused-vars",
       column: 1,
       file: "src/a.ts",
       id: "src/a.ts-10-no-unused-vars",
       line: 10,
       message: "error1",
+      rule: "no-unused-vars",
     };
 
     const snapshot = { items: [], type: "items" as const };
@@ -259,12 +259,12 @@ describe("compareSnapshots", () => {
 
   it("should handle empty baseline", () => {
     const error1 = {
-      code: "no-unused-vars",
       column: 1,
       file: "src/a.ts",
       id: "src/a.ts-10-no-unused-vars",
       line: 10,
       message: "error1",
+      rule: "no-unused-vars",
     };
 
     const snapshot = { items: [error1], type: "items" as const };
@@ -278,20 +278,20 @@ describe("compareSnapshots", () => {
 
   it("should match items by ID, not by line number", () => {
     const error1AtLine50 = {
-      code: "no-unused-vars",
       column: 1,
       file: "src/a.ts",
       id: "hash-of-canonical-form",
       line: 50,
       message: "'foo' is declared but never used",
+      rule: "no-unused-vars",
     };
     const error1AtLine60 = {
-      code: "no-unused-vars",
       column: 1,
       file: "src/a.ts",
       id: "hash-of-canonical-form",
       line: 60,
       message: "'foo' is declared but never used",
+      rule: "no-unused-vars",
     };
 
     const snapshot = { items: [error1AtLine60], type: "items" as const };
@@ -308,20 +308,20 @@ describe("compareSnapshots", () => {
 
   it("should detect position changes when line changes", () => {
     const error1AtLine10 = {
-      code: "no-unused-vars",
       column: 5,
       file: "src/a.ts",
       id: "error-id",
       line: 10,
       message: "unused variable",
+      rule: "no-unused-vars",
     };
     const error1AtLine20 = {
-      code: "no-unused-vars",
       column: 5,
       file: "src/a.ts",
       id: "error-id",
       line: 20,
       message: "unused variable",
+      rule: "no-unused-vars",
     };
 
     const snapshot = { items: [error1AtLine20], type: "items" as const };
@@ -336,20 +336,20 @@ describe("compareSnapshots", () => {
 
   it("should detect position changes when column changes", () => {
     const error1AtCol5 = {
-      code: "no-unused-vars",
       column: 5,
       file: "src/a.ts",
       id: "error-id",
       line: 10,
       message: "unused variable",
+      rule: "no-unused-vars",
     };
     const error1AtCol10 = {
-      code: "no-unused-vars",
       column: 10,
       file: "src/a.ts",
       id: "error-id",
       line: 10,
       message: "unused variable",
+      rule: "no-unused-vars",
     };
 
     const snapshot = { items: [error1AtCol10], type: "items" as const };
@@ -364,20 +364,20 @@ describe("compareSnapshots", () => {
 
   it("should detect position changes when both line and column change", () => {
     const error1 = {
-      code: "no-unused-vars",
       column: 5,
       file: "src/a.ts",
       id: "error-id",
       line: 10,
       message: "unused variable",
+      rule: "no-unused-vars",
     };
     const error1Moved = {
-      code: "no-unused-vars",
       column: 15,
       file: "src/a.ts",
       id: "error-id",
       line: 20,
       message: "unused variable",
+      rule: "no-unused-vars",
     };
 
     const snapshot = { items: [error1Moved], type: "items" as const };
@@ -392,28 +392,28 @@ describe("compareSnapshots", () => {
 
   it("should detect position changes alongside regressions", () => {
     const error1AtLine10 = {
-      code: "no-unused-vars",
       column: 5,
       file: "src/a.ts",
       id: "error1-id",
       line: 10,
       message: "unused variable",
+      rule: "no-unused-vars",
     };
     const error1AtLine20 = {
-      code: "no-unused-vars",
       column: 5,
       file: "src/a.ts",
       id: "error1-id",
       line: 20,
       message: "unused variable",
+      rule: "no-unused-vars",
     };
     const error2 = {
-      code: "no-undef",
       column: 1,
       file: "src/b.ts",
       id: "error2-id",
       line: 15,
       message: "new error",
+      rule: "no-undef",
     };
 
     const snapshot = {
@@ -432,28 +432,28 @@ describe("compareSnapshots", () => {
 
   it("should detect position changes alongside improvements", () => {
     const error1AtLine10 = {
-      code: "no-unused-vars",
       column: 5,
       file: "src/a.ts",
       id: "error1-id",
       line: 10,
       message: "unused variable",
+      rule: "no-unused-vars",
     };
     const error1AtLine20 = {
-      code: "no-unused-vars",
       column: 5,
       file: "src/a.ts",
       id: "error1-id",
       line: 20,
       message: "unused variable",
+      rule: "no-unused-vars",
     };
     const error2 = {
-      code: "no-undef",
       column: 1,
       file: "src/b.ts",
       id: "error2-id",
       line: 15,
       message: "removed error",
+      rule: "no-undef",
     };
 
     const snapshot = { items: [error1AtLine20], type: "items" as const };
@@ -472,20 +472,20 @@ describe("compareSnapshots", () => {
 
   it("should not detect position changes for new items", () => {
     const error1 = {
-      code: "no-unused-vars",
       column: 5,
       file: "src/a.ts",
       id: "error1-id",
       line: 10,
       message: "existing error",
+      rule: "no-unused-vars",
     };
     const error2 = {
-      code: "no-undef",
       column: 1,
       file: "src/b.ts",
       id: "error2-id",
       line: 20,
       message: "new error",
+      rule: "no-undef",
     };
 
     const snapshot = { items: [error1, error2], type: "items" as const };

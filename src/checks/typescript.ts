@@ -131,11 +131,11 @@ export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
       const signature = `${file} - ${tsCode}: ${message}` as const;
 
       rawItems.push({
-        code: tsCode,
         column: character + 1,
         file,
         line: line + 1,
         message,
+        rule: tsCode,
         signature,
       });
     } else {
@@ -143,11 +143,11 @@ export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
       const signature = `${file} - ${tsCode}: ${message}` as const;
 
       rawItems.push({
-        code: tsCode,
         column: 0,
         file,
         line: 0,
         message,
+        rule: tsCode,
         signature,
       });
     }

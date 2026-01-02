@@ -5,12 +5,12 @@ describe("areEntriesEqual()", () => {
     const entry = {
       items: [
         {
-          code: "no-unused-vars",
           column: 1,
           file: "src/a.ts",
           id: "src/a.ts-10-no-unused-vars",
           line: 10,
           message: "error1",
+          rule: "no-unused-vars",
         },
       ],
       type: "items" as const,
@@ -21,20 +21,20 @@ describe("areEntriesEqual()", () => {
 
   it("should return true for identical entries", () => {
     const item1 = {
-      code: "no-unused-vars",
       column: 1,
       file: "src/a.ts",
       id: "src/a.ts-10-no-unused-vars",
       line: 10,
       message: "error1",
+      rule: "no-unused-vars",
     };
     const item2 = {
-      code: "no-undef",
       column: 1,
       file: "src/b.ts",
       id: "src/b.ts-20-no-undef",
       line: 20,
       message: "error2",
+      rule: "no-undef",
     };
 
     const entry = { items: [item1, item2], type: "items" as const };
@@ -45,20 +45,20 @@ describe("areEntriesEqual()", () => {
 
   it("should return true when items are in different order", () => {
     const item1 = {
-      code: "no-unused-vars",
       column: 1,
       file: "src/a.ts",
       id: "src/a.ts-10-no-unused-vars",
       line: 10,
       message: "error1",
+      rule: "no-unused-vars",
     };
     const item2 = {
-      code: "no-undef",
       column: 1,
       file: "src/b.ts",
       id: "src/b.ts-20-no-undef",
       line: 20,
       message: "error2",
+      rule: "no-undef",
     };
 
     const entry = { items: [item1, item2], type: "items" as const };
@@ -69,28 +69,28 @@ describe("areEntriesEqual()", () => {
 
   it("should return false when items differ", () => {
     const item1 = {
-      code: "no-unused-vars",
       column: 1,
       file: "src/a.ts",
       id: "src/a.ts-10-no-unused-vars",
       line: 10,
       message: "error1",
+      rule: "no-unused-vars",
     };
     const item2 = {
-      code: "no-undef",
       column: 1,
       file: "src/b.ts",
       id: "src/b.ts-20-no-undef",
       line: 20,
       message: "error2",
+      rule: "no-undef",
     };
     const item3 = {
-      code: "semi",
       column: 1,
       file: "src/c.ts",
       id: "src/c.ts-30-semi",
       line: 30,
       message: "error3",
+      rule: "semi",
     };
 
     const entry = { items: [item1, item2], type: "items" as const };
@@ -101,20 +101,20 @@ describe("areEntriesEqual()", () => {
 
   it("should return false when item counts differ", () => {
     const item1 = {
-      code: "no-unused-vars",
       column: 1,
       file: "src/a.ts",
       id: "src/a.ts-10-no-unused-vars",
       line: 10,
       message: "error1",
+      rule: "no-unused-vars",
     };
     const item2 = {
-      code: "no-undef",
       column: 1,
       file: "src/b.ts",
       id: "src/b.ts-20-no-undef",
       line: 20,
       message: "error2",
+      rule: "no-undef",
     };
 
     const entry = { items: [item1, item2], type: "items" as const };
@@ -132,20 +132,20 @@ describe("areEntriesEqual()", () => {
 
   it("should handle duplicate items correctly", () => {
     const item1 = {
-      code: "no-unused-vars",
       column: 1,
       file: "src/a.ts",
       id: "src/a.ts-10-no-unused-vars",
       line: 10,
       message: "error1",
+      rule: "no-unused-vars",
     };
     const item2 = {
-      code: "no-undef",
       column: 1,
       file: "src/b.ts",
       id: "src/b.ts-20-no-undef",
       line: 20,
       message: "error2",
+      rule: "no-undef",
     };
 
     const entry = { items: [item1, item1, item2], type: "items" as const };
@@ -156,20 +156,20 @@ describe("areEntriesEqual()", () => {
 
   it("should return false when duplicate counts differ", () => {
     const item1 = {
-      code: "no-unused-vars",
       column: 1,
       file: "src/a.ts",
       id: "src/a.ts-10-no-unused-vars",
       line: 10,
       message: "error1",
+      rule: "no-unused-vars",
     };
     const item2 = {
-      code: "no-undef",
       column: 1,
       file: "src/b.ts",
       id: "src/b.ts-20-no-undef",
       line: 20,
       message: "error2",
+      rule: "no-undef",
     };
 
     const entry = { items: [item1, item1], type: "items" as const };
@@ -185,20 +185,20 @@ describe("areEntriesEqual()", () => {
     const existing = {
       items: [
         {
-          code: "no-unused-vars",
           column: 1,
           file: "src/a.ts",
           id: "src/a.ts-10-no-unused-vars",
           line: 10,
           message: "error1",
+          rule: "no-unused-vars",
         },
         {
-          code: "no-undef",
           column: 1,
           file: "src/b.ts",
           id: "src/b.ts-20-no-undef",
           line: 20,
           message: "error2",
+          rule: "no-undef",
         },
       ],
       type: "items" as const,
@@ -211,20 +211,20 @@ describe("areEntriesEqual()", () => {
     const entry = {
       items: [
         {
-          code: "no-unused-vars",
           column: 1,
           file: "src/a.ts",
           id: "src/a.ts-10-no-unused-vars",
           line: 10,
           message: "error1",
+          rule: "no-unused-vars",
         },
         {
-          code: "no-undef",
           column: 1,
           file: "src/b.ts",
           id: "src/b.ts-20-no-undef",
           line: 20,
           message: "error2",
+          rule: "no-undef",
         },
       ],
       type: "items" as const,
@@ -238,20 +238,20 @@ describe("areEntriesEqual()", () => {
 
   it("should return false when duplicate distributions differ", () => {
     const item1 = {
-      code: "no-unused-vars",
       column: 1,
       file: "src/a.ts",
       id: "src/a.ts-10-no-unused-vars",
       line: 10,
       message: "error1",
+      rule: "no-unused-vars",
     };
     const item2 = {
-      code: "no-undef",
       column: 1,
       file: "src/b.ts",
       id: "src/b.ts-20-no-undef",
       line: 20,
       message: "error2",
+      rule: "no-undef",
     };
 
     const entry = { items: [item1, item1, item2], type: "items" as const };

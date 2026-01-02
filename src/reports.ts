@@ -38,7 +38,7 @@ function formatItemLine(
   const linkText = item.line ? `Line ${item.line}` : displayPath;
   const link = createMarkdownLink(linkText, href);
 
-  const description = `${item.code}: ${escapeHtml(item.message)}`;
+  const description = `${item.rule}: ${escapeHtml(item.message)}`;
 
   return `- ${link} - ${description}\n`;
 }
@@ -61,7 +61,7 @@ function formatUnparsableSection(items: DiagnosticItem[]) {
   let section = `\n### Other Issues (${items.length})\n\n`;
 
   for (const item of items) {
-    section += `- ${item.code}: ${escapeHtml(item.message)}\n`;
+    section += `- ${item.rule}: ${escapeHtml(item.message)}\n`;
   }
 
   return `${section}\n`;

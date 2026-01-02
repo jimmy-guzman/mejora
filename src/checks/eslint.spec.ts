@@ -82,19 +82,19 @@ describe("runEslintCheck", () => {
 
     expect(result.items).toHaveLength(2);
     expect(result.items[0]).toMatchObject({
-      code: "no-undef",
       column: 5,
       file: "src/file.js",
       line: 1,
       message: "'foo' is not defined.",
+      rule: "no-undef",
     });
     expect(result.items[0]?.id).toBeDefined();
     expect(result.items[1]).toMatchObject({
-      code: "no-console",
       column: 10,
       file: "src/file.js",
       line: 2,
       message: "Unexpected console statement.",
+      rule: "no-console",
     });
     expect(result.items[1]?.id).toBeDefined();
   });
@@ -116,8 +116,8 @@ describe("runEslintCheck", () => {
     const result = await runEslintCheck({ files: ["*.js"] });
 
     expect(result.items).toHaveLength(2);
-    expect(result.items[0]?.code).toBe("no-undef");
-    expect(result.items[1]?.code).toBe("semi");
+    expect(result.items[0]?.rule).toBe("no-undef");
+    expect(result.items[1]?.rule).toBe("semi");
   });
 
   it("should sort items by file name, line number, and column number", async () => {

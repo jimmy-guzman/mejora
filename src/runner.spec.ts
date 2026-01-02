@@ -148,12 +148,12 @@ describe("MejoraRunner", () => {
     };
 
     const newItem = {
-      code: "no-unused-vars",
       column: 1,
       file: "new.js",
       id: "new.js-1-no-unused-vars",
       line: 1,
       message: "error",
+      rule: "no-unused-vars",
     };
 
     vi.mocked(runEslintCheck).mockResolvedValue({
@@ -182,12 +182,12 @@ describe("MejoraRunner", () => {
     };
 
     const newItem = {
-      code: "no-unused-vars",
       column: 1,
       file: "new.js",
       id: "new.js-1-no-unused-vars",
       line: 1,
       message: "error",
+      rule: "no-unused-vars",
     };
 
     vi.mocked(runEslintCheck).mockResolvedValue({
@@ -290,12 +290,12 @@ describe("MejoraRunner", () => {
     };
 
     const item = {
-      code: "no-unused-vars",
       column: 1,
       file: "file.js",
       id: "file.js-1-no-unused-vars",
       line: 1,
       message: "error",
+      rule: "no-unused-vars",
     };
 
     const snapshot = {
@@ -327,21 +327,21 @@ describe("MejoraRunner", () => {
     };
 
     const item1 = {
-      code: "no-unused-vars",
       column: 1,
       file: "file1.js",
       id: "file1.js-1-no-unused-vars",
       line: 1,
       message: "error",
+      rule: "no-unused-vars",
     };
 
     const item2 = {
-      code: "no-undef",
       column: 2,
       file: "file2.js",
       id: "file2.js-2-no-undef",
       line: 2,
       message: "error",
+      rule: "no-undef",
     };
 
     const existingBaseline = {
@@ -397,12 +397,12 @@ describe("MejoraRunner", () => {
     mockLoad.mockResolvedValue(null);
 
     const item = {
-      code: "no-unused-vars",
       column: 1,
       file: "file.js",
       id: "file.js-1-no-unused-vars",
       line: 1,
       message: "error",
+      rule: "no-unused-vars",
     };
 
     vi.mocked(runEslintCheck).mockResolvedValue({
@@ -442,21 +442,21 @@ describe("MejoraRunner", () => {
     };
 
     const item1 = {
-      code: "no-unused-vars",
       column: 1,
       file: "file1.js",
       id: "file1.js-1-no-unused-vars",
       line: 1,
       message: "error",
+      rule: "no-unused-vars",
     };
 
     const item2 = {
-      code: "no-undef",
       column: 2,
       file: "file2.js",
       id: "file2.js-2-no-undef",
       line: 2,
       message: "error",
+      rule: "no-undef",
     };
 
     const existingBaseline = {
@@ -510,21 +510,21 @@ describe("MejoraRunner", () => {
     mockLoad.mockResolvedValue(null);
 
     const item1 = {
-      code: "no-unused-vars",
       column: 1,
       file: "file1.js",
       id: "file1.js-1-no-unused-vars",
       line: 1,
       message: "error",
+      rule: "no-unused-vars",
     };
 
     const item2 = {
-      code: "no-undef",
       column: 2,
       file: "file2.js",
       id: "file2.js-2-no-undef",
       line: 2,
       message: "error",
+      rule: "no-undef",
     };
 
     vi.mocked(runEslintCheck).mockResolvedValue({
@@ -713,12 +713,12 @@ describe("MejoraRunner", () => {
 
   it("should not save baseline when no changes detected", async () => {
     const item = {
-      code: "no-unused-vars",
       column: 1,
       file: "file.js",
       id: "file.js-1-no-unused-vars",
       line: 1,
       message: "error",
+      rule: "no-unused-vars",
     };
 
     const existingBaseline = {

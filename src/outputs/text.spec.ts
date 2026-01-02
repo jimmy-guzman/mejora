@@ -25,28 +25,28 @@ describe("formatTextOutput", () => {
           snapshot: {
             items: [
               {
-                code: "no-unused-vars",
                 column: 1,
                 file: "src/a.ts",
                 id: "src/a.ts-10-no-unused-vars",
                 line: 10,
                 message: "error1",
+                rule: "no-unused-vars",
               },
               {
-                code: "no-undef",
                 column: 1,
                 file: "src/b.ts",
                 id: "src/b.ts-20-no-undef",
                 line: 20,
                 message: "error2",
+                rule: "no-undef",
               },
               {
-                code: "semi",
                 column: 1,
                 file: "src/c.ts",
                 id: "src/c.ts-30-semi",
                 line: 30,
                 message: "error3",
+                rule: "semi",
               },
             ],
             type: "items" as const,
@@ -124,12 +124,12 @@ describe("formatTextOutput", () => {
   it("should truncate initial baseline items over 10", () => {
     const items = Array.from({ length: 15 }, (_, i) => {
       return {
-        code: "error",
         column: 1,
         file: `src/file${i}.ts`,
         id: `src/file${i}.ts-${i + 1}-error`,
         line: i + 1,
         message: `error${i}`,
+        rule: "error",
       };
     });
 
@@ -177,40 +177,40 @@ describe("formatTextOutput", () => {
           isInitial: false,
           newItems: [
             {
-              code: "no-unused-vars",
               column: 1,
               file: "src/a.ts",
               id: "src/a.ts-10-no-unused-vars",
               line: 10,
               message: "error1",
+              rule: "no-unused-vars",
             },
             {
-              code: "no-undef",
               column: 1,
               file: "src/b.ts",
               id: "src/b.ts-20-no-undef",
               line: 20,
               message: "error2",
+              rule: "no-undef",
             },
           ],
           removedItems: [],
           snapshot: {
             items: [
               {
-                code: "no-unused-vars",
                 column: 1,
                 file: "src/a.ts",
                 id: "src/a.ts-10-no-unused-vars",
                 line: 10,
                 message: "error1",
+                rule: "no-unused-vars",
               },
               {
-                code: "no-undef",
                 column: 1,
                 file: "src/b.ts",
                 id: "src/b.ts-20-no-undef",
                 line: 20,
                 message: "error2",
+                rule: "no-undef",
               },
             ],
             type: "items" as const,
@@ -252,20 +252,20 @@ describe("formatTextOutput", () => {
           baseline: {
             items: [
               {
-                code: "no-unused-vars",
                 column: 1,
                 file: "src/a.ts",
                 id: "src/a.ts-10-no-unused-vars",
                 line: 10,
                 message: "error1",
+                rule: "no-unused-vars",
               },
               {
-                code: "no-undef",
                 column: 1,
                 file: "src/b.ts",
                 id: "src/b.ts-20-no-undef",
                 line: 20,
                 message: "error2",
+                rule: "no-undef",
               },
             ],
             type: "items" as const,
@@ -279,20 +279,20 @@ describe("formatTextOutput", () => {
           newItems: [],
           removedItems: [
             {
-              code: "no-unused-vars",
               column: 1,
               file: "src/a.ts",
               id: "src/a.ts-10-no-unused-vars",
               line: 10,
               message: "error1",
+              rule: "no-unused-vars",
             },
             {
-              code: "no-undef",
               column: 1,
               file: "src/b.ts",
               id: "src/b.ts-20-no-undef",
               line: 20,
               message: "error2",
+              rule: "no-undef",
             },
           ],
           snapshot: { items: [], type: "items" as const },
@@ -333,20 +333,20 @@ describe("formatTextOutput", () => {
           baseline: {
             items: [
               {
-                code: "no-unused-vars",
                 column: 1,
                 file: "src/a.ts",
                 id: "src/a.ts-10-no-unused-vars",
                 line: 10,
                 message: "error1",
+                rule: "no-unused-vars",
               },
               {
-                code: "no-undef",
                 column: 1,
                 file: "src/b.ts",
                 id: "src/b.ts-20-no-undef",
                 line: 20,
                 message: "error2",
+                rule: "no-undef",
               },
             ],
             type: "items" as const,
@@ -359,41 +359,41 @@ describe("formatTextOutput", () => {
           isInitial: false,
           newItems: [
             {
-              code: "semi",
               column: 1,
               file: "src/c.ts",
               id: "src/c.ts-30-semi",
               line: 30,
               message: "error3",
+              rule: "semi",
             },
           ],
           removedItems: [
             {
-              code: "no-unused-vars",
               column: 1,
               file: "src/a.ts",
               id: "src/a.ts-10-no-unused-vars",
               line: 10,
               message: "error1",
+              rule: "no-unused-vars",
             },
           ],
           snapshot: {
             items: [
               {
-                code: "no-undef",
                 column: 1,
                 file: "src/b.ts",
                 id: "src/b.ts-20-no-undef",
                 line: 20,
                 message: "error2",
+                rule: "no-undef",
               },
               {
-                code: "semi",
                 column: 1,
                 file: "src/c.ts",
                 id: "src/c.ts-30-semi",
                 line: 30,
                 message: "error3",
+                rule: "semi",
               },
             ],
             type: "items" as const,
@@ -436,12 +436,12 @@ describe("formatTextOutput", () => {
           baseline: {
             items: [
               {
-                code: "no-unused-vars",
                 column: 1,
                 file: "src/a.ts",
                 id: "src/a.ts-10-no-unused-vars",
                 line: 10,
                 message: "error1",
+                rule: "no-unused-vars",
               },
             ],
             type: "items" as const,
@@ -457,12 +457,12 @@ describe("formatTextOutput", () => {
           snapshot: {
             items: [
               {
-                code: "no-unused-vars",
                 column: 1,
                 file: "src/a.ts",
                 id: "src/a.ts-10-no-unused-vars",
                 line: 10,
                 message: "error1",
+                rule: "no-unused-vars",
               },
             ],
             type: "items" as const,
@@ -496,12 +496,12 @@ describe("formatTextOutput", () => {
           baseline: {
             items: [
               {
-                code: "no-unused-vars",
                 column: 1,
                 file: "src/a.ts",
                 id: "src/a.ts-10-no-unused-vars",
                 line: 10,
                 message: "error1",
+                rule: "no-unused-vars",
               },
             ],
             type: "items" as const,
@@ -516,12 +516,12 @@ describe("formatTextOutput", () => {
           snapshot: {
             items: [
               {
-                code: "no-unused-vars",
                 column: 1,
                 file: "src/a.ts",
                 id: "src/a.ts-10-no-unused-vars",
                 line: 10,
                 message: "error1",
+                rule: "no-unused-vars",
               },
             ],
             type: "items" as const,
@@ -567,12 +567,12 @@ describe("formatTextOutput", () => {
           baseline: {
             items: [
               {
-                code: "TS2304",
                 column: 1,
                 file: "src/a.ts",
                 id: "src/a.ts-10-TS2304",
                 line: 10,
                 message: "error1",
+                rule: "TS2304",
               },
             ],
             type: "items" as const,
@@ -588,12 +588,12 @@ describe("formatTextOutput", () => {
           snapshot: {
             items: [
               {
-                code: "TS2304",
                 column: 1,
                 file: "src/a.ts",
                 id: "src/a.ts-10-TS2304",
                 line: 10,
                 message: "error1",
+                rule: "TS2304",
               },
             ],
             type: "items" as const,
@@ -682,12 +682,12 @@ describe("formatTextOutput", () => {
   it("should truncate regressions over 10", () => {
     const items = Array.from({ length: 15 }, (_, i) => {
       return {
-        code: "error",
         column: 1,
         file: `src/file${i}.ts`,
         id: `src/file${i}.ts-${i + 1}-error`,
         line: i + 1,
         message: `error${i}`,
+        rule: "error",
       };
     });
 
@@ -722,12 +722,12 @@ describe("formatTextOutput", () => {
   it("should truncate improvements over 10", () => {
     const items = Array.from({ length: 12 }, (_, i) => {
       return {
-        code: "error",
         column: 1,
         file: `src/file${i}.ts`,
         id: `src/file${i}.ts-${i + 1}-error`,
         line: i + 1,
         message: `error${i}`,
+        rule: "error",
       };
     });
 
@@ -810,24 +810,24 @@ describe("formatTextOutput", () => {
           isInitial: false,
           newItems: [
             {
-              code: "no-unused-vars",
               column: 1,
               file: "src/a.ts",
               id: "src/a.ts-10-no-unused-vars",
               line: 10,
               message: "error1",
+              rule: "no-unused-vars",
             },
           ],
           removedItems: [],
           snapshot: {
             items: [
               {
-                code: "no-unused-vars",
                 column: 1,
                 file: "src/a.ts",
                 id: "src/a.ts-10-no-unused-vars",
                 line: 10,
                 message: "error1",
+                rule: "no-unused-vars",
               },
             ],
             type: "items" as const,
@@ -837,12 +837,12 @@ describe("formatTextOutput", () => {
           baseline: {
             items: [
               {
-                code: "TS2304",
                 column: 1,
                 file: "src/b.ts",
                 id: "src/b.ts-20-TS2304",
                 line: 20,
                 message: "error2",
+                rule: "TS2304",
               },
             ],
             type: "items" as const,
@@ -856,12 +856,12 @@ describe("formatTextOutput", () => {
           newItems: [],
           removedItems: [
             {
-              code: "TS2304",
               column: 1,
               file: "src/b.ts",
               id: "src/b.ts-20-TS2304",
               line: 20,
               message: "error2",
+              rule: "TS2304",
             },
           ],
           snapshot: { items: [], type: "items" as const },
@@ -935,12 +935,12 @@ describe("formatTextOutput", () => {
           baseline: {
             items: [
               {
-                code: "no-unused-vars",
                 column: 1,
                 file: "src/a.ts",
                 id: "src/a.ts-10-no-unused-vars",
                 line: 10,
                 message: "error1",
+                rule: "no-unused-vars",
               },
             ],
             type: "items" as const,
@@ -953,12 +953,12 @@ describe("formatTextOutput", () => {
           newItems: [],
           removedItems: [
             {
-              code: "no-unused-vars",
               column: 1,
               file: "src/a.ts",
               id: "src/a.ts-10-no-unused-vars",
               line: 10,
               message: "error1",
+              rule: "no-unused-vars",
             },
           ],
           snapshot: { items: [], type: "items" as const },
@@ -1015,12 +1015,12 @@ describe("formatTextOutput", () => {
           snapshot: {
             items: [
               {
-                code: "no-unused-vars",
                 column: 1,
                 file: "src/a.ts",
                 id: "src/a.ts-10-no-unused-vars",
                 line: 10,
                 message: "error1",
+                rule: "no-unused-vars",
               },
             ],
             type: "items" as const,
@@ -1038,12 +1038,12 @@ describe("formatTextOutput", () => {
           snapshot: {
             items: [
               {
-                code: "TS2304",
                 column: 1,
                 file: "src/b.ts",
                 id: "src/b.ts-20-TS2304",
                 line: 20,
                 message: "error2",
+                rule: "TS2304",
               },
             ],
             type: "items" as const,
@@ -1067,12 +1067,12 @@ describe("formatTextOutput", () => {
           baseline: {
             items: [
               {
-                code: "no-unused-vars",
                 column: 1,
                 file: "src/a.ts",
                 id: "src/a.ts-10-no-unused-vars",
                 line: 10,
                 message: "error1",
+                rule: "no-unused-vars",
               },
             ],
             type: "items" as const,
@@ -1085,12 +1085,12 @@ describe("formatTextOutput", () => {
           newItems: [],
           removedItems: [
             {
-              code: "no-unused-vars",
               column: 1,
               file: "src/a.ts",
               id: "src/a.ts-10-no-unused-vars",
               line: 10,
               message: "error1",
+              rule: "no-unused-vars",
             },
           ],
           snapshot: { items: [], type: "items" as const },
@@ -1099,12 +1099,12 @@ describe("formatTextOutput", () => {
           baseline: {
             items: [
               {
-                code: "TS2304",
                 column: 1,
                 file: "src/b.ts",
                 id: "src/b.ts-20-TS2304",
                 line: 20,
                 message: "error2",
+                rule: "TS2304",
               },
             ],
             type: "items" as const,
@@ -1117,12 +1117,12 @@ describe("formatTextOutput", () => {
           newItems: [],
           removedItems: [
             {
-              code: "TS2304",
               column: 1,
               file: "src/b.ts",
               id: "src/b.ts-20-TS2304",
               line: 20,
               message: "error2",
+              rule: "TS2304",
             },
           ],
           snapshot: { items: [], type: "items" as const },
@@ -1145,36 +1145,36 @@ describe("formatTextOutput", () => {
           baseline: {
             items: [
               {
-                code: "old1",
                 column: 1,
                 file: "src/a.ts",
                 id: "src/a.ts-1-old1",
                 line: 1,
                 message: "old1",
+                rule: "old1",
               },
               {
-                code: "old2",
                 column: 1,
                 file: "src/a.ts",
                 id: "src/a.ts-2-old2",
                 line: 2,
                 message: "old2",
+                rule: "old2",
               },
               {
-                code: "old3",
                 column: 1,
                 file: "src/a.ts",
                 id: "src/a.ts-3-old3",
                 line: 3,
                 message: "old3",
+                rule: "old3",
               },
               {
-                code: "old4",
                 column: 1,
                 file: "src/a.ts",
                 id: "src/a.ts-4-old4",
                 line: 4,
                 message: "old4",
+                rule: "old4",
               },
             ],
             type: "items" as const,
@@ -1188,36 +1188,36 @@ describe("formatTextOutput", () => {
           newItems: [],
           removedItems: [
             {
-              code: "old1",
               column: 1,
               file: "src/a.ts",
               id: "src/a.ts-1-old1",
               line: 1,
               message: "old1",
+              rule: "old1",
             },
             {
-              code: "old2",
               column: 1,
               file: "src/a.ts",
               id: "src/a.ts-2-old2",
               line: 2,
               message: "old2",
+              rule: "old2",
             },
             {
-              code: "old3",
               column: 1,
               file: "src/a.ts",
               id: "src/a.ts-3-old3",
               line: 3,
               message: "old3",
+              rule: "old3",
             },
             {
-              code: "old4",
               column: 1,
               file: "src/a.ts",
               id: "src/a.ts-4-old4",
               line: 4,
               message: "old4",
+              rule: "old4",
             },
           ],
           snapshot: { items: [], type: "items" as const },
@@ -1232,56 +1232,56 @@ describe("formatTextOutput", () => {
           isInitial: false,
           newItems: [
             {
-              code: "TS2304",
               column: 1,
               file: "src/b.ts",
               id: "src/b.ts-1-TS2304",
               line: 1,
               message: "new1",
+              rule: "TS2304",
             },
             {
-              code: "TS2304",
               column: 1,
               file: "src/b.ts",
               id: "src/b.ts-2-TS2304",
               line: 2,
               message: "new2",
+              rule: "TS2304",
             },
             {
-              code: "TS2304",
               column: 1,
               file: "src/b.ts",
               id: "src/b.ts-3-TS2304",
               line: 3,
               message: "new3",
+              rule: "TS2304",
             },
           ],
           removedItems: [],
           snapshot: {
             items: [
               {
-                code: "TS2304",
                 column: 1,
                 file: "src/b.ts",
                 id: "src/b.ts-1-TS2304",
                 line: 1,
                 message: "new1",
+                rule: "TS2304",
               },
               {
-                code: "TS2304",
                 column: 1,
                 file: "src/b.ts",
                 id: "src/b.ts-2-TS2304",
                 line: 2,
                 message: "new2",
+                rule: "TS2304",
               },
               {
-                code: "TS2304",
                 column: 1,
                 file: "src/b.ts",
                 id: "src/b.ts-3-TS2304",
                 line: 3,
                 message: "new3",
+                rule: "TS2304",
               },
             ],
             type: "items" as const,
@@ -1291,20 +1291,20 @@ describe("formatTextOutput", () => {
           baseline: {
             items: [
               {
-                code: "unchanged1",
                 column: 1,
                 file: "src/c.ts",
                 id: "src/c.ts-1-unchanged1",
                 line: 1,
                 message: "unchanged1",
+                rule: "unchanged1",
               },
               {
-                code: "unchanged2",
                 column: 1,
                 file: "src/c.ts",
                 id: "src/c.ts-2-unchanged2",
                 line: 2,
                 message: "unchanged2",
+                rule: "unchanged2",
               },
             ],
             type: "items" as const,
@@ -1319,20 +1319,20 @@ describe("formatTextOutput", () => {
           snapshot: {
             items: [
               {
-                code: "unchanged1",
                 column: 1,
                 file: "src/c.ts",
                 id: "src/c.ts-1-unchanged1",
                 line: 1,
                 message: "unchanged1",
+                rule: "unchanged1",
               },
               {
-                code: "unchanged2",
                 column: 1,
                 file: "src/c.ts",
                 id: "src/c.ts-2-unchanged2",
                 line: 2,
                 message: "unchanged2",
+                rule: "unchanged2",
               },
             ],
             type: "items" as const,
@@ -1350,44 +1350,44 @@ describe("formatTextOutput", () => {
           snapshot: {
             items: [
               {
-                code: "initial1",
                 column: 1,
                 file: "src/d.ts",
                 id: "src/d.ts-1-initial1",
                 line: 1,
                 message: "initial1",
+                rule: "initial1",
               },
               {
-                code: "initial2",
                 column: 1,
                 file: "src/d.ts",
                 id: "src/d.ts-2-initial2",
                 line: 2,
                 message: "initial2",
+                rule: "initial2",
               },
               {
-                code: "initial3",
                 column: 1,
                 file: "src/d.ts",
                 id: "src/d.ts-3-initial3",
                 line: 3,
                 message: "initial3",
+                rule: "initial3",
               },
               {
-                code: "initial4",
                 column: 1,
                 file: "src/d.ts",
                 id: "src/d.ts-4-initial4",
                 line: 4,
                 message: "initial4",
+                rule: "initial4",
               },
               {
-                code: "initial5",
                 column: 1,
                 file: "src/d.ts",
                 id: "src/d.ts-5-initial5",
                 line: 5,
                 message: "initial5",
+                rule: "initial5",
               },
             ],
             type: "items" as const,
@@ -1420,24 +1420,24 @@ describe("formatTextOutput", () => {
           isInitial: false,
           newItems: [
             {
-              code: "config-error",
               column: 0,
               file: "(global)",
               id: "global1",
               line: 0,
               message: "Invalid configuration",
+              rule: "config-error",
             },
           ],
           removedItems: [],
           snapshot: {
             items: [
               {
-                code: "config-error",
                 column: 0,
                 file: "(global)",
                 id: "global1",
                 line: 0,
                 message: "Invalid configuration",
+                rule: "config-error",
               },
             ],
             type: "items" as const,
@@ -1485,12 +1485,12 @@ describe("formatTextOutput", () => {
           snapshot: {
             items: [
               {
-                code: "no-unused-vars",
                 column: 0,
                 file: "src/a.ts",
                 id: "src/a.ts-10-no-unused-vars",
                 line: 10,
                 message: "error1",
+                rule: "no-unused-vars",
               },
             ],
             type: "items" as const,

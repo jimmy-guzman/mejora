@@ -32,7 +32,7 @@ Snapshots use the `items` format with structured diagnostic information:
           "file": "src/example.ts",
           "line": 12,
           "column": 5,
-          "code": "no-unused-vars",
+          "rule": "no-unused-vars",
           "message": "'foo' is declared but never used"
         }
       ]
@@ -40,6 +40,9 @@ Snapshots use the `items` format with structured diagnostic information:
   }
 }
 ```
+
+> [!NOTE]
+> Diagnostic identifiers (`id`) are stable across runs and generally insensitive to code movement, while remaining unique for repeated diagnostics.
 
 The baseline represents the last accepted state and should be committed to the repository.
 

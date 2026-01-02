@@ -42,11 +42,11 @@ export async function runEslintCheck(config: ESLintCheckConfig) {
       const signature = `${file} - ${ruleId}: ${message}` as const;
 
       rawItems.push({
-        code: ruleId,
         column,
         file,
         line,
         message,
+        rule: ruleId,
         signature,
       });
     }

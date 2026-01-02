@@ -43,7 +43,7 @@ function formatItem(
 ) {
   const arrow = formatItemArrow(kind);
   const location = formatLocation(item.file, item.line, item.column);
-  const code = dim(item.code);
+  const code = dim(item.rule);
 
   return [`${arrow} ${location}  ${code}`, item.message];
 }

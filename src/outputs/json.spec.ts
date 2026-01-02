@@ -3,20 +3,20 @@ import { formatJsonOutput } from "./json";
 describe("formatJsonOutput", () => {
   it("should format result with regressions", () => {
     const error1 = {
-      code: "no-unused-vars",
       column: 1,
       file: "src/a.ts",
       id: "src/a.ts-10-no-unused-vars",
       line: 10,
       message: "error1",
+      rule: "no-unused-vars",
     };
     const error2 = {
-      code: "no-undef",
       column: 1,
       file: "src/b.ts",
       id: "src/b.ts-20-no-undef",
       line: 20,
       message: "error2",
+      rule: "no-undef",
     };
 
     const result = {
@@ -60,20 +60,20 @@ describe("formatJsonOutput", () => {
 
   it("should format result with improvements", () => {
     const error1 = {
-      code: "no-unused-vars",
       column: 1,
       file: "src/a.ts",
       id: "src/a.ts-10-no-unused-vars",
       line: 10,
       message: "error1",
+      rule: "no-unused-vars",
     };
     const error2 = {
-      code: "no-undef",
       column: 1,
       file: "src/b.ts",
       id: "src/b.ts-20-no-undef",
       line: 20,
       message: "error2",
+      rule: "no-undef",
     };
 
     const result = {
@@ -114,12 +114,12 @@ describe("formatJsonOutput", () => {
 
   it("should format initial baseline", () => {
     const error1 = {
-      code: "no-unused-vars",
       column: 1,
       file: "src/a.ts",
       id: "src/a.ts-10-no-unused-vars",
       line: 10,
       message: "error1",
+      rule: "no-unused-vars",
     };
 
     const result = {
@@ -194,20 +194,20 @@ describe("formatJsonOutput", () => {
 
   it("should format multiple checks", () => {
     const error1 = {
-      code: "no-unused-vars",
       column: 1,
       file: "src/a.ts",
       id: "src/a.ts-10-no-unused-vars",
       line: 10,
       message: "error1",
+      rule: "no-unused-vars",
     };
     const error2 = {
-      code: "TS2304",
       column: 1,
       file: "src/b.ts",
       id: "src/b.ts-20-TS2304",
       line: 20,
       message: "error2",
+      rule: "TS2304",
     };
 
     const result = {
@@ -321,20 +321,20 @@ describe("formatJsonOutput", () => {
 
   it("should count a check as both improvement and regression when both flags are true", () => {
     const itemA = {
-      code: "no-unused-vars",
       column: 1,
       file: "src/a.ts",
       id: "src/a.ts-10-no-unused-vars",
       line: 10,
       message: "a",
+      rule: "no-unused-vars",
     };
     const itemB = {
-      code: "no-undef",
       column: 1,
       file: "src/b.ts",
       id: "src/b.ts-20-no-undef",
       line: 20,
       message: "b",
+      rule: "no-undef",
     };
 
     const result = {
@@ -376,20 +376,20 @@ describe("formatJsonOutput", () => {
 
   it("should treat initial checks as initial only even if improvement/regression flags are true", () => {
     const itemA = {
-      code: "no-unused-vars",
       column: 1,
       file: "src/a.ts",
       id: "src/a.ts-10-no-unused-vars",
       line: 10,
       message: "a",
+      rule: "no-unused-vars",
     };
     const itemB = {
-      code: "no-undef",
       column: 1,
       file: "src/b.ts",
       id: "src/b.ts-20-no-undef",
       line: 20,
       message: "b",
+      rule: "no-undef",
     };
 
     const result = {

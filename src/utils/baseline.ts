@@ -29,7 +29,7 @@ export const areEntriesEqual = (
       item.file === existing.file &&
       item.line === existing.line &&
       item.column === existing.column &&
-      item.code === existing.code &&
+      item.rule === existing.rule &&
       item.message === existing.message
     );
   });

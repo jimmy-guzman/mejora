@@ -3,16 +3,6 @@ import type { CompilerOptions } from "typescript";
 
 export interface DiagnosticItem {
   /**
-   * Diagnostic error code.
-   * - For ESLint, this is the rule ID.
-   * - For TypeScript, this is the TS error code.
-   *
-   * @example "no-nested-ternary" (for ESLint)
-   *
-   * @example "TS2345" (for TypeScript)
-   */
-  code: string;
-  /**
    * 1-indexed column number for display.
    */
   column: number;
@@ -22,6 +12,8 @@ export interface DiagnosticItem {
   file: string;
   /**
    * Hash of canonical representation.
+   *
+   * @example "a1b2c3d4e5f6g7h8i9j0"
    */
   id: string;
   /**
@@ -32,6 +24,14 @@ export interface DiagnosticItem {
    *  The diagnostic message.
    */
   message: string;
+  /**
+   * Rule identifier.
+   *
+   * @example "no-nested-ternary" (ESLint)
+   *
+   * @example "TS2345" (TypeScript)
+   */
+  rule: string;
 }
 
 export interface ItemsSnapshot {
@@ -199,6 +199,10 @@ export interface CheckResult {
   duration?: number;
   hasImprovement: boolean;
   hasRegression: boolean;
+  /**
+   * Indicates whether any diagnostic items were relocated (i.e., their
+   * file, line, or column changed) compared to the baseline.
+   */
   hasRelocation: boolean;
   isInitial: boolean;
   newItems: DiagnosticItem[];

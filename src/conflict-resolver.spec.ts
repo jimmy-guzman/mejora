@@ -4,28 +4,28 @@ import { BASELINE_VERSION } from "./constants";
 describe("resolveBaselineConflict", () => {
   it("should merge conflicts with union of items", () => {
     const item1 = {
-      code: "no-unused-vars",
       column: 1,
       file: "src/a.ts",
       id: "error1-id",
       line: 10,
       message: "error1",
+      rule: "no-unused-vars",
     };
     const item2 = {
-      code: "no-undef",
       column: 1,
       file: "src/b.ts",
       id: "error2-id",
       line: 20,
       message: "error2",
+      rule: "no-undef",
     };
     const item3 = {
-      code: "semi",
       column: 1,
       file: "src/c.ts",
       id: "error3-id",
       line: 30,
       message: "error3",
+      rule: "semi",
     };
 
     const conflictContent = [
@@ -60,20 +60,20 @@ describe("resolveBaselineConflict", () => {
 
   it("should merge conflicts with different checks on each side", () => {
     const item1 = {
-      code: "no-unused-vars",
       column: 1,
       file: "src/a.ts",
       id: "error1-id",
       line: 10,
       message: "error1",
+      rule: "no-unused-vars",
     };
     const item2 = {
-      code: "TS2304",
       column: 1,
       file: "src/b.ts",
       id: "error2-id",
       line: 20,
       message: "error2",
+      rule: "TS2304",
     };
 
     const conflictContent = [
@@ -107,28 +107,28 @@ describe("resolveBaselineConflict", () => {
 
   it("should merge conflicts with overlapping items", () => {
     const item1 = {
-      code: "no-unused-vars",
       column: 1,
       file: "src/a.ts",
       id: "error1-id",
       line: 10,
       message: "error1",
+      rule: "no-unused-vars",
     };
     const item2 = {
-      code: "no-undef",
       column: 1,
       file: "src/b.ts",
       id: "error2-id",
       line: 20,
       message: "error2",
+      rule: "no-undef",
     };
     const item3 = {
-      code: "semi",
       column: 1,
       file: "src/c.ts",
       id: "error3-id",
       line: 30,
       message: "error3",
+      rule: "semi",
     };
     const item4 = {
       code: "quotes",
@@ -243,28 +243,28 @@ describe("resolveBaselineConflict", () => {
 
   it("should merge multiple checks with conflicts", () => {
     const eslintItem1 = {
-      code: "no-unused-vars",
       column: 1,
       file: "src/a.ts",
       id: "eslint-error1-id",
       line: 10,
       message: "error1",
+      rule: "no-unused-vars",
     };
     const eslintItem2 = {
-      code: "no-undef",
       column: 1,
       file: "src/b.ts",
       id: "eslint-error2-id",
       line: 20,
       message: "error2",
+      rule: "no-undef",
     };
     const tsItem1 = {
-      code: "TS2304",
       column: 1,
       file: "src/c.ts",
       id: "ts-error1-id",
       line: 30,
       message: "ts-error1",
+      rule: "TS2304",
     };
     const tsItem2 = {
       code: "TS2345",
@@ -321,20 +321,20 @@ describe("resolveBaselineConflict", () => {
 
   it("should preserve check type from either side", () => {
     const item1 = {
-      code: "no-unused-vars",
       column: 1,
       file: "src/a.ts",
       id: "error1-id",
       line: 10,
       message: "error1",
+      rule: "no-unused-vars",
     };
     const item2 = {
-      code: "no-undef",
       column: 1,
       file: "src/b.ts",
       id: "error2-id",
       line: 20,
       message: "error2",
+      rule: "no-undef",
     };
 
     const conflictContent = [
@@ -445,12 +445,12 @@ describe("resolveBaselineConflict", () => {
 
   it("should merge when one side has empty checks", () => {
     const item1 = {
-      code: "no-unused-vars",
       column: 1,
       file: "src/a.ts",
       id: "error1-id",
       line: 10,
       message: "error1",
+      rule: "no-unused-vars",
     };
 
     const conflictContent = [
@@ -477,28 +477,28 @@ describe("resolveBaselineConflict", () => {
 
   it("should deduplicate items from both sides by ID", () => {
     const item1 = {
-      code: "no-unused-vars",
       column: 1,
       file: "src/a.ts",
       id: "error1-id",
       line: 10,
       message: "error1",
+      rule: "no-unused-vars",
     };
     const item2 = {
-      code: "no-undef",
       column: 1,
       file: "src/b.ts",
       id: "error2-id",
       line: 20,
       message: "error2",
+      rule: "no-undef",
     };
     const item3 = {
-      code: "semi",
       column: 1,
       file: "src/c.ts",
       id: "error3-id",
       line: 30,
       message: "error3",
+      rule: "semi",
     };
 
     const conflictContent = [
@@ -578,20 +578,20 @@ describe("resolveBaselineConflict", () => {
 
   it("should default to 'items' type when both sides are missing type", () => {
     const item1 = {
-      code: "no-unused-vars",
       column: 1,
       file: "src/a.ts",
       id: "error1-id",
       line: 10,
       message: "error1",
+      rule: "no-unused-vars",
     };
     const item2 = {
-      code: "no-undef",
       column: 1,
       file: "src/b.ts",
       id: "error2-id",
       line: 20,
       message: "error2",
+      rule: "no-undef",
     };
 
     const conflictContent = [
@@ -625,28 +625,28 @@ describe("resolveBaselineConflict", () => {
 
   it("should merge multiple conflict blocks with different checks", () => {
     const eslintItem1 = {
-      code: "no-unused-vars",
       column: 1,
       file: "src/a.ts",
       id: "eslint-error1-id",
       line: 10,
       message: "error1",
+      rule: "no-unused-vars",
     };
     const eslintItem2 = {
-      code: "no-undef",
       column: 1,
       file: "src/b.ts",
       id: "eslint-error2-id",
       line: 20,
       message: "error2",
+      rule: "no-undef",
     };
     const tsItem1 = {
-      code: "TS2304",
       column: 1,
       file: "src/c.ts",
       id: "ts-error1-id",
       line: 30,
       message: "ts-error1",
+      rule: "TS2304",
     };
     const tsItem2 = {
       code: "TS2345",
@@ -705,28 +705,28 @@ describe("resolveBaselineConflict", () => {
 
   it("should merge three conflict blocks", () => {
     const eslintItem1 = {
-      code: "no-unused-vars",
       column: 1,
       file: "src/a.ts",
       id: "eslint-error1-id",
       line: 10,
       message: "error1",
+      rule: "no-unused-vars",
     };
     const eslintItem2 = {
-      code: "no-undef",
       column: 1,
       file: "src/b.ts",
       id: "eslint-error2-id",
       line: 20,
       message: "error2",
+      rule: "no-undef",
     };
     const tsItem1 = {
-      code: "TS2304",
       column: 1,
       file: "src/c.ts",
       id: "ts-error1-id",
       line: 30,
       message: "ts-error1",
+      rule: "TS2304",
     };
     const tsItem2 = {
       code: "TS2345",
@@ -821,28 +821,28 @@ describe("resolveBaselineConflict", () => {
 
   it("should merge multiple conflict blocks without outer JSON structure", () => {
     const eslintItem1 = {
-      code: "no-unused-vars",
       column: 1,
       file: "src/a.ts",
       id: "eslint-error1-id",
       line: 10,
       message: "error1",
+      rule: "no-unused-vars",
     };
     const eslintItem2 = {
-      code: "no-undef",
       column: 1,
       file: "src/b.ts",
       id: "eslint-error2-id",
       line: 20,
       message: "error2",
+      rule: "no-undef",
     };
     const tsItem1 = {
-      code: "TS2304",
       column: 1,
       file: "src/c.ts",
       id: "ts-error1-id",
       line: 30,
       message: "ts-error1",
+      rule: "TS2304",
     };
     const tsItem2 = {
       code: "TS2345",
@@ -906,28 +906,28 @@ describe("resolveBaselineConflict", () => {
 
   it("should merge when the same check appears in multiple conflict blocks", () => {
     const itemA = {
-      code: "no-unused-vars",
       column: 1,
       file: "src/a.ts",
       id: "a-id",
       line: 10,
       message: "a",
+      rule: "no-unused-vars",
     };
     const itemB = {
-      code: "no-undef",
       column: 1,
       file: "src/b.ts",
       id: "b-id",
       line: 20,
       message: "b",
+      rule: "no-undef",
     };
     const itemC = {
-      code: "semi",
       column: 1,
       file: "src/c.ts",
       id: "c-id",
       line: 30,
       message: "c",
+      rule: "semi",
     };
     const itemD = {
       code: "quotes",
@@ -984,28 +984,28 @@ describe("resolveBaselineConflict", () => {
 
   it("should merge conflict blocks that are check entries inside checks", () => {
     const eslintItemA = {
-      code: "no-unused-vars",
       column: 1,
       file: "src/a.ts",
       id: "a-id",
       line: 10,
       message: "a",
+      rule: "no-unused-vars",
     };
     const eslintItemB = {
-      code: "no-undef",
       column: 1,
       file: "src/b.ts",
       id: "b-id",
       line: 20,
       message: "b",
+      rule: "no-undef",
     };
     const tsItemX = {
-      code: "TS2304",
       column: 1,
       file: "src/x.ts",
       id: "x-id",
       line: 30,
       message: "x",
+      rule: "TS2304",
     };
     const tsItemY = {
       code: "TS2345",

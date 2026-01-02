@@ -4,23 +4,23 @@ import { assignStableIds, sortByLocation } from "./utils";
 
 describe("assignStableIds", () => {
   it("should assign ids based on relative position within a signature group", () => {
-    const signature = "file - code: - message" as const;
+    const signature = "file - rule: - message" as const;
 
     const items = [
       {
-        code: "X",
         column: 1,
         file: "a.ts",
         line: 2,
         message: "msg",
+        rule: "X",
         signature,
       },
       {
-        code: "X",
         column: 1,
         file: "a.ts",
         line: 10,
         message: "msg",
+        rule: "X",
         signature,
       },
     ];
@@ -33,23 +33,23 @@ describe("assignStableIds", () => {
   });
 
   it("should preserve duplicate diagnostics with identical signatures", () => {
-    const signature = "file - code: - message" as const;
+    const signature = "file - rule: - message" as const;
 
     const items = [
       {
-        code: "X",
         column: 1,
         file: "a.ts",
         line: 1,
         message: "same",
+        rule: "X",
         signature,
       },
       {
-        code: "X",
         column: 1,
         file: "a.ts",
         line: 5,
         message: "same",
+        rule: "X",
         signature,
       },
     ];
@@ -63,19 +63,19 @@ describe("assignStableIds", () => {
   it("should assign ids independently per signature group", () => {
     const items = [
       {
-        code: "A",
         column: 1,
         file: "a.ts",
         line: 1,
         message: "a",
+        rule: "A",
         signature: "a.ts - A: - a" as const,
       },
       {
-        code: "B",
         column: 1,
         file: "b.ts",
         line: 1,
         message: "b",
+        rule: "B",
         signature: "b.ts - B: - b" as const,
       },
     ];
@@ -89,23 +89,23 @@ describe("assignStableIds", () => {
   });
 
   it("should assign ids based on sorted location rather than input order", () => {
-    const signature = "file - code: - message" as const;
+    const signature = "file - rule: - message" as const;
 
     const items = [
       {
-        code: "X",
         column: 1,
         file: "a.ts",
         line: 10,
         message: "msg",
+        rule: "X",
         signature,
       },
       {
-        code: "X",
         column: 1,
         file: "a.ts",
         line: 1,
         message: "msg",
+        rule: "X",
         signature,
       },
     ];
@@ -120,15 +120,15 @@ describe("assignStableIds", () => {
   });
 
   it("should return DiagnosticItem objects", () => {
-    const signature = "file - code: - message" as const;
+    const signature = "file - rule: - message" as const;
 
     const items = [
       {
-        code: "X",
         column: 1,
         file: "a.ts",
         line: 1,
         message: "msg",
+        rule: "X",
         signature,
       },
     ];

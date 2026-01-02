@@ -26,12 +26,12 @@ describe("BaselineManager", () => {
         eslint: {
           items: [
             {
-              code: "no-unused-vars",
               column: 1,
               file: "src/a.ts",
               id: "src/a.ts-10-no-unused-vars",
               line: 10,
               message: "error1",
+              rule: "no-unused-vars",
             },
           ],
           type: "items" as const,
@@ -60,12 +60,12 @@ describe("BaselineManager", () => {
         eslint: {
           items: [
             {
-              code: "no-unused-vars",
               column: 1,
               file: "src/a.ts",
               id: "src/a.ts-10-no-unused-vars",
               line: 10,
               message: "error1",
+              rule: "no-unused-vars",
             },
           ],
           type: "items" as const,
@@ -73,20 +73,20 @@ describe("BaselineManager", () => {
         typescript: {
           items: [
             {
-              code: "TS2304",
               column: 1,
               file: "src/b.ts",
               id: "src/b.ts-20-TS2304",
               line: 20,
               message: "error2",
+              rule: "TS2304",
             },
             {
-              code: "TS2345",
               column: 1,
               file: "src/c.ts",
               id: "src/c.ts-30-TS2345",
               line: 30,
               message: "error3",
+              rule: "TS2345",
             },
           ],
           type: "items" as const,
@@ -109,12 +109,12 @@ describe("BaselineManager", () => {
           eslint: {
             items: [
               {
-                code: "no-unused-vars",
                 column: 1,
                 file: "src/a.ts",
                 id: "src/a.ts-10-no-unused-vars",
                 line: 10,
                 message: "error1",
+                rule: "no-unused-vars",
               },
             ],
             type: "items" as const,
@@ -128,12 +128,12 @@ describe("BaselineManager", () => {
       expect(entry).toStrictEqual({
         items: [
           {
-            code: "no-unused-vars",
             column: 1,
             file: "src/a.ts",
             id: "src/a.ts-10-no-unused-vars",
             line: 10,
             message: "error1",
+            rule: "no-unused-vars",
           },
         ],
         type: "items",
@@ -146,12 +146,12 @@ describe("BaselineManager", () => {
           eslint: {
             items: [
               {
-                code: "no-unused-vars",
                 column: 1,
                 file: "src/a.ts",
                 id: "src/a.ts-10-no-unused-vars",
                 line: 10,
                 message: "error1",
+                rule: "no-unused-vars",
               },
             ],
             type: "items" as const,
@@ -179,12 +179,12 @@ describe("BaselineManager", () => {
           eslint: {
             items: [
               {
-                code: "no-unused-vars",
                 column: 1,
                 file: "src/a.ts",
                 id: "src/a.ts-10-no-unused-vars",
                 line: 10,
                 message: "error1",
+                rule: "no-unused-vars",
               },
             ],
             type: "items" as const,
@@ -196,12 +196,12 @@ describe("BaselineManager", () => {
       const newEntry = {
         items: [
           {
-            code: "TS2304",
             column: 1,
             file: "src/b.ts",
             id: "src/b.ts-20-TS2304",
             line: 20,
             message: "error2",
+            rule: "TS2304",
           },
         ],
         type: "items" as const,
@@ -214,12 +214,12 @@ describe("BaselineManager", () => {
           eslint: {
             items: [
               {
-                code: "no-unused-vars",
                 column: 1,
                 file: "src/a.ts",
                 id: "src/a.ts-10-no-unused-vars",
                 line: 10,
                 message: "error1",
+                rule: "no-unused-vars",
               },
             ],
             type: "items",
@@ -227,12 +227,12 @@ describe("BaselineManager", () => {
           typescript: {
             items: [
               {
-                code: "TS2304",
                 column: 1,
                 file: "src/b.ts",
                 id: "src/b.ts-20-TS2304",
                 line: 20,
                 message: "error2",
+                rule: "TS2304",
               },
             ],
             type: "items",
@@ -248,12 +248,12 @@ describe("BaselineManager", () => {
           eslint: {
             items: [
               {
-                code: "no-unused-vars",
                 column: 1,
                 file: "src/a.ts",
                 id: "src/a.ts-10-no-unused-vars",
                 line: 10,
                 message: "error1",
+                rule: "no-unused-vars",
               },
             ],
             type: "items" as const,
@@ -265,20 +265,20 @@ describe("BaselineManager", () => {
       const updatedEntry = {
         items: [
           {
-            code: "no-undef",
             column: 1,
             file: "src/b.ts",
             id: "src/b.ts-20-no-undef",
             line: 20,
             message: "error2",
+            rule: "no-undef",
           },
           {
-            code: "semi",
             column: 1,
             file: "src/c.ts",
             id: "src/c.ts-30-semi",
             line: 30,
             message: "error3",
+            rule: "semi",
           },
         ],
         type: "items" as const,
@@ -291,20 +291,20 @@ describe("BaselineManager", () => {
           eslint: {
             items: [
               {
-                code: "no-undef",
                 column: 1,
                 file: "src/b.ts",
                 id: "src/b.ts-20-no-undef",
                 line: 20,
                 message: "error2",
+                rule: "no-undef",
               },
               {
-                code: "semi",
                 column: 1,
                 file: "src/c.ts",
                 id: "src/c.ts-30-semi",
                 line: 30,
                 message: "error3",
+                rule: "semi",
               },
             ],
             type: "items",
@@ -318,12 +318,12 @@ describe("BaselineManager", () => {
       const entry = {
         items: [
           {
-            code: "no-unused-vars",
             column: 1,
             file: "src/a.ts",
             id: "src/a.ts-10-no-unused-vars",
             line: 10,
             message: "error1",
+            rule: "no-unused-vars",
           },
         ],
         type: "items" as const,
@@ -336,12 +336,12 @@ describe("BaselineManager", () => {
           eslint: {
             items: [
               {
-                code: "no-unused-vars",
                 column: 1,
                 file: "src/a.ts",
                 id: "src/a.ts-10-no-unused-vars",
                 line: 10,
                 message: "error1",
+                rule: "no-unused-vars",
               },
             ],
             type: "items",
@@ -357,12 +357,12 @@ describe("BaselineManager", () => {
           eslint: {
             items: [
               {
-                code: "no-unused-vars",
                 column: 1,
                 file: "src/a.ts",
                 id: "src/a.ts-10-no-unused-vars",
                 line: 10,
                 message: "error1",
+                rule: "no-unused-vars",
               },
             ],
             type: "items" as const,
@@ -374,12 +374,12 @@ describe("BaselineManager", () => {
       const newEntry = {
         items: [
           {
-            code: "TS2304",
             column: 1,
             file: "src/b.ts",
             id: "src/b.ts-20-TS2304",
             line: 20,
             message: "error2",
+            rule: "TS2304",
           },
         ],
         type: "items" as const,
@@ -391,12 +391,12 @@ describe("BaselineManager", () => {
         eslint: {
           items: [
             {
-              code: "no-unused-vars",
               column: 1,
               file: "src/a.ts",
               id: "src/a.ts-10-no-unused-vars",
               line: 10,
               message: "error1",
+              rule: "no-unused-vars",
             },
           ],
           type: "items",
@@ -406,20 +406,20 @@ describe("BaselineManager", () => {
 
     it("should return same reference when entry is identical", () => {
       const item1 = {
-        code: "no-unused-vars",
         column: 1,
         file: "src/a.ts",
         id: "src/a.ts-10-no-unused-vars",
         line: 10,
         message: "error1",
+        rule: "no-unused-vars",
       };
       const item2 = {
-        code: "no-undef",
         column: 1,
         file: "src/b.ts",
         id: "src/b.ts-20-no-undef",
         line: 20,
         message: "error2",
+        rule: "no-undef",
       };
 
       const baseline = {
@@ -452,12 +452,12 @@ describe("BaselineManager", () => {
           eslint: {
             items: [
               {
-                code: "no-unused-vars",
                 column: 1,
                 file: "src/a.ts",
                 id: "src/a.ts-10-no-unused-vars",
                 line: 10,
                 message: "error1",
+                rule: "no-unused-vars",
               },
             ],
             type: "items" as const,
@@ -469,12 +469,12 @@ describe("BaselineManager", () => {
       const differentEntry = {
         items: [
           {
-            code: "no-undef",
             column: 1,
             file: "src/b.ts",
             id: "src/b.ts-20-no-undef",
             line: 20,
             message: "error2",
+            rule: "no-undef",
           },
         ],
         type: "items" as const,
@@ -490,12 +490,12 @@ describe("BaselineManager", () => {
       expect(updated.checks.eslint).toStrictEqual({
         items: [
           {
-            code: "no-undef",
             column: 1,
             file: "src/b.ts",
             id: "src/b.ts-20-no-undef",
             line: 20,
             message: "error2",
+            rule: "no-undef",
           },
         ],
         type: "items",
@@ -504,20 +504,20 @@ describe("BaselineManager", () => {
 
     it("should return same reference when items order differs", () => {
       const item1 = {
-        code: "no-unused-vars",
         column: 1,
         file: "src/a.ts",
         id: "src/a.ts-10-no-unused-vars",
         line: 10,
         message: "error1",
+        rule: "no-unused-vars",
       };
       const item2 = {
-        code: "no-undef",
         column: 1,
         file: "src/b.ts",
         id: "src/b.ts-20-no-undef",
         line: 20,
         message: "error2",
+        rule: "no-undef",
       };
 
       const baseline = {
@@ -550,12 +550,12 @@ describe("BaselineManager", () => {
           eslint: {
             items: [
               {
-                code: "no-unused-vars",
                 column: 1,
                 file: "src/a.ts",
                 id: "src/a.ts-10-no-unused-vars",
                 line: 10,
                 message: "error1",
+                rule: "no-unused-vars",
               },
             ],
             type: "items" as const,
@@ -567,12 +567,12 @@ describe("BaselineManager", () => {
       const newEntry = {
         items: [
           {
-            code: "TS2304",
             column: 1,
             file: "src/b.ts",
             id: "src/b.ts-20-TS2304",
             line: 20,
             message: "error2",
+            rule: "TS2304",
           },
         ],
         type: "items" as const,
@@ -591,12 +591,12 @@ describe("BaselineManager", () => {
           eslint: {
             items: [
               {
-                code: "no-unused-vars",
                 column: 1,
                 file: "src/a.ts",
                 id: "src/a.ts-10-no-unused-vars",
                 line: 10,
                 message: "error1",
+                rule: "no-unused-vars",
               },
             ],
             type: "items" as const,
@@ -660,28 +660,28 @@ describe("BaselineManager", () => {
 
     it("should auto-resolve merge conflicts", async () => {
       const item1 = {
-        code: "no-unused-vars",
         column: 1,
         file: "src/a.ts",
         id: "src/a.ts-10-no-unused-vars",
         line: 10,
         message: "error1",
+        rule: "no-unused-vars",
       };
       const item2 = {
-        code: "no-undef",
         column: 1,
         file: "src/b.ts",
         id: "src/b.ts-20-no-undef",
         line: 20,
         message: "error2",
+        rule: "no-undef",
       };
       const item3 = {
-        code: "semi",
         column: 1,
         file: "src/c.ts",
         id: "src/c.ts-30-semi",
         line: 30,
         message: "error3",
+        rule: "semi",
       };
 
       const conflictContent = [
@@ -732,20 +732,20 @@ describe("BaselineManager", () => {
 
     it("should handle conflicts with different checks on each side", async () => {
       const item1 = {
-        code: "no-unused-vars",
         column: 1,
         file: "src/a.ts",
         id: "src/a.ts-10-no-unused-vars",
         line: 10,
         message: "error1",
+        rule: "no-unused-vars",
       };
       const item2 = {
-        code: "TS2304",
         column: 1,
         file: "src/b.ts",
         id: "src/b.ts-20-TS2304",
         line: 20,
         message: "error2",
+        rule: "TS2304",
       };
 
       const conflictContent = [
@@ -782,28 +782,28 @@ describe("BaselineManager", () => {
 
     it("should handle conflicts with overlapping items by ID", async () => {
       const item1 = {
-        code: "no-unused-vars",
         column: 1,
         file: "src/a.ts",
         id: "same-id-1",
         line: 10,
         message: "error1",
+        rule: "no-unused-vars",
       };
       const item2 = {
-        code: "no-undef",
         column: 1,
         file: "src/b.ts",
         id: "same-id-2",
         line: 20,
         message: "error2",
+        rule: "no-undef",
       };
       const item3 = {
-        code: "semi",
         column: 1,
         file: "src/c.ts",
         id: "same-id-3",
         line: 30,
         message: "error3",
+        rule: "semi",
       };
       const item4 = {
         code: "quotes",
@@ -980,12 +980,12 @@ describe("BaselineManager", () => {
           eslint: {
             items: [
               {
-                code: "no-unused-vars",
                 column: 1,
                 file: "src/a.ts",
                 id: "src/a.ts-10-no-unused-vars",
                 line: 10,
                 message: "error1",
+                rule: "no-unused-vars",
               },
             ],
             type: "items" as const,
@@ -1017,12 +1017,12 @@ describe("BaselineManager", () => {
           eslint: {
             items: [
               {
-                code: "no-unused-vars",
                 column: 1,
                 file: "src/a.ts",
                 id: "src/a.ts-10-no-unused-vars",
                 line: 10,
                 message: "error1",
+                rule: "no-unused-vars",
               },
             ],
             type: "items" as const,
@@ -1045,12 +1045,12 @@ describe("BaselineManager", () => {
           eslint: {
             items: [
               {
-                code: "no-unused-vars",
                 column: 1,
                 file: "src/a.ts",
                 id: "src/a.ts-10-no-unused-vars",
                 line: 10,
                 message: "error1",
+                rule: "no-unused-vars",
               },
             ],
             type: "items" as const,
@@ -1098,20 +1098,20 @@ describe("BaselineManager", () => {
           eslint: {
             items: [
               {
-                code: "no-unused-vars",
                 column: 1,
                 file: "src/a.ts",
                 id: "src/a.ts-10-no-unused-vars",
                 line: 10,
                 message: "error1",
+                rule: "no-unused-vars",
               },
               {
-                code: "no-undef",
                 column: 1,
                 file: "src/b.ts",
                 id: "src/b.ts-20-no-undef",
                 line: 20,
                 message: "error2",
+                rule: "no-undef",
               },
             ],
             type: "items" as const,
@@ -1203,12 +1203,12 @@ describe("BaselineManager", () => {
           eslint: {
             items: [
               {
-                code: "no-unused-vars",
                 column: 1,
                 file: "src/a.ts",
                 id: "src/a.ts-10-no-unused-vars",
                 line: 10,
                 message: "error1",
+                rule: "no-unused-vars",
               },
             ],
             type: "items" as const,
@@ -1239,12 +1239,12 @@ describe("BaselineManager", () => {
           eslint: {
             items: [
               {
-                code: "no-unused-vars",
                 column: 1,
                 file: "src/a.ts",
                 id: "src/a.ts-10-no-unused-vars",
                 line: 10,
                 message: "error1",
+                rule: "no-unused-vars",
               },
             ],
             type: "items" as const,

@@ -184,11 +184,11 @@ describe("runTypescriptCheck", () => {
 
     expect(result.items).toHaveLength(1);
     expect(result.items[0]).toMatchObject({
-      code: "TS2304",
       column: 5,
       file: "src/file.ts",
       line: 1,
       message: "Cannot find name 'foo'.",
+      rule: "TS2304",
     });
     expect(result.items[0]?.id).toBeDefined();
   });
@@ -214,11 +214,11 @@ describe("runTypescriptCheck", () => {
 
     expect(result.items).toHaveLength(1);
     expect(result.items[0]).toMatchObject({
-      code: "TS5009",
       column: 0,
       file: "(global)",
       line: 0,
       message: "Cannot find the common subdirectory path",
+      rule: "TS5009",
     });
   });
 
