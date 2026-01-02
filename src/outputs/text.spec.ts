@@ -60,9 +60,9 @@ describe("formatTextOutput", () => {
     expect(output).toMatchInlineSnapshot(`
       "eslint:
         Initial baseline created with 3 issues
-           src/a.ts:10 - no-unused-vars: error1
-           src/b.ts:20 - no-undef: error2
-           src/c.ts:30 - semi: error3
+           src/a.ts:10:1 - no-unused-vars: error1
+           src/b.ts:20:1 - no-undef: error2
+           src/c.ts:30:1 - semi: error3
 
         Duration  2.5s
           Issues  3
@@ -152,8 +152,8 @@ describe("formatTextOutput", () => {
     const output = stripAnsi(formatTextOutput(result));
 
     expect(output).toContain("Initial baseline created with 15 issues");
-    expect(output).toContain("src/file0.ts:1 - error: error0");
-    expect(output).toContain("src/file9.ts:10 - error: error9");
+    expect(output).toContain("src/file0.ts:1:1 - error: error0");
+    expect(output).toContain("src/file9.ts:10:1 - error: error9");
     expect(output).toContain("... and 5 more");
     expect(output).not.toContain("src/file10.ts");
   });
@@ -221,8 +221,8 @@ describe("formatTextOutput", () => {
     expect(output).toMatchInlineSnapshot(`
       "eslint:
         2 new issues (regressions):
-           src/a.ts:10 - no-unused-vars: error1
-           src/b.ts:20 - no-undef: error2
+           src/a.ts:10:1 - no-unused-vars: error1
+           src/b.ts:20:1 - no-undef: error2
 
         Duration  1.5s
           Issues  2
@@ -300,8 +300,8 @@ describe("formatTextOutput", () => {
     expect(output).toMatchInlineSnapshot(`
       "eslint:
         2 issues fixed (improvements):
-           src/a.ts:10 - no-unused-vars: error1
-           src/b.ts:20 - no-undef: error2
+           src/a.ts:10:1 - no-unused-vars: error1
+           src/b.ts:20:1 - no-undef: error2
 
         Duration  1.2s
           Issues  0
@@ -400,9 +400,9 @@ describe("formatTextOutput", () => {
     expect(output).toMatchInlineSnapshot(`
       "eslint:
         1 new issue (regression):
-           src/c.ts:30 - semi: error3
+           src/c.ts:30:1 - semi: error3
         1 issue fixed (improvement):
-           src/a.ts:10 - no-unused-vars: error1
+           src/a.ts:10:1 - no-unused-vars: error1
 
         Duration  1.8s
           Issues  2
@@ -704,8 +704,8 @@ describe("formatTextOutput", () => {
     const output = stripAnsi(formatTextOutput(result));
 
     expect(output).toContain("15 new issues (regressions)");
-    expect(output).toContain("src/file0.ts:1 - error: error0");
-    expect(output).toContain("src/file9.ts:10 - error: error9");
+    expect(output).toContain("src/file0.ts:1:1 - error: error0");
+    expect(output).toContain("src/file9.ts:10:1 - error: error9");
     expect(output).toContain("... and 5 more");
     expect(output).not.toContain("src/file10.ts");
   });
@@ -744,8 +744,8 @@ describe("formatTextOutput", () => {
     const output = stripAnsi(formatTextOutput(result));
 
     expect(output).toContain("12 issues fixed (improvements)");
-    expect(output).toContain("src/file0.ts:1 - error: error0");
-    expect(output).toContain("src/file9.ts:10 - error: error9");
+    expect(output).toContain("src/file0.ts:1:1 - error: error0");
+    expect(output).toContain("src/file9.ts:10:1 - error: error9");
     expect(output).toContain("... and 2 more");
     expect(output).not.toContain("src/file10.ts");
   });
@@ -831,14 +831,14 @@ describe("formatTextOutput", () => {
     expect(output).toMatchInlineSnapshot(`
       "eslint:
         1 new issue (regression):
-           src/a.ts:10 - no-unused-vars: error1
+           src/a.ts:10:1 - no-unused-vars: error1
 
         Duration  1s
           Issues  1
 
       typescript:
         1 issue fixed (improvement):
-           src/b.ts:20 - TS2304: error2
+           src/b.ts:20:1 - TS2304: error2
 
         Duration  1.5s
           Issues  0

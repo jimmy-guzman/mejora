@@ -9,9 +9,11 @@ import { average } from "./average";
 const MAX_ITEMS_TO_DISPLAY = 10;
 
 function formatItem(item: DiagnosticItem) {
-  const location = item.line > 0 ? `${item.file}:${item.line}` : item.file;
+  if (item.line > 0) {
+    return `${item.file}:${item.line}:${item.column} - ${item.code}: ${item.message}`;
+  }
 
-  return `${location} - ${item.code}: ${item.message}`;
+  return `${item.file} - ${item.code}: ${item.message}`;
 }
 
 function formatItemList(
