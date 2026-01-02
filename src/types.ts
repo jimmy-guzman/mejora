@@ -1,15 +1,48 @@
 import type { Linter } from "eslint";
 import type { CompilerOptions } from "typescript";
 
+export interface DiagnosticItem {
+  /**
+   * 1-indexed column number for display.
+   */
+  column: number;
+  /**
+   * Relative path from cwd.
+   */
+  file: string;
+  /**
+   * Hash of canonical representation.
+   *
+   * @example "a1b2c3d4e5f6g7h8i9j0"
+   */
+  id: string;
+  /**
+   * 1-indexed line number for display.
+   */
+  line: number;
+  /**
+   *  The diagnostic message.
+   */
+  message: string;
+  /**
+   * Rule identifier.
+   *
+   * @example "no-nested-ternary" (ESLint)
+   *
+   * @example "TS2345" (TypeScript)
+   */
+  rule: string;
+}
+
 export interface ItemsSnapshot {
-  items: string[];
+  items: DiagnosticItem[];
   type: "items";
 }
 
 export type Snapshot = ItemsSnapshot;
 
 export interface BaselineEntry {
-  items?: string[];
+  items?: DiagnosticItem[];
   type: Snapshot["type"];
 }
 
@@ -166,9 +199,14 @@ export interface CheckResult {
   duration?: number;
   hasImprovement: boolean;
   hasRegression: boolean;
+  /**
+   * Indicates whether any diagnostic items were relocated (i.e., their
+   * file, line, or column changed) compared to the baseline.
+   */
+  hasRelocation: boolean;
   isInitial: boolean;
-  newItems: string[];
-  removedItems: string[];
+  newItems: DiagnosticItem[];
+  removedItems: DiagnosticItem[];
   snapshot: Snapshot;
 }
 

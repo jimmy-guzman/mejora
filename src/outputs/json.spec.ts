@@ -2,6 +2,23 @@ import { formatJsonOutput } from "./json";
 
 describe("formatJsonOutput", () => {
   it("should format result with regressions", () => {
+    const error1 = {
+      column: 1,
+      file: "src/a.ts",
+      id: "abc123def456",
+      line: 10,
+      message: "error1",
+      rule: "no-unused-vars",
+    };
+    const error2 = {
+      column: 1,
+      file: "src/b.ts",
+      id: "111aaa222bbb",
+      line: 20,
+      message: "error2",
+      rule: "no-undef",
+    };
+
     const result = {
       exitCode: 1,
       hasImprovement: false,
@@ -12,11 +29,12 @@ describe("formatJsonOutput", () => {
           checkId: "eslint",
           hasImprovement: false,
           hasRegression: true,
+          hasRelocation: false,
           isInitial: false,
-          newItems: ["error1", "error2"],
+          newItems: [error1, error2],
           removedItems: [],
           snapshot: {
-            items: ["error1", "error2"],
+            items: [error1, error2],
             type: "items" as const,
           },
         },
@@ -28,7 +46,7 @@ describe("formatJsonOutput", () => {
     expect(parsed).toMatchObject({
       checks: [
         expect.objectContaining({
-          newItems: ["error1", "error2"],
+          newItems: [error1, error2],
         }),
       ],
       exitCode: 1,
@@ -41,20 +59,38 @@ describe("formatJsonOutput", () => {
   });
 
   it("should format result with improvements", () => {
+    const error1 = {
+      column: 1,
+      file: "src/a.ts",
+      id: "abc123def456",
+      line: 10,
+      message: "error1",
+      rule: "no-unused-vars",
+    };
+    const error2 = {
+      column: 1,
+      file: "src/b.ts",
+      id: "111aaa222bbb",
+      line: 20,
+      message: "error2",
+      rule: "no-undef",
+    };
+
     const result = {
       exitCode: 0,
       hasImprovement: true,
       hasRegression: false,
       results: [
         {
-          baseline: { items: ["error1", "error2"], type: "items" as const },
+          baseline: { items: [error1, error2], type: "items" as const },
           checkId: "eslint",
           hasImprovement: true,
           hasRegression: false,
+          hasRelocation: false,
           isInitial: false,
           newItems: [],
-          removedItems: ["error1"],
-          snapshot: { items: ["error2"], type: "items" as const },
+          removedItems: [error1],
+          snapshot: { items: [error2], type: "items" as const },
         },
       ],
     };
@@ -64,7 +100,7 @@ describe("formatJsonOutput", () => {
     expect(parsed).toMatchObject({
       checks: [
         expect.objectContaining({
-          removedItems: ["error1"],
+          removedItems: [error1],
         }),
       ],
       exitCode: 0,
@@ -77,6 +113,15 @@ describe("formatJsonOutput", () => {
   });
 
   it("should format initial baseline", () => {
+    const error1 = {
+      column: 1,
+      file: "src/a.ts",
+      id: "abc123def456",
+      line: 10,
+      message: "error1",
+      rule: "no-unused-vars",
+    };
+
     const result = {
       exitCode: 0,
       hasImprovement: false,
@@ -87,10 +132,11 @@ describe("formatJsonOutput", () => {
           checkId: "eslint",
           hasImprovement: false,
           hasRegression: false,
+          hasRelocation: false,
           isInitial: true,
           newItems: [],
           removedItems: [],
-          snapshot: { items: ["error1"], type: "items" as const },
+          snapshot: { items: [error1], type: "items" as const },
         },
       ],
     };
@@ -121,6 +167,7 @@ describe("formatJsonOutput", () => {
           checkId: "eslint",
           hasImprovement: false,
           hasRegression: false,
+          hasRelocation: false,
           isInitial: false,
           newItems: [],
           removedItems: [],
@@ -146,6 +193,23 @@ describe("formatJsonOutput", () => {
   });
 
   it("should format multiple checks", () => {
+    const error1 = {
+      column: 1,
+      file: "src/a.ts",
+      id: "abc123def456",
+      line: 10,
+      message: "error1",
+      rule: "no-unused-vars",
+    };
+    const error2 = {
+      column: 1,
+      file: "src/b.ts",
+      id: "789xyz012tuv",
+      line: 20,
+      message: "error2",
+      rule: "TS2304",
+    };
+
     const result = {
       exitCode: 1,
       hasImprovement: false,
@@ -156,19 +220,21 @@ describe("formatJsonOutput", () => {
           checkId: "eslint",
           hasImprovement: false,
           hasRegression: true,
+          hasRelocation: false,
           isInitial: false,
-          newItems: ["error1"],
+          newItems: [error1],
           removedItems: [],
-          snapshot: { items: ["error1"], type: "items" as const },
+          snapshot: { items: [error1], type: "items" as const },
         },
         {
-          baseline: { items: ["error2"], type: "items" as const },
+          baseline: { items: [error2], type: "items" as const },
           checkId: "typescript",
           hasImprovement: true,
           hasRegression: false,
+          hasRelocation: false,
           isInitial: false,
           newItems: [],
-          removedItems: ["error2"],
+          removedItems: [error2],
           snapshot: { items: [], type: "items" as const },
         },
       ],
@@ -202,6 +268,7 @@ describe("formatJsonOutput", () => {
           duration: 1000,
           hasImprovement: false,
           hasRegression: false,
+          hasRelocation: false,
           isInitial: false,
           newItems: [],
           removedItems: [],
@@ -213,6 +280,7 @@ describe("formatJsonOutput", () => {
           duration: 1500,
           hasImprovement: false,
           hasRegression: false,
+          hasRelocation: false,
           isInitial: false,
           newItems: [],
           removedItems: [],
@@ -252,20 +320,38 @@ describe("formatJsonOutput", () => {
   });
 
   it("should count a check as both improvement and regression when both flags are true", () => {
+    const itemA = {
+      column: 1,
+      file: "src/a.ts",
+      id: "abc123def456",
+      line: 10,
+      message: "a",
+      rule: "no-unused-vars",
+    };
+    const itemB = {
+      column: 1,
+      file: "src/b.ts",
+      id: "111aaa222bbb",
+      line: 20,
+      message: "b",
+      rule: "no-undef",
+    };
+
     const result = {
       exitCode: 1,
       hasImprovement: true,
       hasRegression: true,
       results: [
         {
-          baseline: { items: ["a"], type: "items" as const },
+          baseline: { items: [itemA], type: "items" as const },
           checkId: "eslint",
           hasImprovement: true,
           hasRegression: true,
+          hasRelocation: false,
           isInitial: false,
-          newItems: ["b"],
-          removedItems: ["a"],
-          snapshot: { items: ["b"], type: "items" as const },
+          newItems: [itemB],
+          removedItems: [itemA],
+          snapshot: { items: [itemB], type: "items" as const },
         },
       ],
     };
@@ -289,6 +375,23 @@ describe("formatJsonOutput", () => {
   });
 
   it("should treat initial checks as initial only even if improvement/regression flags are true", () => {
+    const itemA = {
+      column: 1,
+      file: "src/a.ts",
+      id: "abc123def456",
+      line: 10,
+      message: "a",
+      rule: "no-unused-vars",
+    };
+    const itemB = {
+      column: 1,
+      file: "src/b.ts",
+      id: "111aaa222bbb",
+      line: 20,
+      message: "b",
+      rule: "no-undef",
+    };
+
     const result = {
       exitCode: 0,
       hasImprovement: true,
@@ -299,10 +402,11 @@ describe("formatJsonOutput", () => {
           checkId: "eslint",
           hasImprovement: true,
           hasRegression: true,
+          hasRelocation: false,
           isInitial: true,
-          newItems: ["b"],
-          removedItems: ["a"],
-          snapshot: { items: ["b"], type: "items" as const },
+          newItems: [itemB],
+          removedItems: [itemA],
+          snapshot: { items: [itemB], type: "items" as const },
         },
       ],
     };

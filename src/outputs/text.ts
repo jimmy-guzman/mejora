@@ -1,25 +1,71 @@
-import type { CheckResult, RunResult } from "@/types";
+import { basename, dirname } from "pathe";
 
-import { blue, bold, dim, gray, green, red } from "@/utils/colors";
+import type { CheckResult, DiagnosticItem, RunResult } from "@/types";
+
+import { blue, bold, dim, gray, green, red, underline } from "@/utils/colors";
 import { duration } from "@/utils/duration";
 import { plural } from "@/utils/text";
 
 import { average } from "./average";
 
 const MAX_ITEMS_TO_DISPLAY = 10;
+const ITEM_INDENT = "     ";
+const MESSAGE_INDENT = `${ITEM_INDENT}  `;
+const SECTION_INDENT = "  ";
+const SUMMARY_INDENT = "  ";
+const METADATA_INDENT = "    ";
+const SECTION_BREAK = "";
 
-function formatItemList(items: string[], maxItems = MAX_ITEMS_TO_DISPLAY) {
-  const lines: string[] = [];
-  const itemsToShow = items.slice(0, maxItems);
+type Kind = "improvement" | "initial" | "regression";
 
-  for (const item of itemsToShow) {
-    lines.push(`     ${dim(item)}`);
+function formatItemArrow(kind: Kind) {
+  if (kind === "initial") {
+    return dim("→");
   }
 
-  const remainingCount = items.length - maxItems;
+  if (kind === "improvement") {
+    return green("↑");
+  }
+
+  return red("↓");
+}
+
+function formatLocation(file: string, line: number, column: number) {
+  const dir = dirname(file);
+  const name = basename(file);
+
+  const position = line > 0 ? `:${line}:${column > 0 ? column : 1}` : "";
+
+  const dirPart = dir === "." ? "" : dim(`${dir}/`);
+  const namePart = underline(name);
+  const posPart = position ? dim(position) : "";
+
+  return `${dirPart}${namePart}${posPart}`;
+}
+
+function formatItem(item: DiagnosticItem, kind: Kind) {
+  const arrow = formatItemArrow(kind);
+  const location = formatLocation(item.file, item.line, item.column);
+  const code = dim(item.rule);
+
+  return [`${arrow} ${location}  ${code}`, item.message];
+}
+
+function formatItemList(items: DiagnosticItem[], kind: Kind) {
+  const lines: string[] = [];
+
+  const itemsToShow = items.slice(0, MAX_ITEMS_TO_DISPLAY);
+
+  for (const item of itemsToShow) {
+    const [head, message] = formatItem(item, kind);
+
+    lines.push(`${ITEM_INDENT}${head}`, `${MESSAGE_INDENT}${message}`);
+  }
+
+  const remainingCount = items.length - itemsToShow.length;
 
   if (remainingCount > 0) {
-    lines.push(`     ${dim(`... and ${remainingCount} more`)}`);
+    lines.push(`${ITEM_INDENT}${dim(`... and ${remainingCount} more`)}`);
   }
 
   return lines;
@@ -28,11 +74,11 @@ function formatItemList(items: string[], maxItems = MAX_ITEMS_TO_DISPLAY) {
 function formatDuration(checkDuration?: number) {
   if (checkDuration === undefined) return [];
 
-  return [`  ${dim("Duration")}  ${duration(checkDuration)}`];
+  return [`${SECTION_INDENT}${dim("Duration")}  ${duration(checkDuration)}`];
 }
 
 function formatIssueCount(count: number) {
-  return [`    ${dim("Issues")}  ${bold(count)}`];
+  return [`${METADATA_INDENT}${dim("Issues")}  ${bold(count)}`];
 }
 
 function formatMetadata(check: CheckResult) {
@@ -48,8 +94,8 @@ function formatRegressions(check: CheckResult) {
   const count = check.newItems.length;
 
   return [
-    `  ${red(count)} new ${plural(count, "issue")} (${plural(count, "regression")}):`,
-    ...formatItemList(check.newItems),
+    `${SECTION_INDENT}${red(count)} new ${plural(count, "issue")} (${plural(count, "regression")}):`,
+    ...formatItemList(check.newItems, "regression"),
   ];
 }
 
@@ -59,8 +105,8 @@ function formatImprovements(check: CheckResult) {
   const count = check.removedItems.length;
 
   return [
-    `  ${green(count)} ${plural(count, "issue")} fixed (${plural(count, "improvement")}):`,
-    ...formatItemList(check.removedItems),
+    `${SECTION_INDENT}${green(count)} ${plural(count, "issue")} fixed (${plural(count, "improvement")}):`,
+    ...formatItemList(check.removedItems, "improvement"),
   ];
 }
 
@@ -70,14 +116,14 @@ function formatInitialBaseline(check: CheckResult, isFirst: boolean) {
 
   const lines = [
     `${prefix}${check.checkId}:`,
-    `  Initial baseline created with ${blue(count)} ${plural(count, "issue")}`,
+    `${SECTION_INDENT}Initial baseline created with ${blue(count)} ${plural(count, "issue")}`,
   ];
 
   if (check.snapshot.items.length > 0) {
-    lines.push(...formatItemList(check.snapshot.items));
+    lines.push(...formatItemList(check.snapshot.items, "initial"));
   }
 
-  lines.push("", ...formatMetadata(check));
+  lines.push(SECTION_BREAK, ...formatMetadata(check));
 
   return lines;
 }
@@ -89,7 +135,7 @@ function formatChangeBaseline(check: CheckResult, isFirst: boolean) {
     `${prefix}${check.checkId}:`,
     ...formatRegressions(check),
     ...formatImprovements(check),
-    "",
+    SECTION_BREAK,
     ...formatMetadata(check),
   ];
 
@@ -144,7 +190,6 @@ function formatSummary(result: RunResult) {
     totalInitial: 0,
     totalIssues: 0,
     totalRegressions: 0,
-    totalUnchanged: 0,
   };
 
   for (const check of result.results) {
@@ -167,26 +212,21 @@ function formatSummary(result: RunResult) {
     if (hasRegression) {
       acc.totalRegressions += check.newItems.length;
     }
-
-    if (!hasImprovement && !hasRegression) {
-      acc.totalUnchanged += issueCount;
-    }
   }
 
   const summaryLines = [
-    `  ${dim("Improvements")}  ${green(acc.totalImprovements)}`,
-    `   ${dim("Regressions")}  ${red(acc.totalRegressions)}`,
-    `     ${dim("Unchanged")}  ${acc.totalUnchanged}`,
-    `       ${dim("Initial")}  ${blue(acc.totalInitial)}`,
-    `        ${dim("Checks")}  ${result.results.length}`,
-    `        ${dim("Issues")}  ${bold(acc.totalIssues)}`,
+    `${SUMMARY_INDENT}${dim("Improvements")}  ${green(acc.totalImprovements)}`,
+    `${SUMMARY_INDENT} ${dim("Regressions")}  ${red(acc.totalRegressions)}`,
+    `${SUMMARY_INDENT}     ${dim("Initial")}  ${blue(acc.totalInitial)}`,
+    `${SUMMARY_INDENT}      ${dim("Checks")}  ${result.results.length}`,
+    `${SUMMARY_INDENT}      ${dim("Issues")}  ${bold(acc.totalIssues)}`,
   ];
 
   const avgDuration = average(result.totalDuration, result.results.length);
 
   if (result.totalDuration !== undefined && avgDuration !== undefined) {
     summaryLines.push(
-      `      ${dim("Duration")}  ${duration(result.totalDuration)} ${gray(
+      `${SUMMARY_INDENT}    ${dim("Duration")}  ${duration(result.totalDuration)} ${gray(
         `(avg ${duration(avgDuration)})`,
       )}`,
     );
@@ -205,7 +245,7 @@ export function formatTextOutput(result: RunResult) {
   }
 
   if (lines.length > 0) {
-    lines.push("");
+    lines.push(SECTION_BREAK);
   }
 
   lines.push(formatSummary(result));

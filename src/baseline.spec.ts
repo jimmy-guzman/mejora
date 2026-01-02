@@ -4,11 +4,9 @@ import { BaselineManager } from "./baseline";
 import { logger } from "./utils/logger";
 
 vi.mock("node:fs/promises");
-
 vi.mock("is-in-ci", () => ({
   default: false,
 }));
-
 vi.mock("./utils/logger");
 
 const mockReadFile = vi.mocked(readFile);
@@ -21,16 +19,28 @@ describe("BaselineManager", () => {
   });
 
   describe("static create", () => {
-    it("should create a baseline with version 1", () => {
+    it("should create a baseline with version 2", () => {
       const checks = {
-        eslint: { items: ["error1"], type: "items" as const },
+        eslint: {
+          items: [
+            {
+              column: 1,
+              file: "src/a.ts",
+              id: "abc123def456",
+              line: 10,
+              message: "error1",
+              rule: "no-unused-vars",
+            },
+          ],
+          type: "items" as const,
+        },
       };
 
       const baseline = BaselineManager.create(checks);
 
       expect(baseline).toStrictEqual({
         checks,
-        version: 1,
+        version: 2,
       });
     });
 
@@ -39,21 +49,53 @@ describe("BaselineManager", () => {
 
       expect(baseline).toStrictEqual({
         checks: {},
-        version: 1,
+        version: 2,
       });
     });
 
     it("should create a baseline with multiple checks", () => {
       const checks = {
-        eslint: { items: ["error1"], type: "items" as const },
-        typescript: { items: ["error2", "error3"], type: "items" as const },
+        eslint: {
+          items: [
+            {
+              column: 1,
+              file: "src/a.ts",
+              id: "abc123def456",
+              line: 10,
+              message: "error1",
+              rule: "no-unused-vars",
+            },
+          ],
+          type: "items" as const,
+        },
+        typescript: {
+          items: [
+            {
+              column: 1,
+              file: "src/b.ts",
+              id: "789xyz012tuv",
+              line: 20,
+              message: "error2",
+              rule: "TS2304",
+            },
+            {
+              column: 1,
+              file: "src/c.ts",
+              id: "fed654cba321",
+              line: 30,
+              message: "error3",
+              rule: "TS2345",
+            },
+          ],
+          type: "items" as const,
+        },
       };
 
       const baseline = BaselineManager.create(checks);
 
       expect(baseline).toStrictEqual({
         checks,
-        version: 1,
+        version: 2,
       });
     });
   });
@@ -62,22 +104,58 @@ describe("BaselineManager", () => {
     it("should return entry when baseline exists and has the check", () => {
       const baseline = {
         checks: {
-          eslint: { items: ["error1"], type: "items" as const },
+          eslint: {
+            items: [
+              {
+                column: 1,
+                file: "src/a.ts",
+                id: "abc123def456",
+                line: 10,
+                message: "error1",
+                rule: "no-unused-vars",
+              },
+            ],
+            type: "items" as const,
+          },
         },
-        version: 1,
+        version: 2,
       };
 
       const entry = BaselineManager.getEntry(baseline, "eslint");
 
-      expect(entry).toStrictEqual({ items: ["error1"], type: "items" });
+      expect(entry).toStrictEqual({
+        items: [
+          {
+            column: 1,
+            file: "src/a.ts",
+            id: "abc123def456",
+            line: 10,
+            message: "error1",
+            rule: "no-unused-vars",
+          },
+        ],
+        type: "items",
+      });
     });
 
     it("should return undefined when baseline exists but check does not", () => {
       const baseline = {
         checks: {
-          eslint: { items: ["error1"], type: "items" as const },
+          eslint: {
+            items: [
+              {
+                column: 1,
+                file: "src/a.ts",
+                id: "abc123def456",
+                line: 10,
+                message: "error1",
+                rule: "no-unused-vars",
+              },
+            ],
+            type: "items" as const,
+          },
         },
-        version: 1,
+        version: 2,
       };
 
       const entry = BaselineManager.getEntry(baseline, "typescript");
@@ -96,13 +174,34 @@ describe("BaselineManager", () => {
     it("should add new entry to existing baseline", () => {
       const baseline = {
         checks: {
-          eslint: { items: ["error1"], type: "items" as const },
+          eslint: {
+            items: [
+              {
+                column: 1,
+                file: "src/a.ts",
+                id: "abc123def456",
+                line: 10,
+                message: "error1",
+                rule: "no-unused-vars",
+              },
+            ],
+            type: "items" as const,
+          },
         },
-        version: 1,
+        version: 2,
       };
 
       const newEntry = {
-        items: ["error2"],
+        items: [
+          {
+            column: 1,
+            file: "src/b.ts",
+            id: "789xyz012tuv",
+            line: 20,
+            message: "error2",
+            rule: "TS2304",
+          },
+        ],
         type: "items" as const,
       };
 
@@ -110,23 +209,76 @@ describe("BaselineManager", () => {
 
       expect(updated).toStrictEqual({
         checks: {
-          eslint: { items: ["error1"], type: "items" },
-          typescript: { items: ["error2"], type: "items" },
+          eslint: {
+            items: [
+              {
+                column: 1,
+                file: "src/a.ts",
+                id: "abc123def456",
+                line: 10,
+                message: "error1",
+                rule: "no-unused-vars",
+              },
+            ],
+            type: "items",
+          },
+          typescript: {
+            items: [
+              {
+                column: 1,
+                file: "src/b.ts",
+                id: "789xyz012tuv",
+                line: 20,
+                message: "error2",
+                rule: "TS2304",
+              },
+            ],
+            type: "items",
+          },
         },
-        version: 1,
+        version: 2,
       });
     });
 
     it("should update existing entry in baseline", () => {
       const baseline = {
         checks: {
-          eslint: { items: ["error1"], type: "items" as const },
+          eslint: {
+            items: [
+              {
+                column: 1,
+                file: "src/a.ts",
+                id: "abc123def456",
+                line: 10,
+                message: "error1",
+                rule: "no-unused-vars",
+              },
+            ],
+            type: "items" as const,
+          },
         },
-        version: 1,
+        version: 2,
       };
 
       const updatedEntry = {
-        items: ["error2", "error3"],
+        items: [
+          {
+            column: 1,
+            file: "src/b.ts",
+            id: "111aaa222bbb",
+            line: 20,
+            message: "error2",
+            rule: "no-undef",
+          },
+          {
+            column: 1,
+            file: "src/c.ts",
+            id: "333ccc444ddd",
+            line: 30,
+            message: "error3",
+            rule: "semi",
+          },
+        ],
         type: "items" as const,
       };
 
@@ -134,15 +286,44 @@ describe("BaselineManager", () => {
 
       expect(updated).toStrictEqual({
         checks: {
-          eslint: { items: ["error2", "error3"], type: "items" },
+          eslint: {
+            items: [
+              {
+                column: 1,
+                file: "src/b.ts",
+                id: "111aaa222bbb",
+                line: 20,
+                message: "error2",
+                rule: "no-undef",
+              },
+              {
+                column: 1,
+                file: "src/c.ts",
+                id: "333ccc444ddd",
+                line: 30,
+                message: "error3",
+                rule: "semi",
+              },
+            ],
+            type: "items",
+          },
         },
-        version: 1,
+        version: 2,
       });
     });
 
     it("should create new baseline when baseline is null", () => {
       const entry = {
-        items: ["error1"],
+        items: [
+          {
+            column: 1,
+            file: "src/a.ts",
+            id: "abc123def456",
+            line: 10,
+            message: "error1",
+            rule: "no-unused-vars",
+          },
+        ],
         type: "items" as const,
       };
 
@@ -150,42 +331,107 @@ describe("BaselineManager", () => {
 
       expect(updated).toStrictEqual({
         checks: {
-          eslint: { items: ["error1"], type: "items" },
+          eslint: {
+            items: [
+              {
+                column: 1,
+                file: "src/a.ts",
+                id: "abc123def456",
+                line: 10,
+                message: "error1",
+                rule: "no-unused-vars",
+              },
+            ],
+            type: "items",
+          },
         },
-        version: 1,
+        version: 2,
       });
     });
 
     it("should not mutate the original baseline", () => {
       const baseline = {
         checks: {
-          eslint: { items: ["error1"], type: "items" as const },
+          eslint: {
+            items: [
+              {
+                column: 1,
+                file: "src/a.ts",
+                id: "abc123def456",
+                line: 10,
+                message: "error1",
+                rule: "no-unused-vars",
+              },
+            ],
+            type: "items" as const,
+          },
         },
-        version: 1,
+        version: 2,
       };
 
       const newEntry = {
-        items: ["error2"],
+        items: [
+          {
+            column: 1,
+            file: "src/b.ts",
+            id: "789xyz012tuv",
+            line: 20,
+            message: "error2",
+            rule: "TS2304",
+          },
+        ],
         type: "items" as const,
       };
 
       BaselineManager.update(baseline, "typescript", newEntry);
 
       expect(baseline.checks).toStrictEqual({
-        eslint: { items: ["error1"], type: "items" },
+        eslint: {
+          items: [
+            {
+              column: 1,
+              file: "src/a.ts",
+              id: "abc123def456",
+              line: 10,
+              message: "error1",
+              rule: "no-unused-vars",
+            },
+          ],
+          type: "items",
+        },
       });
     });
 
     it("should return same reference when entry is identical", () => {
+      const item1 = {
+        column: 1,
+        file: "src/a.ts",
+        id: "abc123def456",
+        line: 10,
+        message: "error1",
+        rule: "no-unused-vars",
+      };
+      const item2 = {
+        column: 1,
+        file: "src/b.ts",
+        id: "111aaa222bbb",
+        line: 20,
+        message: "error2",
+        rule: "no-undef",
+      };
+
       const baseline = {
         checks: {
-          eslint: { items: ["error1", "error2"], type: "items" as const },
+          eslint: {
+            items: [item1, item2],
+            type: "items" as const,
+          },
         },
-        version: 1,
+        version: 2,
       };
 
       const identicalEntry = {
-        items: ["error1", "error2"],
+        items: [item1, item2],
         type: "items" as const,
       };
 
@@ -201,13 +447,34 @@ describe("BaselineManager", () => {
     it("should return new reference when items differ", () => {
       const baseline = {
         checks: {
-          eslint: { items: ["error1"], type: "items" as const },
+          eslint: {
+            items: [
+              {
+                column: 1,
+                file: "src/a.ts",
+                id: "abc123def456",
+                line: 10,
+                message: "error1",
+                rule: "no-unused-vars",
+              },
+            ],
+            type: "items" as const,
+          },
         },
-        version: 1,
+        version: 2,
       };
 
       const differentEntry = {
-        items: ["error2"],
+        items: [
+          {
+            column: 1,
+            file: "src/b.ts",
+            id: "111aaa222bbb",
+            line: 20,
+            message: "error2",
+            rule: "no-undef",
+          },
+        ],
         type: "items" as const,
       };
 
@@ -219,21 +486,50 @@ describe("BaselineManager", () => {
 
       expect(updated).not.toBe(baseline);
       expect(updated.checks.eslint).toStrictEqual({
-        items: ["error2"],
+        items: [
+          {
+            column: 1,
+            file: "src/b.ts",
+            id: "111aaa222bbb",
+            line: 20,
+            message: "error2",
+            rule: "no-undef",
+          },
+        ],
         type: "items",
       });
     });
 
     it("should return same reference when items order differs", () => {
+      const item1 = {
+        column: 1,
+        file: "src/a.ts",
+        id: "abc123def456",
+        line: 10,
+        message: "error1",
+        rule: "no-unused-vars",
+      };
+      const item2 = {
+        column: 1,
+        file: "src/b.ts",
+        id: "111aaa222bbb",
+        line: 20,
+        message: "error2",
+        rule: "no-undef",
+      };
+
       const baseline = {
         checks: {
-          eslint: { items: ["error1", "error2"], type: "items" as const },
+          eslint: {
+            items: [item1, item2],
+            type: "items" as const,
+          },
         },
-        version: 1,
+        version: 2,
       };
 
       const reorderedEntry = {
-        items: ["error2", "error1"],
+        items: [item2, item1],
         type: "items" as const,
       };
 
@@ -249,13 +545,34 @@ describe("BaselineManager", () => {
     it("should return new reference when adding new check", () => {
       const baseline = {
         checks: {
-          eslint: { items: ["error1"], type: "items" as const },
+          eslint: {
+            items: [
+              {
+                column: 1,
+                file: "src/a.ts",
+                id: "abc123def456",
+                line: 10,
+                message: "error1",
+                rule: "no-unused-vars",
+              },
+            ],
+            type: "items" as const,
+          },
         },
-        version: 1,
+        version: 2,
       };
 
       const newEntry = {
-        items: ["error2"],
+        items: [
+          {
+            column: 1,
+            file: "src/b.ts",
+            id: "789xyz012tuv",
+            line: 20,
+            message: "error2",
+            rule: "TS2304",
+          },
+        ],
         type: "items" as const,
       };
 
@@ -269,9 +586,21 @@ describe("BaselineManager", () => {
     it("should load and parse baseline file", async () => {
       const baseline = {
         checks: {
-          eslint: { items: ["error1"], type: "items" as const },
+          eslint: {
+            items: [
+              {
+                column: 1,
+                file: "src/a.ts",
+                id: "abc123def456",
+                line: 10,
+                message: "error1",
+                rule: "no-unused-vars",
+              },
+            ],
+            type: "items" as const,
+          },
         },
-        version: 1,
+        version: 2,
       };
 
       mockReadFile.mockResolvedValue(JSON.stringify(baseline));
@@ -312,7 +641,7 @@ describe("BaselineManager", () => {
     it("should use custom baseline path", async () => {
       const baseline = {
         checks: {},
-        version: 1,
+        version: 2,
       };
 
       mockReadFile.mockResolvedValue(JSON.stringify(baseline));
@@ -328,21 +657,52 @@ describe("BaselineManager", () => {
     });
 
     it("should auto-resolve merge conflicts", async () => {
+      const item1 = {
+        column: 1,
+        file: "src/a.ts",
+        id: "abc123def456",
+        line: 10,
+        message: "error1",
+        rule: "no-unused-vars",
+      };
+      const item2 = {
+        column: 1,
+        file: "src/b.ts",
+        id: "111aaa222bbb",
+        line: 20,
+        message: "error2",
+        rule: "no-undef",
+      };
+      const item3 = {
+        column: 1,
+        file: "src/c.ts",
+        id: "333ccc444ddd",
+        line: 30,
+        message: "error3",
+        rule: "semi",
+      };
+
       const conflictContent = [
         "{",
-        '  "version": 1,',
+        '  "version": 2,',
         "<<<<<<< HEAD",
         '  "checks": {',
         '    "eslint": {',
         '      "type": "items",',
-        '      "items": ["error1", "error2"]',
+        '      "items": [',
+        `        ${JSON.stringify(item1)},`,
+        `        ${JSON.stringify(item2)}`,
+        "      ]",
         "    }",
         "  }",
         "=======",
         '  "checks": {',
         '    "eslint": {',
         '      "type": "items",',
-        '      "items": ["error2", "error3"]',
+        '      "items": [',
+        `        ${JSON.stringify(item2)},`,
+        `        ${JSON.stringify(item3)}`,
+        "      ]",
         "    }",
         "  }",
         ">>>>>>> feature",
@@ -356,38 +716,51 @@ describe("BaselineManager", () => {
       const manager = new BaselineManager(".mejora/baseline.json");
       const result = await manager.load();
 
-      expect(result?.checks.eslint?.items).toStrictEqual([
-        "error1",
-        "error2",
-        "error3",
-      ]);
+      expect(result?.checks.eslint?.items).toHaveLength(3);
       expect(logger.start).toHaveBeenCalledWith(
         "Merge conflict detected in baseline, auto-resolving...",
       );
       expect(logger.success).toHaveBeenCalledWith("Baseline conflict resolved");
       expect(mockWriteFile).toHaveBeenCalledWith(
         ".mejora/baseline.json",
-        expect.stringContaining('"error1"'),
+        expect.stringContaining('"no-unused-vars"'),
         "utf8",
       );
     });
 
     it("should handle conflicts with different checks on each side", async () => {
+      const item1 = {
+        column: 1,
+        file: "src/a.ts",
+        id: "abc123def456",
+        line: 10,
+        message: "error1",
+        rule: "no-unused-vars",
+      };
+      const item2 = {
+        column: 1,
+        file: "src/b.ts",
+        id: "789xyz012tuv",
+        line: 20,
+        message: "error2",
+        rule: "TS2304",
+      };
+
       const conflictContent = [
         "{",
-        '  "version": 1,',
+        '  "version": 2,',
         "<<<<<<< HEAD",
         '  "checks": {',
         '    "eslint": {',
         '      "type": "items",',
-        '      "items": ["error1"]',
+        `      "items": [${JSON.stringify(item1)}]`,
         "    }",
         "  }",
         "=======",
         '  "checks": {',
         '    "typescript": {',
         '      "type": "items",',
-        '      "items": ["error2"]',
+        `      "items": [${JSON.stringify(item2)}]`,
         "    }",
         "  }",
         ">>>>>>> feature",
@@ -401,26 +774,67 @@ describe("BaselineManager", () => {
       const manager = new BaselineManager(".mejora/baseline.json");
       const result = await manager.load();
 
-      expect(result?.checks.eslint?.items).toStrictEqual(["error1"]);
-      expect(result?.checks.typescript?.items).toStrictEqual(["error2"]);
+      expect(result?.checks.eslint?.items).toHaveLength(1);
+      expect(result?.checks.typescript?.items).toHaveLength(1);
     });
 
-    it("should handle conflicts with overlapping items", async () => {
+    it("should handle conflicts with overlapping items by ID", async () => {
+      const item1 = {
+        column: 1,
+        file: "src/a.ts",
+        id: "aaa111",
+        line: 10,
+        message: "error1",
+        rule: "no-unused-vars",
+      };
+      const item2 = {
+        column: 1,
+        file: "src/b.ts",
+        id: "bbb222",
+        line: 20,
+        message: "error2",
+        rule: "no-undef",
+      };
+      const item3 = {
+        column: 1,
+        file: "src/c.ts",
+        id: "ccc333",
+        line: 30,
+        message: "error3",
+        rule: "semi",
+      };
+      const item4 = {
+        column: 1,
+        file: "src/d.ts",
+        id: "ddd444",
+        line: 40,
+        message: "error4",
+        rule: "quotes",
+      };
+
       const conflictContent = [
         "{",
-        '  "version": 1,',
+        '  "version": 2,',
         "<<<<<<< HEAD",
         '  "checks": {',
         '    "eslint": {',
         '      "type": "items",',
-        '      "items": ["error1", "error2", "error3"]',
+        '      "items": [',
+        `        ${JSON.stringify(item1)},`,
+        `        ${JSON.stringify(item2)},`,
+        `        ${JSON.stringify(item3)}`,
+        "      ]",
         "    }",
         "  }",
         "=======",
         '  "checks": {',
         '    "eslint": {',
         '      "type": "items",',
-        '      "items": ["error2", "error3", "error4"]',
+        '      "items": [',
+        `        ${JSON.stringify(item2)},`,
+        `        ${JSON.stringify(item3)},`,
+        `        ${JSON.stringify(item4)}`,
+        "      ]",
         "    }",
         "  }",
         ">>>>>>> feature",
@@ -434,30 +848,64 @@ describe("BaselineManager", () => {
       const manager = new BaselineManager(".mejora/baseline.json");
       const result = await manager.load();
 
-      expect(result?.checks.eslint?.items).toStrictEqual([
-        "error1",
-        "error2",
-        "error3",
-        "error4",
-      ]);
+      expect(result?.checks.eslint?.items).toHaveLength(4);
     });
 
-    it("should sort merged items", async () => {
+    it("should sort merged items by ID", async () => {
+      const itemZ = {
+        column: 1,
+        file: "src/z.ts",
+        id: "zzz999",
+        line: 10,
+        message: "z-error",
+        rule: "z-error",
+      };
+      const itemA = {
+        column: 1,
+        file: "src/a.ts",
+        id: "aaa111",
+        line: 20,
+        message: "a-error",
+        rule: "a-error",
+      };
+      const itemM = {
+        column: 1,
+        file: "src/m.ts",
+        id: "mmm555",
+        line: 30,
+        message: "m-error",
+        rule: "m-error",
+      };
+      const itemB = {
+        column: 1,
+        file: "src/b.ts",
+        id: "bbb222",
+        line: 40,
+        message: "b-error",
+        rule: "b-error",
+      };
+
       const conflictContent = [
         "{",
-        '  "version": 1,',
+        '  "version": 2,',
         "<<<<<<< HEAD",
         '  "checks": {',
         '    "eslint": {',
         '      "type": "items",',
-        '      "items": ["z-error", "a-error"]',
+        '      "items": [',
+        `        ${JSON.stringify(itemZ)},`,
+        `        ${JSON.stringify(itemA)}`,
+        "      ]",
         "    }",
         "  }",
         "=======",
         '  "checks": {',
         '    "eslint": {',
         '      "type": "items",',
-        '      "items": ["m-error", "b-error"]',
+        '      "items": [',
+        `        ${JSON.stringify(itemM)},`,
+        `        ${JSON.stringify(itemB)}`,
+        "      ]",
         "    }",
         "  }",
         ">>>>>>> feature",
@@ -471,18 +919,15 @@ describe("BaselineManager", () => {
       const manager = new BaselineManager(".mejora/baseline.json");
       const result = await manager.load();
 
-      expect(result?.checks.eslint?.items).toStrictEqual([
-        "a-error",
-        "b-error",
-        "m-error",
-        "z-error",
-      ]);
+      const ids = result?.checks.eslint?.items?.map((i) => i.id);
+
+      expect(ids).toStrictEqual(["aaa111", "bbb222", "mmm555", "zzz999"]);
     });
 
     it("should throw error for malformed conflict markers", async () => {
       const conflictContent = [
         "{",
-        '  "version": 1,',
+        '  "version": 2,',
         "<<<<<<< HEAD",
         '  "checks": {}',
         "  // Missing =======",
@@ -502,7 +947,7 @@ describe("BaselineManager", () => {
     it("should throw error for invalid JSON in conflict sections", async () => {
       const conflictContent = [
         "{",
-        '  "version": 1,',
+        '  "version": 2,',
         "<<<<<<< HEAD",
         '  "checks": { invalid json }',
         "=======",
@@ -530,9 +975,21 @@ describe("BaselineManager", () => {
     it("should save both JSON and markdown files", async () => {
       const baseline = {
         checks: {
-          eslint: { items: ["error1"], type: "items" as const },
+          eslint: {
+            items: [
+              {
+                column: 1,
+                file: "src/a.ts",
+                id: "abc123def456",
+                line: 10,
+                message: "error1",
+                rule: "no-unused-vars",
+              },
+            ],
+            type: "items" as const,
+          },
         },
-        version: 1,
+        version: 2,
       };
 
       const manager = new BaselineManager(".mejora/baseline.json");
@@ -555,9 +1012,21 @@ describe("BaselineManager", () => {
     it("should save with force parameter true", async () => {
       const baseline = {
         checks: {
-          eslint: { items: ["error1"], type: "items" as const },
+          eslint: {
+            items: [
+              {
+                column: 1,
+                file: "src/a.ts",
+                id: "abc123def456",
+                line: 10,
+                message: "error1",
+                rule: "no-unused-vars",
+              },
+            ],
+            type: "items" as const,
+          },
         },
-        version: 1,
+        version: 2,
       };
 
       const manager = new BaselineManager(".mejora/baseline.json");
@@ -571,9 +1040,21 @@ describe("BaselineManager", () => {
     it("should save with force parameter false in non-CI environment", async () => {
       const baseline = {
         checks: {
-          eslint: { items: ["error1"], type: "items" as const },
+          eslint: {
+            items: [
+              {
+                column: 1,
+                file: "src/a.ts",
+                id: "abc123def456",
+                line: 10,
+                message: "error1",
+                rule: "no-unused-vars",
+              },
+            ],
+            type: "items" as const,
+          },
         },
-        version: 1,
+        version: 2,
       };
 
       const manager = new BaselineManager(".mejora/baseline.json");
@@ -587,7 +1068,7 @@ describe("BaselineManager", () => {
     it("should use custom baseline path for save", async () => {
       const baseline = {
         checks: {},
-        version: 1,
+        version: 2,
       };
 
       const manager = new BaselineManager("custom/path/baseline.json");
@@ -612,9 +1093,29 @@ describe("BaselineManager", () => {
     it("should format JSON with 2 space indentation and trailing newline", async () => {
       const baseline = {
         checks: {
-          eslint: { items: ["error1", "error2"], type: "items" as const },
+          eslint: {
+            items: [
+              {
+                column: 1,
+                file: "src/a.ts",
+                id: "abc123def456",
+                line: 10,
+                message: "error1",
+                rule: "no-unused-vars",
+              },
+              {
+                column: 1,
+                file: "src/b.ts",
+                id: "111aaa222bbb",
+                line: 20,
+                message: "error2",
+                rule: "no-undef",
+              },
+            ],
+            type: "items" as const,
+          },
         },
-        version: 1,
+        version: 2,
       };
 
       const manager = new BaselineManager(".mejora/baseline.json");
@@ -635,7 +1136,7 @@ describe("BaselineManager", () => {
     it("should handle nested directory creation", async () => {
       const baseline = {
         checks: {},
-        version: 1,
+        version: 2,
       };
 
       const manager = new BaselineManager("deep/nested/path/baseline.json");
@@ -653,10 +1154,11 @@ describe("BaselineManager", () => {
       const manager = new BaselineManager();
       const baseline = {
         checks: {},
-        version: 1,
+        version: 2,
       };
 
       mockReadFile.mockResolvedValue(JSON.stringify(baseline));
+
       await manager.load();
 
       expect(mockReadFile).toHaveBeenCalledWith(
@@ -670,10 +1172,11 @@ describe("BaselineManager", () => {
       const manager = new BaselineManager(customPath);
       const baseline = {
         checks: {},
-        version: 1,
+        version: 2,
       };
 
       mockReadFile.mockResolvedValue(JSON.stringify(baseline));
+
       await manager.load();
 
       expect(mockReadFile).toHaveBeenCalledWith(customPath, "utf8");
@@ -690,16 +1193,27 @@ describe("BaselineManager", () => {
       vi.doMock("is-in-ci", () => ({
         default: true,
       }));
-
       vi.resetModules();
 
       const { BaselineManager: CIBaselineManager } = await import("./baseline");
 
       const baseline = {
         checks: {
-          eslint: { items: ["error1"], type: "items" as const },
+          eslint: {
+            items: [
+              {
+                column: 1,
+                file: "src/a.ts",
+                id: "abc123def456",
+                line: 10,
+                message: "error1",
+                rule: "no-unused-vars",
+              },
+            ],
+            type: "items" as const,
+          },
         },
-        version: 1,
+        version: 2,
       };
 
       const manager = new CIBaselineManager(".mejora/baseline.json");
@@ -714,16 +1228,27 @@ describe("BaselineManager", () => {
       vi.doMock("is-in-ci", () => ({
         default: true,
       }));
-
       vi.resetModules();
 
       const { BaselineManager: CIBaselineManager } = await import("./baseline");
 
       const baseline = {
         checks: {
-          eslint: { items: ["error1"], type: "items" as const },
+          eslint: {
+            items: [
+              {
+                column: 1,
+                file: "src/a.ts",
+                id: "abc123def456",
+                line: 10,
+                message: "error1",
+                rule: "no-unused-vars",
+              },
+            ],
+            type: "items" as const,
+          },
         },
-        version: 1,
+        version: 2,
       };
 
       const manager = new CIBaselineManager(".mejora/baseline.json");

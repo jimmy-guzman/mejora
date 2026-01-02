@@ -1,80 +1,181 @@
-import { areEntriesEqual } from "./baseline";
+import { areBaselineEntriesEquivalent } from "./baseline";
 
-describe("areEntriesEqual()", () => {
+describe("areBaselineEntriesEquivalent", () => {
   it("should return false when existingEntry is undefined", () => {
-    const entry = { items: ["error1"], type: "items" as const };
+    const entry = {
+      items: [
+        {
+          column: 1,
+          file: "src/a.ts",
+          id: "abc123def456",
+          line: 10,
+          message: "error1",
+          rule: "no-unused-vars",
+        },
+      ],
+      type: "items" as const,
+    };
 
-    expect(areEntriesEqual(entry, undefined)).toBe(false);
+    expect(areBaselineEntriesEquivalent(entry, undefined)).toBe(false);
   });
 
   it("should return true for identical entries", () => {
-    const entry = { items: ["error1", "error2"], type: "items" as const };
-    const existing = {
-      items: ["error1", "error2"],
-      type: "items" as const,
+    const item1 = {
+      column: 1,
+      file: "src/a.ts",
+      id: "abc123def456",
+      line: 10,
+      message: "error1",
+      rule: "no-unused-vars",
+    };
+    const item2 = {
+      column: 1,
+      file: "src/b.ts",
+      id: "111aaa222bbb",
+      line: 20,
+      message: "error2",
+      rule: "no-undef",
     };
 
-    expect(areEntriesEqual(entry, existing)).toBe(true);
+    const entry = { items: [item1, item2], type: "items" as const };
+    const existing = { items: [item1, item2], type: "items" as const };
+
+    expect(areBaselineEntriesEquivalent(entry, existing)).toBe(true);
   });
 
   it("should return true when items are in different order", () => {
-    const entry = { items: ["error1", "error2"], type: "items" as const };
-    const existing = {
-      items: ["error2", "error1"],
-      type: "items" as const,
+    const item1 = {
+      column: 1,
+      file: "src/a.ts",
+      id: "abc123def456",
+      line: 10,
+      message: "error1",
+      rule: "no-unused-vars",
+    };
+    const item2 = {
+      column: 1,
+      file: "src/b.ts",
+      id: "111aaa222bbb",
+      line: 20,
+      message: "error2",
+      rule: "no-undef",
     };
 
-    expect(areEntriesEqual(entry, existing)).toBe(true);
+    const entry = { items: [item1, item2], type: "items" as const };
+    const existing = { items: [item2, item1], type: "items" as const };
+
+    expect(areBaselineEntriesEquivalent(entry, existing)).toBe(true);
   });
 
   it("should return false when items differ", () => {
-    const entry = { items: ["error1", "error2"], type: "items" as const };
-    const existing = {
-      items: ["error1", "error3"],
-      type: "items" as const,
+    const item1 = {
+      column: 1,
+      file: "src/a.ts",
+      id: "abc123def456",
+      line: 10,
+      message: "error1",
+      rule: "no-unused-vars",
+    };
+    const item2 = {
+      column: 1,
+      file: "src/b.ts",
+      id: "111aaa222bbb",
+      line: 20,
+      message: "error2",
+      rule: "no-undef",
+    };
+    const item3 = {
+      column: 1,
+      file: "src/c.ts",
+      id: "333ccc444ddd",
+      line: 30,
+      message: "error3",
+      rule: "semi",
     };
 
-    expect(areEntriesEqual(entry, existing)).toBe(false);
+    const entry = { items: [item1, item2], type: "items" as const };
+    const existing = { items: [item1, item3], type: "items" as const };
+
+    expect(areBaselineEntriesEquivalent(entry, existing)).toBe(false);
   });
 
   it("should return false when item counts differ", () => {
-    const entry = { items: ["error1", "error2"], type: "items" as const };
-    const existing = { items: ["error1"], type: "items" as const };
+    const item1 = {
+      column: 1,
+      file: "src/a.ts",
+      id: "abc123def456",
+      line: 10,
+      message: "error1",
+      rule: "no-unused-vars",
+    };
+    const item2 = {
+      column: 1,
+      file: "src/b.ts",
+      id: "111aaa222bbb",
+      line: 20,
+      message: "error2",
+      rule: "no-undef",
+    };
 
-    expect(areEntriesEqual(entry, existing)).toBe(false);
+    const entry = { items: [item1, item2], type: "items" as const };
+    const existing = { items: [item1], type: "items" as const };
+
+    expect(areBaselineEntriesEquivalent(entry, existing)).toBe(false);
   });
 
   it("should return true for empty items arrays", () => {
     const entry = { items: [], type: "items" as const };
     const existing = { items: [], type: "items" as const };
 
-    expect(areEntriesEqual(entry, existing)).toBe(true);
+    expect(areBaselineEntriesEquivalent(entry, existing)).toBe(true);
   });
 
   it("should handle duplicate items correctly", () => {
-    const entry = {
-      items: ["error1", "error1", "error2"],
-      type: "items" as const,
+    const item1 = {
+      column: 1,
+      file: "src/a.ts",
+      id: "abc123def456",
+      line: 10,
+      message: "error1",
+      rule: "no-unused-vars",
     };
-    const existing = {
-      items: ["error1", "error2"],
-      type: "items" as const,
+    const item2 = {
+      column: 1,
+      file: "src/b.ts",
+      id: "111aaa222bbb",
+      line: 20,
+      message: "error2",
+      rule: "no-undef",
     };
 
-    expect(areEntriesEqual(entry, existing)).toBe(false);
+    const entry = { items: [item1, item1, item2], type: "items" as const };
+    const existing = { items: [item1, item2], type: "items" as const };
+
+    expect(areBaselineEntriesEquivalent(entry, existing)).toBe(false);
   });
 
   it("should return false when duplicate counts differ", () => {
-    const entry = {
-      items: ["error1", "error1"],
-      type: "items" as const,
+    const item1 = {
+      column: 1,
+      file: "src/a.ts",
+      id: "abc123def456",
+      line: 10,
+      message: "error1",
+      rule: "no-unused-vars",
     };
-    const existing = {
-      items: ["error1", "error2"],
-      type: "items" as const,
+    const item2 = {
+      column: 1,
+      file: "src/b.ts",
+      id: "111aaa222bbb",
+      line: 20,
+      message: "error2",
+      rule: "no-undef",
     };
 
-    expect(areEntriesEqual(entry, existing)).toBe(false);
+    const entry = { items: [item1, item1], type: "items" as const };
+    const existing = { items: [item1, item2], type: "items" as const };
+
+    expect(areBaselineEntriesEquivalent(entry, existing)).toBe(false);
   });
 
   it("should return false when new entry items are missing", () => {
@@ -82,35 +183,80 @@ describe("areEntriesEqual()", () => {
       type: "items" as const,
     };
     const existing = {
-      items: ["error1", "error2"],
+      items: [
+        {
+          column: 1,
+          file: "src/a.ts",
+          id: "abc123def456",
+          line: 10,
+          message: "error1",
+          rule: "no-unused-vars",
+        },
+        {
+          column: 1,
+          file: "src/b.ts",
+          id: "111aaa222bbb",
+          line: 20,
+          message: "error2",
+          rule: "no-undef",
+        },
+      ],
       type: "items" as const,
     };
 
-    expect(areEntriesEqual(entry, existing)).toBe(false);
+    expect(areBaselineEntriesEquivalent(entry, existing)).toBe(false);
   });
 
   it("should return false when existing entry items are missing", () => {
     const entry = {
-      items: ["error1", "error2"],
+      items: [
+        {
+          column: 1,
+          file: "src/a.ts",
+          id: "abc123def456",
+          line: 10,
+          message: "error1",
+          rule: "no-unused-vars",
+        },
+        {
+          column: 1,
+          file: "src/b.ts",
+          id: "111aaa222bbb",
+          line: 20,
+          message: "error2",
+          rule: "no-undef",
+        },
+      ],
       type: "items" as const,
     };
     const existing = {
       type: "items" as const,
     };
 
-    expect(areEntriesEqual(entry, existing)).toBe(false);
+    expect(areBaselineEntriesEquivalent(entry, existing)).toBe(false);
   });
 
   it("should return false when duplicate distributions differ", () => {
-    const entry = {
-      items: ["error1", "error1", "error2"],
-      type: "items" as const,
+    const item1 = {
+      column: 1,
+      file: "src/a.ts",
+      id: "abc123def456",
+      line: 10,
+      message: "error1",
+      rule: "no-unused-vars",
     };
-    const existing = {
-      items: ["error1", "error2", "error2"],
-      type: "items" as const,
+    const item2 = {
+      column: 1,
+      file: "src/b.ts",
+      id: "111aaa222bbb",
+      line: 20,
+      message: "error2",
+      rule: "no-undef",
     };
 
-    expect(areEntriesEqual(entry, existing)).toBe(false);
+    const entry = { items: [item1, item1, item2], type: "items" as const };
+    const existing = { items: [item1, item2, item2], type: "items" as const };
+
+    expect(areBaselineEntriesEquivalent(entry, existing)).toBe(false);
   });
 });

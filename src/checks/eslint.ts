@@ -1,24 +1,10 @@
 import { relative } from "pathe";
 
+import type { RawDiagnosticItem } from "@/checks/utils";
 import type { ESLintCheckConfig } from "@/types";
 
+import { assignStableIds, sortByLocation } from "@/checks/utils";
 import { createCacheKey, ensureCacheDir } from "@/utils/cache";
-
-type Item = `${string}:${number}:${number} - ${string}`;
-
-const createItem = ({
-  column,
-  cwd,
-  filePath,
-  line,
-  ruleId,
-}: {
-  column: number;
-  cwd: string;
-  filePath: string;
-  line: number;
-  ruleId: string;
-}) => `${relative(cwd, filePath)}:${line}:${column} - ${ruleId}` as const;
 
 // TODO: what about version
 export async function validateEslintDeps() {
@@ -31,8 +17,8 @@ export async function validateEslintDeps() {
 
 export async function runEslintCheck(config: ESLintCheckConfig) {
   const { ESLint } = await import("eslint");
-  const cwd = process.cwd();
 
+  const cwd = process.cwd();
   const cacheDir = await ensureCacheDir(cwd, "eslint");
   const cacheKey = createCacheKey(config);
 
@@ -44,20 +30,32 @@ export async function runEslintCheck(config: ESLintCheckConfig) {
   });
 
   const results = await eslint.lintFiles(config.files);
-  const items: Item[] = [];
+
+  const rawItems: RawDiagnosticItem[] = [];
 
   for (const { filePath, messages } of results) {
-    for (const { column, line, ruleId } of messages) {
-      if (ruleId) {
-        const item = createItem({ column, cwd, filePath, line, ruleId });
+    const file = relative(cwd, filePath);
 
-        items.push(item);
-      }
+    for (const { column, line, message, ruleId } of messages) {
+      if (!ruleId) continue;
+
+      const signature = `${file} - ${ruleId}: ${message}` as const;
+
+      rawItems.push({
+        column,
+        file,
+        line,
+        message,
+        rule: ruleId,
+        signature,
+      });
     }
   }
 
+  const items = assignStableIds(rawItems);
+
   return {
-    items: items.toSorted(),
+    items: items.toSorted(sortByLocation),
     type: "items" as const,
   };
 }

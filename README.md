@@ -1,7 +1,7 @@
 # mejora
 
 > Prevent regressions. Allow improvement.
-> _mejora_ (Spanish for “improvement”)
+> _mejora_ (Spanish for "improvement")
 
 ![actions][actions-badge]
 [![version][version-badge]][package]
@@ -19,13 +19,30 @@ Snapshots are compared against a baseline.
 - New items are regressions and fail the run
 - Removed items are improvements and pass the run
 
-Snapshots currently use the `items` format:
+Snapshots use the `items` format with structured diagnostic information:
 
 ```json
-{ "type": "items", "items": ["file.ts:12", "file.ts:45"] }
+{
+  "checks": {
+    "eslint": {
+      "type": "items",
+      "items": [
+        {
+          "id": "a1b2c3d4...",
+          "file": "src/example.ts",
+          "line": 12,
+          "column": 5,
+          "rule": "no-unused-vars",
+          "message": "'foo' is declared but never used"
+        }
+      ]
+    }
+  }
+}
 ```
 
-Order does not matter.
+> [!NOTE]
+> Diagnostic identifiers (`id`) are stable across runs and generally insensitive to code movement, while remaining unique for repeated diagnostics.
 
 The baseline represents the last accepted state and should be committed to the repository.
 

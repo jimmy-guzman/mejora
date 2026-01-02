@@ -55,13 +55,23 @@ describe("runEslintCheck", () => {
     });
   });
 
-  it("should extract violations as filepath:line:column - ruleId", async () => {
+  it("should extract violations as DiagnosticItem objects", async () => {
     mockLintFiles.mockResolvedValue([
       {
         filePath: "/test/project/src/file.js",
         messages: [
-          { column: 5, line: 1, ruleId: "no-undef" },
-          { column: 10, line: 2, ruleId: "no-console" },
+          {
+            column: 5,
+            line: 1,
+            message: "'foo' is not defined.",
+            ruleId: "no-undef",
+          },
+          {
+            column: 10,
+            line: 2,
+            message: "Unexpected console statement.",
+            ruleId: "no-console",
+          },
         ],
       },
     ]);
@@ -70,10 +80,23 @@ describe("runEslintCheck", () => {
 
     const result = await runEslintCheck({ files: ["src/**/*.js"] });
 
-    expect(result.items).toStrictEqual([
-      "src/file.js:1:5 - no-undef",
-      "src/file.js:2:10 - no-console",
-    ]);
+    expect(result.items).toHaveLength(2);
+    expect(result.items[0]).toMatchObject({
+      column: 5,
+      file: "src/file.js",
+      line: 1,
+      message: "'foo' is not defined.",
+      rule: "no-undef",
+    });
+    expect(result.items[0]?.id).toBeDefined();
+    expect(result.items[1]).toMatchObject({
+      column: 10,
+      file: "src/file.js",
+      line: 2,
+      message: "Unexpected console statement.",
+      rule: "no-console",
+    });
+    expect(result.items[1]?.id).toBeDefined();
   });
 
   it("should filter out messages without ruleId", async () => {
@@ -81,9 +104,9 @@ describe("runEslintCheck", () => {
       {
         filePath: "/test/project/file.js",
         messages: [
-          { column: 1, line: 1, ruleId: "no-undef" },
-          { column: 1, line: 2, ruleId: null },
-          { column: 1, line: 3, ruleId: "semi" },
+          { column: 1, line: 1, message: "error1", ruleId: "no-undef" },
+          { column: 1, line: 2, message: "error2", ruleId: null },
+          { column: 1, line: 3, message: "error3", ruleId: "semi" },
         ],
       },
     ]);
@@ -92,21 +115,24 @@ describe("runEslintCheck", () => {
 
     const result = await runEslintCheck({ files: ["*.js"] });
 
-    expect(result.items).toStrictEqual([
-      "file.js:1:1 - no-undef",
-      "file.js:3:1 - semi",
-    ]);
+    expect(result.items).toHaveLength(2);
+    expect(result.items[0]?.rule).toBe("no-undef");
+    expect(result.items[1]?.rule).toBe("semi");
   });
 
-  it("should sort items", async () => {
+  it("should sort items by file name, line number, and column number", async () => {
     mockLintFiles.mockResolvedValue([
       {
         filePath: "/test/project/zebra.js",
-        messages: [{ column: 1, line: 1, ruleId: "no-undef" }],
+        messages: [
+          { column: 1, line: 1, message: "error", ruleId: "no-undef" },
+        ],
       },
       {
         filePath: "/test/project/apple.js",
-        messages: [{ column: 1, line: 1, ruleId: "no-undef" }],
+        messages: [
+          { column: 1, line: 1, message: "error", ruleId: "no-undef" },
+        ],
       },
     ]);
 
@@ -114,10 +140,8 @@ describe("runEslintCheck", () => {
 
     const result = await runEslintCheck({ files: ["*.js"] });
 
-    expect(result.items).toStrictEqual([
-      "apple.js:1:1 - no-undef",
-      "zebra.js:1:1 - no-undef",
-    ]);
+    expect(result.items[0]?.file).toBe("apple.js");
+    expect(result.items[1]?.file).toBe("zebra.js");
   });
 
   it("should configure ESLint with cache and overrides", async () => {

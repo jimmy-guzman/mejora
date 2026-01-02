@@ -1,7 +1,8 @@
-import { createHash } from "node:crypto";
 import { mkdir } from "node:fs/promises";
 
 import { resolve } from "pathe";
+
+import { hash } from "./hash";
 
 const stableReplacer = (_key: string, value: unknown) => {
   if (value && typeof value === "object" && !Array.isArray(value)) {
@@ -28,7 +29,7 @@ const stableReplacer = (_key: string, value: unknown) => {
 export function createCacheKey(input: unknown): string {
   const json = JSON.stringify(input ?? null, stableReplacer);
 
-  return createHash("sha256").update(json).digest("hex");
+  return hash(json);
 }
 
 /**
