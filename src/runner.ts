@@ -1,14 +1,18 @@
+import { mkdir } from "node:fs/promises";
+
+import { resolve } from "pathe";
+
 import type { CheckResult, CliOptions, Config } from "./types";
 
 import { BaselineManager } from "./baseline";
-import { runEslintCheck, validateEslintDeps } from "./checks/eslint";
-import {
-  runTypescriptCheck,
-  validateTypescriptDeps,
-} from "./checks/typescript";
+import { runEslintCheck } from "./checks/eslint";
+import { runTypescriptCheck } from "./checks/typescript";
 import { compareSnapshots } from "./comparison";
 import { logger } from "./utils/logger";
 
+/**
+ * Main runner class for executing code quality checks.
+ */
 export class MejoraRunner {
   private baselineManager: BaselineManager;
 
@@ -39,6 +43,10 @@ export class MejoraRunner {
     );
   }
 
+  private static getRequiredCheckTypes(checks: Config["checks"]) {
+    return new Set(Object.values(checks).map((c) => c.type));
+  }
+
   private static resolveRegex(pattern: string, option: "--only" | "--skip") {
     try {
       return new RegExp(pattern);
@@ -55,16 +63,30 @@ export class MejoraRunner {
     return runTypescriptCheck(checkConfig);
   }
 
+  private static async setupInfrastructure(checks: Config["checks"]) {
+    const cwd = process.cwd();
+    const cacheRoot = resolve(cwd, "node_modules", ".cache", "mejora");
+
+    const checkTypes = MejoraRunner.getRequiredCheckTypes(checks);
+
+    const dirs = [
+      cacheRoot,
+      ...[...checkTypes].map((type) => resolve(cacheRoot, type)),
+    ];
+
+    await Promise.all(dirs.map((dir) => mkdir(dir, { recursive: true })));
+  }
+
   private static async validateAllDeps(checks: Config["checks"]) {
-    const checkTypes = new Set(Object.values(checks).map((c) => c.type));
+    const checkTypes = MejoraRunner.getRequiredCheckTypes(checks);
     const validations = [];
 
     if (checkTypes.has("eslint")) {
-      validations.push(validateEslintDeps());
+      validations.push(import("eslint"));
     }
 
     if (checkTypes.has("typescript")) {
-      validations.push(validateTypescriptDeps());
+      validations.push(import("typescript"));
     }
 
     await Promise.all(validations);
@@ -76,9 +98,12 @@ export class MejoraRunner {
     const checksToRun = MejoraRunner.filterChecks(config.checks, options);
 
     try {
-      await MejoraRunner.validateAllDeps(checksToRun);
+      await Promise.all([
+        MejoraRunner.setupInfrastructure(checksToRun),
+        MejoraRunner.validateAllDeps(checksToRun),
+      ]);
     } catch (error) {
-      logger.error("Dependency validation failed:", error);
+      logger.error("Setup failed:", error);
 
       return {
         exitCode: 2,

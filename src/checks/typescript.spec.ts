@@ -29,9 +29,7 @@ vi.mock("typescript", () => {
 vi.mock("@/utils/cache", () => {
   return {
     createCacheKey: vi.fn().mockReturnValue("abc123def456"),
-    ensureCacheDir: vi
-      .fn()
-      .mockResolvedValue("/test/project/node_modules/.cache/mejora/typescript"),
+    getCacheDir: vi.fn(() => "node_modules/.cache/mejora/typescript"),
   };
 });
 
@@ -551,31 +549,6 @@ describe("runTypescriptCheck", () => {
     expect(realWriteFile).toHaveBeenCalledExactlyOnceWith(
       "/test/project/node_modules/.cache/mejora/typescript/abc123def456.tsbuildinfo",
       "testing",
-    );
-  });
-});
-
-describe("validateTypescriptDeps", () => {
-  afterEach(() => {
-    vi.resetModules();
-  });
-
-  it("should not throw if typescript is installed", async () => {
-    const { validateTypescriptDeps } = await import("./typescript");
-
-    await expect(validateTypescriptDeps()).resolves.not.toThrowError();
-  });
-
-  it("should throw if typescript is not installed", async () => {
-    vi.doUnmock("typescript");
-    vi.doMock("typescript", () => {
-      throw new Error("Cannot find module 'typescript'");
-    });
-
-    const { validateTypescriptDeps } = await import("./typescript");
-
-    await expect(validateTypescriptDeps()).rejects.toThrowError(
-      "TypeScript check requires typescript but it's not installed.",
     );
   });
 });

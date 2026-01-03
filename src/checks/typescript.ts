@@ -4,17 +4,7 @@ import type { RawDiagnosticItem } from "@/checks/utils";
 import type { TypeScriptCheckConfig } from "@/types";
 
 import { assignStableIds, sortByLocation } from "@/checks/utils";
-import { createCacheKey, ensureCacheDir } from "@/utils/cache";
-
-export async function validateTypescriptDeps() {
-  try {
-    await import("typescript");
-  } catch {
-    throw new Error(
-      `TypeScript check requires typescript but it's not installed.`,
-    );
-  }
-}
+import { createCacheKey, getCacheDir } from "@/utils/cache";
 
 export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
   const {
@@ -61,7 +51,7 @@ export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
     config.overrides?.compilerOptions,
   );
 
-  const cacheDir = await ensureCacheDir(cwd, "typescript");
+  const cacheDir = getCacheDir("typescript", cwd);
 
   const cacheKey = createCacheKey({
     configPath,

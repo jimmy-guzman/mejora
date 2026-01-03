@@ -15,9 +15,7 @@ vi.mock("eslint", () => {
 vi.mock("@/utils/cache", () => {
   return {
     createCacheKey: vi.fn(() => "abc123def456"),
-    ensureCacheDir: vi
-      .fn()
-      .mockResolvedValue("node_modules/.cache/mejora/eslint"),
+    getCacheDir: vi.fn(() => "node_modules/.cache/mejora/eslint"),
   };
 });
 
@@ -163,31 +161,6 @@ describe("runEslintCheck", () => {
         concurrency: "auto",
         overrideConfig: config.overrides,
       }),
-    );
-  });
-});
-
-describe("validateEslintDeps", () => {
-  afterEach(() => {
-    vi.resetModules();
-  });
-
-  it("should not throw if eslint is installed", async () => {
-    const { validateEslintDeps } = await import("./eslint");
-
-    await expect(validateEslintDeps()).resolves.not.toThrowError();
-  });
-
-  it("should throw if eslint is not installed", async () => {
-    vi.doUnmock("eslint");
-    vi.doMock("eslint", () => {
-      throw new Error("Cannot find module 'eslint'");
-    });
-
-    const { validateEslintDeps } = await import("./eslint");
-
-    await expect(validateEslintDeps()).rejects.toThrowError(
-      "ESLint check requires eslint but it's not installed.",
     );
   });
 });

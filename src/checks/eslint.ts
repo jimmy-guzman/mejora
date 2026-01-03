@@ -4,22 +4,13 @@ import type { RawDiagnosticItem } from "@/checks/utils";
 import type { ESLintCheckConfig } from "@/types";
 
 import { assignStableIds, sortByLocation } from "@/checks/utils";
-import { createCacheKey, ensureCacheDir } from "@/utils/cache";
-
-// TODO: what about version
-export async function validateEslintDeps() {
-  try {
-    await import("eslint");
-  } catch {
-    throw new Error(`ESLint check requires eslint but it's not installed.`);
-  }
-}
+import { createCacheKey, getCacheDir } from "@/utils/cache";
 
 export async function runEslintCheck(config: ESLintCheckConfig) {
   const { ESLint } = await import("eslint");
 
   const cwd = process.cwd();
-  const cacheDir = await ensureCacheDir(cwd, "eslint");
+  const cacheDir = getCacheDir("eslint", cwd);
   const cacheKey = createCacheKey(config);
 
   const eslint = new ESLint({
