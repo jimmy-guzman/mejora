@@ -1,3 +1,10 @@
+## [2.0.4](https://github.com/jimmy-guzman/mejora/compare/v2.0.3...v2.0.4) (2026-01-03)
+
+
+### Bug Fixes
+
+* 🐛 add missing forced/warning indicator ([#49](https://github.com/jimmy-guzman/mejora/issues/49)) ([3b7a276](https://github.com/jimmy-guzman/mejora/commit/3b7a27689019ee64cafa66213b9be9bc7ae6d834))
+
 ## [2.0.3](https://github.com/jimmy-guzman/mejora/compare/v2.0.2...v2.0.3) (2026-01-03)
 
 
