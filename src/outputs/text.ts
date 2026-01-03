@@ -115,7 +115,7 @@ function formatInitialBaseline(check: CheckResult, isFirst: boolean) {
   const count = check.snapshot.items.length;
 
   const lines = [
-    `${prefix}${check.checkId}:`,
+    `${prefix}${blue("ℹ")} ${check.checkId}:`,
     `${SECTION_INDENT}Initial baseline created with ${blue(count)} ${plural(count, "issue")}`,
   ];
 
@@ -130,9 +130,10 @@ function formatInitialBaseline(check: CheckResult, isFirst: boolean) {
 
 function formatChangeBaseline(check: CheckResult, isFirst: boolean) {
   const prefix = isFirst ? "" : "\n";
+  const symbol = check.hasRegression ? red("✖") : green("✔");
 
   const lines = [
-    `${prefix}${check.checkId}:`,
+    `${prefix}${symbol} ${check.checkId}:`,
     ...formatRegressions(check),
     ...formatImprovements(check),
     SECTION_BREAK,
@@ -148,11 +149,11 @@ function formatUnchanged(check: CheckResult, isFirst: boolean) {
 
   if (check.duration !== undefined) {
     return [
-      `${prefix}${check.checkId} (${bold(count)}) ${dim(duration(check.duration))}`,
+      `${prefix}${gray("ℹ")} ${check.checkId} (${bold(count)}) ${dim(duration(check.duration))}`,
     ];
   }
 
-  return [`${prefix}${check.checkId} (${bold(count)})`];
+  return [`${prefix}${gray("ℹ")} ${check.checkId} (${bold(count)})`];
 }
 
 function formatCheckResult(check: CheckResult, isFirst: boolean) {
