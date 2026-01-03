@@ -71,7 +71,7 @@ try {
     logger.log(formatJsonOutput(result));
   } else {
     logger.log("");
-    logger.log(formatTextOutput(result));
+    logger.log(formatTextOutput(result, values.force));
   }
 
   process.exit(result.exitCode);

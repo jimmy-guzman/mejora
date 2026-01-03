@@ -55,7 +55,7 @@ describe("formatTextOutput", () => {
       ],
     };
 
-    const output = stripAnsi(formatTextOutput(result));
+    const output = stripAnsi(formatTextOutput(result, false));
 
     expect(output).toMatchInlineSnapshot(`
       "ℹ eslint:
@@ -103,7 +103,7 @@ describe("formatTextOutput", () => {
       ],
     };
 
-    const output = stripAnsi(formatTextOutput(result));
+    const output = stripAnsi(formatTextOutput(result, false));
 
     expect(output).toMatchInlineSnapshot(`
       "ℹ eslint:
@@ -152,7 +152,7 @@ describe("formatTextOutput", () => {
       ],
     };
 
-    const output = stripAnsi(formatTextOutput(result));
+    const output = stripAnsi(formatTextOutput(result, false));
 
     expect(output).toContain("Initial baseline created with 15 issues");
     expect(output).toContain("src/file0.ts:1:1");
@@ -219,7 +219,7 @@ describe("formatTextOutput", () => {
       ],
     };
 
-    const output = stripAnsi(formatTextOutput(result));
+    const output = stripAnsi(formatTextOutput(result, false));
 
     expect(output).toMatchInlineSnapshot(`
       "✖ eslint:
@@ -300,7 +300,7 @@ describe("formatTextOutput", () => {
       ],
     };
 
-    const output = stripAnsi(formatTextOutput(result));
+    const output = stripAnsi(formatTextOutput(result, false));
 
     expect(output).toMatchInlineSnapshot(`
       "✔ eslint:
@@ -402,7 +402,7 @@ describe("formatTextOutput", () => {
       ],
     };
 
-    const output = stripAnsi(formatTextOutput(result));
+    const output = stripAnsi(formatTextOutput(result, false));
 
     expect(output).toMatchInlineSnapshot(`
       "✖ eslint:
@@ -471,7 +471,7 @@ describe("formatTextOutput", () => {
       ],
     };
 
-    const output = stripAnsi(formatTextOutput(result));
+    const output = stripAnsi(formatTextOutput(result, false));
 
     expect(output).toMatchInlineSnapshot(`
       "ℹ eslint (1) 1.5s
@@ -530,7 +530,7 @@ describe("formatTextOutput", () => {
       ],
     };
 
-    const output = stripAnsi(formatTextOutput(result));
+    const output = stripAnsi(formatTextOutput(result, false));
 
     expect(output).toMatchInlineSnapshot(`
       "ℹ eslint (1)
@@ -602,7 +602,7 @@ describe("formatTextOutput", () => {
       ],
     };
 
-    const output = stripAnsi(formatTextOutput(result));
+    const output = stripAnsi(formatTextOutput(result, false));
 
     expect(output).toMatchInlineSnapshot(`
       "ℹ eslint (0) 1s
@@ -628,7 +628,7 @@ describe("formatTextOutput", () => {
       totalDuration: 1500,
     };
 
-    const output = stripAnsi(formatTextOutput(result));
+    const output = stripAnsi(formatTextOutput(result, false));
 
     expect(output).toMatchInlineSnapshot(`
       "  Improvements  0
@@ -663,7 +663,7 @@ describe("formatTextOutput", () => {
       totalDuration: 1500,
     };
 
-    const output = stripAnsi(formatTextOutput(result));
+    const output = stripAnsi(formatTextOutput(result, false));
 
     expect(output).toMatchInlineSnapshot(`
       "ℹ eslint (0) 1.5s
@@ -710,7 +710,7 @@ describe("formatTextOutput", () => {
       ],
     };
 
-    const output = stripAnsi(formatTextOutput(result));
+    const output = stripAnsi(formatTextOutput(result, false));
 
     expect(output).toContain("15 new issues (regressions)");
     expect(output).toContain("src/file0.ts:1:1");
@@ -750,7 +750,7 @@ describe("formatTextOutput", () => {
       ],
     };
 
-    const output = stripAnsi(formatTextOutput(result));
+    const output = stripAnsi(formatTextOutput(result, false));
 
     expect(output).toContain("12 issues fixed (improvements)");
     expect(output).toContain("src/file0.ts:1:1");
@@ -870,7 +870,7 @@ describe("formatTextOutput", () => {
       totalDuration: 2500,
     };
 
-    const output = stripAnsi(formatTextOutput(result));
+    const output = stripAnsi(formatTextOutput(result, false));
 
     expect(output).toMatchInlineSnapshot(`
       "✖ eslint:
@@ -920,7 +920,7 @@ describe("formatTextOutput", () => {
       ],
     };
 
-    const output = stripAnsi(formatTextOutput(result));
+    const output = stripAnsi(formatTextOutput(result, false));
 
     expect(output).toMatch(/^ℹ eslint:/);
   });
@@ -966,7 +966,7 @@ describe("formatTextOutput", () => {
       ],
     };
 
-    const output = stripAnsi(formatTextOutput(result));
+    const output = stripAnsi(formatTextOutput(result, false));
 
     expect(output).toMatch(/^✔ eslint:/);
   });
@@ -992,7 +992,7 @@ describe("formatTextOutput", () => {
       ],
     };
 
-    const output = stripAnsi(formatTextOutput(result));
+    const output = stripAnsi(formatTextOutput(result, false));
 
     expect(output).toMatch(/^ℹ eslint \(0\)/);
   });
@@ -1052,7 +1052,7 @@ describe("formatTextOutput", () => {
       ],
     };
 
-    const output = stripAnsi(formatTextOutput(result));
+    const output = stripAnsi(formatTextOutput(result, false));
 
     expect(output).toMatch(/^ℹ eslint:[\s\S]*\n\nℹ typescript:/);
   });
@@ -1130,7 +1130,7 @@ describe("formatTextOutput", () => {
       ],
     };
 
-    const output = stripAnsi(formatTextOutput(result));
+    const output = stripAnsi(formatTextOutput(result, false));
 
     expect(output).toMatch(/^✔ eslint:[\s\S]*\n\n✔ typescript:/);
   });
@@ -1397,7 +1397,7 @@ describe("formatTextOutput", () => {
       totalDuration: 1500,
     };
 
-    const output = stripAnsi(formatTextOutput(result));
+    const output = stripAnsi(formatTextOutput(result, false));
 
     expect(output).toContain("Improvements  4");
     expect(output).toContain("Regressions  3");
@@ -1446,7 +1446,7 @@ describe("formatTextOutput", () => {
       ],
     };
 
-    const output = stripAnsi(formatTextOutput(result));
+    const output = stripAnsi(formatTextOutput(result, false));
 
     expect(output).toMatchInlineSnapshot(`
       "✖ eslint:
@@ -1499,9 +1499,90 @@ describe("formatTextOutput", () => {
       ],
     };
 
-    const output = stripAnsi(formatTextOutput(result));
+    const output = stripAnsi(formatTextOutput(result, false));
 
     expect(output).toContain("→ src/a.ts:10:1  no-unused-vars");
     expect(output).not.toContain("src/a.ts:10:0");
+  });
+
+  it("should format regressions with force flag", () => {
+    const result = {
+      exitCode: 0,
+      hasImprovement: false,
+      hasRegression: true,
+      results: [
+        {
+          baseline: { items: [], type: "items" as const },
+          checkId: "eslint",
+          duration: 1500,
+          hasImprovement: false,
+          hasRegression: true,
+          hasRelocation: false,
+          isInitial: false,
+          newItems: [
+            {
+              column: 1,
+              file: "src/a.ts",
+              id: "abc123def456",
+              line: 10,
+              message: "error1",
+              rule: "no-unused-vars",
+            },
+            {
+              column: 1,
+              file: "src/b.ts",
+              id: "111aaa222bbb",
+              line: 20,
+              message: "error2",
+              rule: "no-undef",
+            },
+          ],
+          removedItems: [],
+          snapshot: {
+            items: [
+              {
+                column: 1,
+                file: "src/a.ts",
+                id: "abc123def456",
+                line: 10,
+                message: "error1",
+                rule: "no-unused-vars",
+              },
+              {
+                column: 1,
+                file: "src/b.ts",
+                id: "111aaa222bbb",
+                line: 20,
+                message: "error2",
+                rule: "no-undef",
+              },
+            ],
+            type: "items" as const,
+          },
+        },
+      ],
+    };
+
+    const output = stripAnsi(formatTextOutput(result, true));
+
+    expect(output).toMatchInlineSnapshot(`
+    "✖ eslint:
+      2 new issues (regressions):
+         ↓ src/a.ts:10:1  no-unused-vars
+           error1
+         ↓ src/b.ts:20:1  no-undef
+           error2
+
+      Duration  1.5s
+        Issues  2
+
+      Improvements  0
+       Regressions  2
+           Initial  0
+            Checks  1
+            Issues  2
+
+    ⚠ Regressions detected (forced)"
+  `);
   });
 });

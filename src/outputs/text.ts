@@ -2,7 +2,16 @@ import { basename, dirname } from "pathe";
 
 import type { CheckResult, DiagnosticItem, RunResult } from "@/types";
 
-import { blue, bold, dim, gray, green, red, underline } from "@/utils/colors";
+import {
+  blue,
+  bold,
+  dim,
+  gray,
+  green,
+  red,
+  underline,
+  yellow,
+} from "@/utils/colors";
 import { duration } from "@/utils/duration";
 import { plural } from "@/utils/text";
 
@@ -168,12 +177,20 @@ function formatCheckResult(check: CheckResult, isFirst: boolean) {
   return formatUnchanged(check, isFirst);
 }
 
-function formatStatusMessage(result: RunResult, hasAnyInitial: boolean) {
+function formatStatusMessage(
+  result: RunResult,
+  hasAnyInitial: boolean,
+  wasForced: boolean,
+) {
   if (hasAnyInitial) {
     return blue("✔ Initial baseline created successfully");
   }
 
   if (result.hasRegression) {
+    if (wasForced) {
+      return yellow("⚠ Regressions detected (forced)");
+    }
+
     return `${red("✗ Regressions detected")} - Run failed`;
   }
 
@@ -184,7 +201,7 @@ function formatStatusMessage(result: RunResult, hasAnyInitial: boolean) {
   return green("✔ All checks passed");
 }
 
-function formatSummary(result: RunResult) {
+function formatSummary(result: RunResult, wasForced: boolean) {
   const acc = {
     hasAnyInitial: false,
     totalImprovements: 0,
@@ -233,12 +250,15 @@ function formatSummary(result: RunResult) {
     );
   }
 
-  summaryLines.push("", formatStatusMessage(result, acc.hasAnyInitial));
+  summaryLines.push(
+    "",
+    formatStatusMessage(result, acc.hasAnyInitial, wasForced),
+  );
 
   return summaryLines.join("\n");
 }
 
-export function formatTextOutput(result: RunResult) {
+export function formatTextOutput(result: RunResult, wasForced: boolean) {
   const lines: string[] = [];
 
   for (const [index, check] of result.results.entries()) {
@@ -249,7 +269,7 @@ export function formatTextOutput(result: RunResult) {
     lines.push(SECTION_BREAK);
   }
 
-  lines.push(formatSummary(result));
+  lines.push(formatSummary(result, wasForced));
 
   return lines.join("\n");
 }
