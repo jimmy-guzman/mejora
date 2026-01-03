@@ -54,19 +54,17 @@ export class BaselineManager {
     try {
       const content = await readFile(this.baselinePath, "utf8");
 
-      const hasMergeConflict = content.includes("<<<<<<<");
-
-      if (hasMergeConflict) {
+      if (content.includes("<<<<<<<")) {
         logger.start("Merge conflict detected in baseline, auto-resolving...");
-
         const resolved = resolveBaselineConflict(content);
 
         await this.save(resolved, true);
-
         logger.success("Baseline conflict resolved");
 
         return resolved;
       }
+
+      await this.resolveMarkdownConflictIfNeeded(content);
 
       // TODO: consider using zod for validation and parsing
       return JSON.parse(content) as Baseline;
@@ -95,5 +93,29 @@ export class BaselineManager {
       writeFile(this.baselinePath, jsonContent, "utf8"),
       writeFile(mdPath, mdContent, "utf8"),
     ]);
+  }
+
+  private async resolveMarkdownConflictIfNeeded(baselineContent: string) {
+    const markdownPath = this.baselinePath.replace(".json", ".md");
+
+    try {
+      const markdownContent = await readFile(markdownPath, "utf8");
+
+      if (markdownContent.includes("<<<<<<<")) {
+        logger.start(
+          "Merge conflict detected in markdown report, regenerating...",
+        );
+
+        const baseline = JSON.parse(baselineContent) as Baseline;
+        const baselineDir = dirname(this.baselinePath);
+        const cleanMarkdown = generateMarkdownReport(baseline, baselineDir);
+
+        await writeFile(markdownPath, cleanMarkdown, "utf8");
+
+        logger.success("Markdown report regenerated");
+      }
+    } catch {
+      // Markdown doesn't exist or can't be read, no problem
+    }
   }
 }
