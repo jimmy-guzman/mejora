@@ -1,5 +1,3 @@
-import { mkdir } from "node:fs/promises";
-
 import { resolve } from "pathe";
 
 import { hash } from "./hash";
@@ -33,25 +31,11 @@ export function createCacheKey(input: unknown): string {
 }
 
 /**
- * Ensures mejora's cache directory exists and returns the path
+ * Get the cache directory path for a given check type.
  *
- * @param cwd Current working directory
- *
- * @param subpath Optional subdirectory within the cache
+ * Note: The directory must already exist. The runner's setupInfrastructure()
+ * method ensures all cache directories are created before checks run.
  */
-export async function ensureCacheDir(
-  cwd: string = process.cwd(),
-  subpath?: string,
-) {
-  const cacheDir = resolve(
-    cwd,
-    "node_modules",
-    ".cache",
-    "mejora",
-    ...(subpath ? [subpath] : []),
-  );
-
-  await mkdir(cacheDir, { recursive: true });
-
-  return cacheDir;
+export function getCacheDir(checkType: string, cwd: string = process.cwd()) {
+  return resolve(cwd, "node_modules", ".cache", "mejora", checkType);
 }

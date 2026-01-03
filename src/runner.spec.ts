@@ -1,9 +1,13 @@
+import { mkdir } from "node:fs/promises";
+
 import type { BaselineManager as BaselineManagerType } from "./baseline";
 import type { Baseline, BaselineEntry } from "./types";
 
-import { validateEslintDeps } from "./checks/eslint";
-import { validateTypescriptDeps } from "./checks/typescript";
 import { logger } from "./utils/logger";
+
+vi.mock("node:fs/promises", () => ({
+  mkdir: vi.fn(),
+}));
 
 vi.mock("./checks/eslint", () => {
   return {
@@ -67,6 +71,7 @@ describe("MejoraRunner", () => {
     vi.clearAllMocks();
     mockLoad.mockResolvedValue(null);
     mockSave.mockResolvedValue(undefined);
+    vi.mocked(mkdir).mockResolvedValue(undefined);
   });
 
   it("should run eslint checks", async () => {
@@ -118,6 +123,50 @@ describe("MejoraRunner", () => {
     await runner.run(config);
 
     expect(runTypescriptCheck).toHaveBeenCalledWith(config.checks["my-check"]);
+  });
+
+  it("should create cache directories during setup", async () => {
+    const config = {
+      checks: {
+        "eslint-check": { files: ["*.js"], type: "eslint" as const },
+        "typescript-check": {
+          tsconfig: "tsconfig.json",
+          type: "typescript" as const,
+        },
+      },
+    };
+
+    vi.mocked(runEslintCheck).mockResolvedValue({ items: [], type: "items" });
+    vi.mocked(runTypescriptCheck).mockResolvedValue({
+      items: [],
+      type: "items",
+    });
+    vi.mocked(compareSnapshots).mockReturnValue({
+      hasImprovement: false,
+      hasRegression: false,
+      hasRelocation: false,
+      isInitial: true,
+      newItems: [],
+      removedItems: [],
+    });
+
+    const runner = new MejoraRunner();
+
+    await runner.run(config);
+
+    // Should create cache root + eslint + typescript directories
+    expect(mkdir).toHaveBeenCalledWith(
+      expect.stringContaining("node_modules/.cache/mejora"),
+      { recursive: true },
+    );
+    expect(mkdir).toHaveBeenCalledWith(
+      expect.stringContaining("node_modules/.cache/mejora/eslint"),
+      { recursive: true },
+    );
+    expect(mkdir).toHaveBeenCalledWith(
+      expect.stringContaining("node_modules/.cache/mejora/typescript"),
+      { recursive: true },
+    );
   });
 
   it("should return exit code 0 when no regressions", async () => {
@@ -282,6 +331,24 @@ describe("MejoraRunner", () => {
     const result = await runner.run(config);
 
     expect(result.exitCode).toBe(2);
+  });
+
+  it("should return exit code 2 on setup error", async () => {
+    const config = {
+      checks: { check1: { files: ["*.js"], type: "eslint" as const } },
+    };
+
+    vi.mocked(mkdir).mockRejectedValue(new Error("Permission denied"));
+
+    const runner = new MejoraRunner();
+    const logSpy = vi.spyOn(logger, "error");
+    const result = await runner.run(config);
+
+    expect(result.exitCode).toBe(2);
+    expect(logSpy).toHaveBeenCalledWith(
+      "Setup failed:",
+      new Error("Permission denied"),
+    );
   });
 
   it("should include results for each check", async () => {
@@ -649,7 +716,7 @@ describe("MejoraRunner", () => {
     expect(runTypescriptCheck).not.toHaveBeenCalled();
   });
 
-  it("should throw when eslint dependencies are missing", async () => {
+  it("should return exit code 2 when module import fails", async () => {
     const config = {
       checks: {
         "my-eslint-check": {
@@ -659,56 +726,18 @@ describe("MejoraRunner", () => {
       },
     };
 
-    vi.mocked(validateEslintDeps).mockRejectedValue(
-      new Error("ESLint not installed"),
-    );
+    // Mock the dynamic import to fail
+    vi.doMock("eslint", () => {
+      throw new Error("ESLint not installed");
+    });
 
     const runner = new MejoraRunner();
     const logSpy = vi.spyOn(logger, "error");
 
-    await expect(runner.run(config)).resolves.toStrictEqual({
-      exitCode: 2,
-      hasImprovement: false,
-      hasRegression: true,
-      results: [],
-      totalDuration: expect.any(Number),
-    });
+    const result = await runner.run(config);
 
-    expect(logSpy).toHaveBeenCalledWith(
-      "Dependency validation failed:",
-      new Error("ESLint not installed"),
-    );
-  });
-
-  it("should throw when typescript dependencies are missing", async () => {
-    const config = {
-      checks: {
-        "my-typescript-check": {
-          files: ["*.ts"],
-          type: "typescript" as const,
-        },
-      },
-    };
-
-    vi.mocked(validateTypescriptDeps).mockRejectedValue(
-      new Error("TypeScript not installed"),
-    );
-
-    const runner = new MejoraRunner();
-    const logSpy = vi.spyOn(logger, "error");
-
-    await expect(runner.run(config)).resolves.toStrictEqual({
-      exitCode: 2,
-      hasImprovement: false,
-      hasRegression: true,
-      results: [],
-      totalDuration: expect.any(Number),
-    });
-
-    expect(logSpy).toHaveBeenCalledWith(
-      "Dependency validation failed:",
-      new Error("TypeScript not installed"),
-    );
+    expect(result.exitCode).toBe(2);
+    expect(logSpy).toHaveBeenCalledWith("Setup failed:", expect.any(Error));
   });
 
   it("should not save baseline when no changes detected", async () => {

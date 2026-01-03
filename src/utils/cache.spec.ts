@@ -1,10 +1,7 @@
-import { mkdir } from "node:fs/promises";
-
 import { resolve } from "pathe";
 
-import { createCacheKey, ensureCacheDir } from "./cache";
+import { createCacheKey, getCacheDir } from "./cache";
 
-vi.mock("node:fs/promises");
 vi.mock("pathe");
 
 describe("createCacheKey", () => {
@@ -74,53 +71,17 @@ describe("createCacheKey", () => {
   });
 });
 
-describe("ensureCacheDir", () => {
+describe("getCacheDir", () => {
   afterEach(() => {
     vi.clearAllMocks();
   });
 
-  it("should create cache directory in node_modules/.cache/mejora", async () => {
-    vi.mocked(resolve).mockReturnValue("/project/node_modules/.cache/mejora");
-    vi.mocked(mkdir).mockResolvedValue(undefined);
-
-    const result = await ensureCacheDir("/project");
-
-    expect(resolve).toHaveBeenCalledWith(
-      "/project",
-      "node_modules",
-      ".cache",
-      "mejora",
-    );
-    expect(mkdir).toHaveBeenCalledWith("/project/node_modules/.cache/mejora", {
-      recursive: true,
-    });
-    expect(result).toBe("/project/node_modules/.cache/mejora");
-  });
-
-  it("should use process.cwd() when no cwd provided", async () => {
-    vi.spyOn(process, "cwd").mockReturnValue("/default/path");
-    vi.mocked(resolve).mockReturnValue(
-      "/default/path/node_modules/.cache/mejora",
-    );
-    vi.mocked(mkdir).mockResolvedValue(undefined);
-
-    await ensureCacheDir();
-
-    expect(resolve).toHaveBeenCalledWith(
-      "/default/path",
-      "node_modules",
-      ".cache",
-      "mejora",
-    );
-  });
-
-  it("should include subpath when provided", async () => {
+  it("should return cache directory path for check type", () => {
     vi.mocked(resolve).mockReturnValue(
       "/project/node_modules/.cache/mejora/typescript",
     );
-    vi.mocked(mkdir).mockResolvedValue(undefined);
 
-    const result = await ensureCacheDir("/project", "typescript");
+    const result = getCacheDir("typescript", "/project");
 
     expect(resolve).toHaveBeenCalledWith(
       "/project",
@@ -129,30 +90,50 @@ describe("ensureCacheDir", () => {
       "mejora",
       "typescript",
     );
-    expect(mkdir).toHaveBeenCalledWith(
-      "/project/node_modules/.cache/mejora/typescript",
-      { recursive: true },
-    );
     expect(result).toBe("/project/node_modules/.cache/mejora/typescript");
   });
 
-  it("should create directory recursively", async () => {
-    vi.mocked(resolve).mockReturnValue("/project/node_modules/.cache/mejora");
-    vi.mocked(mkdir).mockResolvedValue(undefined);
+  it("should use process.cwd() when no cwd provided", () => {
+    vi.spyOn(process, "cwd").mockReturnValue("/default/path");
+    vi.mocked(resolve).mockReturnValue(
+      "/default/path/node_modules/.cache/mejora/eslint",
+    );
 
-    await ensureCacheDir("/project");
+    const result = getCacheDir("eslint");
 
-    expect(mkdir).toHaveBeenCalledWith(expect.any(String), { recursive: true });
+    expect(resolve).toHaveBeenCalledWith(
+      "/default/path",
+      "node_modules",
+      ".cache",
+      "mejora",
+      "eslint",
+    );
+    expect(result).toBe("/default/path/node_modules/.cache/mejora/eslint");
   });
 
-  it("should handle mkdir errors", async () => {
-    vi.mocked(resolve).mockReturnValue("/project/node_modules/.cache/mejora");
-    const error = new Error("Permission denied");
+  it("should handle different check types", () => {
+    vi.mocked(resolve).mockImplementation((...args) => args.join("/"));
 
-    vi.mocked(mkdir).mockRejectedValue(error);
+    const eslintDir = getCacheDir("eslint", "/project");
+    const tsDir = getCacheDir("typescript", "/project");
 
-    await expect(ensureCacheDir("/project")).rejects.toThrowError(
-      "Permission denied",
+    expect(eslintDir).toBe("/project/node_modules/.cache/mejora/eslint");
+    expect(tsDir).toBe("/project/node_modules/.cache/mejora/typescript");
+  });
+
+  it("should not create directories (assumes they exist)", () => {
+    vi.mocked(resolve).mockReturnValue(
+      "/project/node_modules/.cache/mejora/eslint",
+    );
+
+    getCacheDir("eslint", "/project");
+
+    expect(vi.mocked(resolve)).toHaveBeenCalledWith(
+      "/project",
+      "node_modules",
+      ".cache",
+      "mejora",
+      "eslint",
     );
   });
 });
