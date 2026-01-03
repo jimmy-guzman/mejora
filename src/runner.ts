@@ -2,7 +2,7 @@ import { mkdir } from "node:fs/promises";
 
 import { resolve } from "pathe";
 
-import type { CheckResult, CliOptions, Config } from "./types";
+import type { Baseline, CliOptions, Config } from "./types";
 
 import { BaselineManager } from "./baseline";
 import { runEslintCheck } from "./checks/eslint";
@@ -18,6 +18,46 @@ export class MejoraRunner {
 
   constructor(baselinePath?: string) {
     this.baselineManager = new BaselineManager(baselinePath);
+  }
+
+  private static async executeChecks(
+    checks: Config["checks"],
+    baseline: Baseline | null,
+  ) {
+    const checkPromises = Object.entries(checks).map(
+      async ([checkId, checkConfig]) => {
+        try {
+          const startTime = performance.now();
+          const snapshot = await MejoraRunner.runCheck(checkConfig);
+          const duration = performance.now() - startTime;
+
+          const baselineEntry = BaselineManager.getEntry(baseline, checkId);
+          const comparison = compareSnapshots(snapshot, baselineEntry);
+
+          return {
+            baseline: baselineEntry,
+            checkId,
+            duration,
+            hasImprovement: comparison.hasImprovement,
+            hasRegression: comparison.hasRegression,
+            hasRelocation: comparison.hasRelocation,
+            isInitial: comparison.isInitial,
+            newItems: comparison.newItems,
+            removedItems: comparison.removedItems,
+            snapshot,
+          };
+        } catch (error) {
+          logger.error(`Error running check "${checkId}":`, error);
+          throw error;
+        }
+      },
+    );
+
+    try {
+      return await Promise.all(checkPromises);
+    } catch {
+      return null;
+    }
   }
 
   private static filterChecks(checks: Config["checks"], options: CliOptions) {
@@ -120,9 +160,9 @@ export class MejoraRunner {
       `Running ${checkCount} check${checkCount === 1 ? "" : "s"}...`,
     );
 
-    const checkResults = await this.executeChecks(checksToRun, baseline);
+    const results = await MejoraRunner.executeChecks(checksToRun, baseline);
 
-    if (!checkResults) {
+    if (!results) {
       return {
         exitCode: 2,
         hasImprovement: false,
@@ -132,121 +172,51 @@ export class MejoraRunner {
       };
     }
 
-    const { flags, results, updatedBaseline } = this.buildResults(
-      checkResults,
-      baseline,
-      options,
-    );
-
-    if (
-      updatedBaseline &&
-      updatedBaseline !== baseline &&
-      (!flags.hasAnyRegression || options.force || flags.hasAnyInitial)
-    ) {
-      await this.baselineManager.save(updatedBaseline, options.force);
-    }
-
-    const exitCode = flags.hasAnyRegression && !options.force ? 1 : 0;
-
-    return {
-      exitCode,
-      hasImprovement: flags.hasAnyImprovement,
-      hasRegression: flags.hasAnyRegression,
-      results,
-      totalDuration: performance.now() - startTime,
-    };
-  }
-
-  private buildResults(
-    checkResults: NonNullable<Awaited<ReturnType<typeof this.executeChecks>>>,
-    initialBaseline: Awaited<ReturnType<typeof this.baselineManager.load>>,
-    options: CliOptions,
-  ) {
-    const results: CheckResult[] = [];
-
-    let updatedBaseline = initialBaseline;
+    let updatedBaseline = baseline;
     let hasAnyRegression = false;
     let hasAnyImprovement = false;
     let hasAnyInitial = false;
 
-    for (const {
-      baselineEntry,
-      checkId,
-      comparison,
-      duration,
-      snapshot,
-    } of checkResults) {
-      results.push({
-        baseline: baselineEntry,
-        checkId,
-        duration,
-        hasImprovement: comparison.hasImprovement,
-        hasRegression: comparison.hasRegression,
-        hasRelocation: comparison.hasRelocation,
-        isInitial: comparison.isInitial,
-        newItems: comparison.newItems,
-        removedItems: comparison.removedItems,
-        snapshot,
-      });
+    for (const result of results) {
+      if (result.hasRegression) hasAnyRegression = true;
 
-      if (comparison.hasRegression) hasAnyRegression = true;
+      if (result.hasImprovement) hasAnyImprovement = true;
 
-      if (comparison.hasImprovement) hasAnyImprovement = true;
-
-      if (comparison.isInitial) hasAnyInitial = true;
+      if (result.isInitial) hasAnyInitial = true;
 
       if (
-        comparison.hasImprovement ||
-        comparison.hasRelocation ||
+        result.hasImprovement ||
+        result.hasRelocation ||
         options.force ||
-        comparison.isInitial
+        result.isInitial
       ) {
-        updatedBaseline = BaselineManager.update(updatedBaseline, checkId, {
-          items: snapshot.items,
-          type: snapshot.type,
-        });
+        updatedBaseline = BaselineManager.update(
+          updatedBaseline,
+          result.checkId,
+          {
+            items: result.snapshot.items,
+            type: result.snapshot.type,
+          },
+        );
       }
     }
 
-    return {
-      flags: { hasAnyImprovement, hasAnyInitial, hasAnyRegression },
-      results,
-      updatedBaseline,
-    };
-  }
-
-  private async executeChecks(
-    checks: Config["checks"],
-    baseline: Awaited<ReturnType<typeof this.baselineManager.load>>,
-  ) {
-    const checkPromises = Object.entries(checks).map(
-      async ([checkId, checkConfig]) => {
-        try {
-          const startTime = performance.now();
-          const snapshot = await MejoraRunner.runCheck(checkConfig);
-          const duration = performance.now() - startTime;
-
-          const baselineEntry = BaselineManager.getEntry(baseline, checkId);
-          const comparison = compareSnapshots(snapshot, baselineEntry);
-
-          return {
-            baselineEntry,
-            checkId,
-            comparison,
-            duration,
-            snapshot,
-          };
-        } catch (error) {
-          logger.error(`Error running check "${checkId}":`, error);
-          throw error;
-        }
-      },
-    );
-
-    try {
-      return await Promise.all(checkPromises);
-    } catch {
-      return null;
+    if (
+      updatedBaseline &&
+      updatedBaseline !== baseline &&
+      (!hasAnyRegression || options.force || hasAnyInitial)
+    ) {
+      await this.baselineManager.save(updatedBaseline, options.force);
     }
+
+    const exitCode = hasAnyRegression && !options.force ? 1 : 0;
+
+    return {
+      exitCode,
+      hasImprovement: hasAnyImprovement,
+      hasRegression: hasAnyRegression,
+      results,
+      totalDuration: performance.now() - startTime,
+    };
   }
 }
