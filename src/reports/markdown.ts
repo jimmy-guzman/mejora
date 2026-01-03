@@ -136,12 +136,15 @@ export function generateMarkdownReport(
   const cwd = process.cwd();
 
   let markdown =
+    "<!-- prettier-ignore-start -->\n\n" +
     "# Mejora Baseline\n\n" +
     "This file represents the current accepted state of the codebase.\n";
 
   for (const [checkId, { items = [] }] of Object.entries(baseline.checks)) {
     markdown += formatCheckSection(checkId, items, cwd, baselineDir);
   }
+
+  markdown += "\n<!-- prettier-ignore-end -->\n";
 
   return normalizeMarkdown(markdown);
 }

@@ -16,13 +16,17 @@ describe("generateMarkdownReport", () => {
     const result = generateMarkdownReport(baseline, "/project/.mejora");
 
     expect(result).toMatchInlineSnapshot(`
-      "# Mejora Baseline
+      "<!-- prettier-ignore-start -->
+
+      # Mejora Baseline
 
       This file represents the current accepted state of the codebase.
 
       ## eslint (0 issues)
 
       No issues
+
+      <!-- prettier-ignore-end -->
       "
     `);
   });
@@ -50,7 +54,9 @@ describe("generateMarkdownReport", () => {
     const result = generateMarkdownReport(baseline, "/project/.mejora");
 
     expect(result).toMatchInlineSnapshot(`
-      "# Mejora Baseline
+      "<!-- prettier-ignore-start -->
+
+      # Mejora Baseline
 
       This file represents the current accepted state of the codebase.
 
@@ -59,6 +65,8 @@ describe("generateMarkdownReport", () => {
       ### [src/index.ts](../src/index.ts) (1)
 
       - [Line 10](../src/index.ts#L10) - no-unused-vars: 'foo' is never used
+
+      <!-- prettier-ignore-end -->
       "
     `);
   });
@@ -86,7 +94,9 @@ describe("generateMarkdownReport", () => {
     const result = generateMarkdownReport(baseline, "/project/.mejora");
 
     expect(result).toMatchInlineSnapshot(`
-      "# Mejora Baseline
+      "<!-- prettier-ignore-start -->
+
+      # Mejora Baseline
 
       This file represents the current accepted state of the codebase.
 
@@ -95,6 +105,8 @@ describe("generateMarkdownReport", () => {
       ### [src/types.ts](../src/types.ts) (1)
 
       - [src/types.ts](../src/types.ts) - 2304: Type error
+
+      <!-- prettier-ignore-end -->
       "
     `);
   });
@@ -135,7 +147,9 @@ describe("generateMarkdownReport", () => {
     const result = generateMarkdownReport(baseline, "/project/.mejora");
 
     expect(result).toMatchInlineSnapshot(`
-      "# Mejora Baseline
+      "<!-- prettier-ignore-start -->
+
+      # Mejora Baseline
 
       This file represents the current accepted state of the codebase.
 
@@ -150,6 +164,8 @@ describe("generateMarkdownReport", () => {
       ### [src/b.ts](../src/b.ts) (1)
 
       - [Line 2](../src/b.ts#L2) - 2304: error b
+
+      <!-- prettier-ignore-end -->
       "
     `);
   });
@@ -199,7 +215,9 @@ describe("generateMarkdownReport", () => {
     const result = generateMarkdownReport(baseline, "/project/.mejora");
 
     expect(result).toMatchInlineSnapshot(`
-      "# Mejora Baseline
+      "<!-- prettier-ignore-start -->
+
+      # Mejora Baseline
 
       This file represents the current accepted state of the codebase.
 
@@ -212,6 +230,8 @@ describe("generateMarkdownReport", () => {
       ### Other Issues (1)
 
       - unknown: invalid item without path
+
+      <!-- prettier-ignore-end -->
       "
     `);
   });
@@ -255,7 +275,9 @@ describe("generateMarkdownReport", () => {
     const result = generateMarkdownReport(baseline, "/project/.mejora");
 
     expect(result).toMatchInlineSnapshot(`
-      "# Mejora Baseline
+      "<!-- prettier-ignore-start -->
+
+      # Mejora Baseline
 
       This file represents the current accepted state of the codebase.
 
@@ -269,6 +291,8 @@ describe("generateMarkdownReport", () => {
       ### [src/utils.ts](../src/utils.ts) (1)
 
       - [Line 5](../src/utils.ts#L5) - error-3: error 3
+
+      <!-- prettier-ignore-end -->
       "
     `);
   });
@@ -301,7 +325,9 @@ describe("generateMarkdownReport", () => {
     );
 
     expect(result).toMatchInlineSnapshot(`
-      "# Mejora Baseline
+      "<!-- prettier-ignore-start -->
+
+      # Mejora Baseline
 
       This file represents the current accepted state of the codebase.
 
@@ -310,6 +336,8 @@ describe("generateMarkdownReport", () => {
       ### [src/index.ts](../src/index.ts) (1)
 
       - [Line 10](../src/index.ts#L10) - no-unused-vars: 'foo' is never used
+
+      <!-- prettier-ignore-end -->
       "
     `);
   });
@@ -342,7 +370,9 @@ describe("generateMarkdownReport", () => {
     );
 
     expect(result).toMatchInlineSnapshot(`
-      "# Mejora Baseline
+      "<!-- prettier-ignore-start -->
+
+      # Mejora Baseline
 
       This file represents the current accepted state of the codebase.
 
@@ -351,6 +381,8 @@ describe("generateMarkdownReport", () => {
       ### [types.ts](../types.ts) (1)
 
       - [types.ts](../types.ts) - 2304: Type error
+
+      <!-- prettier-ignore-end -->
       "
     `);
   });
@@ -399,7 +431,9 @@ describe("generateMarkdownReport", () => {
     );
 
     expect(result).toMatchInlineSnapshot(`
-      "# Mejora Baseline
+      "<!-- prettier-ignore-start -->
+
+      # Mejora Baseline
 
       This file represents the current accepted state of the codebase.
 
@@ -413,6 +447,8 @@ describe("generateMarkdownReport", () => {
       ### [src/utils.ts](../src/utils.ts) (1)
 
       - [Line 5](../src/utils.ts#L5) - error-3: error 3
+
+      <!-- prettier-ignore-end -->
       "
     `);
   });
@@ -479,7 +515,9 @@ describe("generateMarkdownReport", () => {
     const result = generateMarkdownReport(baseline, "/project/.mejora");
 
     expect(result).toMatchInlineSnapshot(`
-      "# Mejora Baseline
+      "<!-- prettier-ignore-start -->
+
+      # Mejora Baseline
 
       This file represents the current accepted state of the codebase.
 
@@ -488,6 +526,8 @@ describe("generateMarkdownReport", () => {
       ### [src/form.tsx](../src/form.tsx) (1)
 
       - [Line 71](../src/form.tsx#L71) - 7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'string | FormikErrors&lt;ItemGroupUploadFormikRow&gt;'.
+
+      <!-- prettier-ignore-end -->
       "
     `);
 
@@ -520,7 +560,9 @@ describe("generateMarkdownReport", () => {
     const result = generateMarkdownReport(baseline, "/project/.mejora");
 
     expect(result).toMatchInlineSnapshot(`
-      "# Mejora Baseline
+      "<!-- prettier-ignore-start -->
+
+      # Mejora Baseline
 
       This file represents the current accepted state of the codebase.
 
@@ -529,6 +571,8 @@ describe("generateMarkdownReport", () => {
       ### [src/test.ts](../src/test.ts) (1)
 
       - [Line 125](../src/test.ts#L125) - 2345: The types returned by '&#91;Symbol.iterator&#93;().next(...)' are incompatible.
+
+      <!-- prettier-ignore-end -->
       "
     `);
 
@@ -583,7 +627,9 @@ describe("generateMarkdownReport", () => {
     expect(result).not.toContain("\n\n\n");
 
     expect(result).toMatchInlineSnapshot(`
-      "# Mejora Baseline
+      "<!-- prettier-ignore-start -->
+
+      # Mejora Baseline
 
       This file represents the current accepted state of the codebase.
 
@@ -602,6 +648,8 @@ describe("generateMarkdownReport", () => {
       ### [src/c.ts](../src/c.ts) (1)
 
       - [Line 3](../src/c.ts#L3) - 2304: error c
+
+      <!-- prettier-ignore-end -->
       "
     `);
   });
@@ -708,7 +756,9 @@ describe("generateMarkdownReport", () => {
     const result = generateMarkdownReport(baseline, "/project/.mejora");
 
     expect(result).toMatchInlineSnapshot(`
-      "# Mejora Baseline
+      "<!-- prettier-ignore-start -->
+
+      # Mejora Baseline
 
       This file represents the current accepted state of the codebase.
 
@@ -717,6 +767,8 @@ describe("generateMarkdownReport", () => {
       ### [src/index.ts](../src/index.ts) (1)
 
       - [Line 4](../src/index.ts#L4) - @typescript-eslint/no-unused-vars: 'foo' is declared but never used
+
+      <!-- prettier-ignore-end -->
       "
     `);
   });
