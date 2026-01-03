@@ -1,3 +1,10 @@
+## [2.0.5](https://github.com/jimmy-guzman/mejora/compare/v2.0.4...v2.0.5) (2026-01-03)
+
+
+### Bug Fixes
+
+* 🐛 regen markdown report when it has merge conflicts ([#50](https://github.com/jimmy-guzman/mejora/issues/50)) ([e29e732](https://github.com/jimmy-guzman/mejora/commit/e29e7328225079474c8f7738aeacb9f652649d7b))
+
 ## [2.0.4](https://github.com/jimmy-guzman/mejora/compare/v2.0.3...v2.0.4) (2026-01-03)
 
 
