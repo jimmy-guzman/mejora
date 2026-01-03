@@ -1,3 +1,10 @@
+## [2.0.3](https://github.com/jimmy-guzman/mejora/compare/v2.0.2...v2.0.3) (2026-01-03)
+
+
+### Bug Fixes
+
+* 🐛 stable markdown report by preventing formatting ([#48](https://github.com/jimmy-guzman/mejora/issues/48)) ([c86c19d](https://github.com/jimmy-guzman/mejora/commit/c86c19dfe152095be404d94e84fdc4cf40a481ae))
+
 ## [2.0.2](https://github.com/jimmy-guzman/mejora/compare/v2.0.1...v2.0.2) (2026-01-03)
 
 
