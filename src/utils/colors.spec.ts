@@ -16,5 +16,6 @@ describe("colors", () => {
     expect(c.red(1234)).toBe(`[31m1234[39m`);
     expect(c.gray("test")).toBe(`[90mtest[39m`);
     expect(c.gray(1234)).toBe(`[90m1234[39m`);
+    expect(c.yellow("test")).toBe(`[33mtest[39m`);
   });
 });
