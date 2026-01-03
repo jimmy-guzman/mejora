@@ -726,7 +726,6 @@ describe("MejoraRunner", () => {
       },
     };
 
-    // Mock the dynamic import to fail
     vi.doMock("eslint", () => {
       throw new Error("ESLint not installed");
     });
