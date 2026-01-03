@@ -1259,4 +1259,203 @@ describe("BaselineManager", () => {
       expect(mockWriteFile).toHaveBeenCalledTimes(2);
     });
   });
+
+  it("should regenerate markdown when it has merge conflicts but JSON is clean", async () => {
+    const baseline = {
+      checks: {
+        eslint: {
+          items: [
+            {
+              column: 1,
+              file: "src/a.ts",
+              id: "abc123def456",
+              line: 10,
+              message: "error1",
+              rule: "no-unused-vars",
+            },
+          ],
+          type: "items" as const,
+        },
+      },
+      version: 2,
+    };
+
+    const markdownWithConflict = [
+      "# Mejora Baseline",
+      "",
+      "<<<<<<< HEAD",
+      "## eslint",
+      "- error1 in src/a.ts",
+      "=======",
+      "## eslint",
+      "- error2 in src/b.ts",
+      ">>>>>>> feature",
+    ].join("\n");
+
+    mockReadFile.mockResolvedValueOnce(JSON.stringify(baseline));
+    mockReadFile.mockResolvedValueOnce(markdownWithConflict);
+    mockWriteFile.mockResolvedValue();
+
+    const manager = new BaselineManager(".mejora/baseline.json");
+    const result = await manager.load();
+
+    expect(result).toStrictEqual(baseline);
+    expect(logger.start).toHaveBeenCalledWith(
+      "Merge conflict detected in markdown report, regenerating...",
+    );
+    expect(logger.success).toHaveBeenCalledWith("Markdown report regenerated");
+    expect(mockWriteFile).toHaveBeenCalledExactlyOnceWith(
+      ".mejora/baseline.md",
+      expect.any(String),
+      "utf8",
+    );
+  });
+
+  it("should not check markdown when JSON has conflicts", async () => {
+    const item1 = {
+      column: 1,
+      file: "src/a.ts",
+      id: "abc123def456",
+      line: 10,
+      message: "error1",
+      rule: "no-unused-vars",
+    };
+
+    const conflictContent = [
+      "{",
+      '  "version": 2,',
+      "<<<<<<< HEAD",
+      '  "checks": {',
+      '    "eslint": {',
+      '      "type": "items",',
+      `      "items": [${JSON.stringify(item1)}]`,
+      "    }",
+      "  }",
+      "=======",
+      '  "checks": {}',
+      ">>>>>>> feature",
+      "}",
+    ].join("\n");
+
+    mockReadFile.mockResolvedValue(conflictContent);
+    mockMkdir.mockResolvedValue(undefined);
+    mockWriteFile.mockResolvedValue();
+
+    const manager = new BaselineManager(".mejora/baseline.json");
+
+    await manager.load();
+
+    expect(mockReadFile).toHaveBeenCalledExactlyOnceWith(
+      ".mejora/baseline.json",
+      "utf8",
+    );
+  });
+
+  it("should handle missing markdown file gracefully", async () => {
+    const baseline = {
+      checks: {
+        eslint: {
+          items: [
+            {
+              column: 1,
+              file: "src/a.ts",
+              id: "abc123def456",
+              line: 10,
+              message: "error1",
+              rule: "no-unused-vars",
+            },
+          ],
+          type: "items" as const,
+        },
+      },
+      version: 2,
+    };
+
+    const mdError = new Error("ENOENT") as NodeJS.ErrnoException;
+
+    mdError.code = "ENOENT";
+
+    mockReadFile.mockResolvedValueOnce(JSON.stringify(baseline));
+    mockReadFile.mockRejectedValueOnce(mdError);
+
+    const manager = new BaselineManager(".mejora/baseline.json");
+    const result = await manager.load();
+
+    expect(result).toStrictEqual(baseline);
+    expect(mockWriteFile).not.toHaveBeenCalled();
+  });
+
+  it("should handle markdown read errors gracefully", async () => {
+    const baseline = {
+      checks: {
+        eslint: {
+          items: [
+            {
+              column: 1,
+              file: "src/a.ts",
+              id: "abc123def456",
+              line: 10,
+              message: "error1",
+              rule: "no-unused-vars",
+            },
+          ],
+          type: "items" as const,
+        },
+      },
+      version: 2,
+    };
+
+    const mdError = new Error("Permission denied") as NodeJS.ErrnoException;
+
+    mdError.code = "EACCES";
+
+    mockReadFile.mockResolvedValueOnce(JSON.stringify(baseline));
+    mockReadFile.mockRejectedValueOnce(mdError);
+
+    const manager = new BaselineManager(".mejora/baseline.json");
+    const result = await manager.load();
+
+    expect(result).toStrictEqual(baseline);
+    expect(mockWriteFile).not.toHaveBeenCalled();
+  });
+
+  it("should not regenerate markdown when it has no conflicts", async () => {
+    const baseline = {
+      checks: {
+        eslint: {
+          items: [
+            {
+              column: 1,
+              file: "src/a.ts",
+              id: "abc123def456",
+              line: 10,
+              message: "error1",
+              rule: "no-unused-vars",
+            },
+          ],
+          type: "items" as const,
+        },
+      },
+      version: 2,
+    };
+
+    const cleanMarkdown = [
+      "# Mejora Baseline",
+      "",
+      "## eslint",
+      "- error1 in src/a.ts",
+    ].join("\n");
+
+    mockReadFile.mockResolvedValueOnce(JSON.stringify(baseline));
+    mockReadFile.mockResolvedValueOnce(cleanMarkdown);
+
+    const manager = new BaselineManager(".mejora/baseline.json");
+    const result = await manager.load();
+
+    expect(result).toStrictEqual(baseline);
+    expect(logger.start).not.toHaveBeenCalledWith(
+      "Merge conflict detected in markdown report, regenerating...",
+    );
+    expect(mockWriteFile).not.toHaveBeenCalled();
+  });
 });
