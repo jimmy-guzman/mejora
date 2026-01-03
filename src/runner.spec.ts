@@ -154,7 +154,6 @@ describe("MejoraRunner", () => {
 
     await runner.run(config);
 
-    // Should create cache root + eslint + typescript directories
     expect(mkdir).toHaveBeenCalledWith(
       expect.stringContaining("node_modules/.cache/mejora"),
       { recursive: true },
@@ -737,6 +736,8 @@ describe("MejoraRunner", () => {
 
     expect(result.exitCode).toBe(2);
     expect(logSpy).toHaveBeenCalledWith("Setup failed:", expect.any(Error));
+
+    vi.doUnmock("eslint");
   });
 
   it("should not save baseline when no changes detected", async () => {
