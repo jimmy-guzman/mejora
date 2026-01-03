@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/jimmy-guzman/mejora/compare/v2.0.0...v2.0.1) (2026-01-03)
+
+
+### Performance Improvements
+
+* ⚡️ run checks in parallel ([#46](https://github.com/jimmy-guzman/mejora/issues/46)) ([2de14ad](https://github.com/jimmy-guzman/mejora/commit/2de14ad71da69e9adf5b5c1522cf90e971beee10)), closes [#33](https://github.com/jimmy-guzman/mejora/issues/33)
+
 # [2.0.0](https://github.com/jimmy-guzman/mejora/compare/v1.6.2...v2.0.0) (2026-01-02)
 
 
