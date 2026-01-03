@@ -201,6 +201,10 @@ export class MejoraRunner {
       }
     }
 
+    // Save the baseline if it changed and:
+    // - No regressions occurred (safe to save all improvements)
+    // - OR force flag is set (explicitly requested)
+    // - OR any check is initial (establish baseline for new checks, even if others regress)
     if (
       updatedBaseline &&
       updatedBaseline !== baseline &&
