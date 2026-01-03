@@ -1,3 +1,10 @@
+## [2.0.2](https://github.com/jimmy-guzman/mejora/compare/v2.0.1...v2.0.2) (2026-01-03)
+
+
+### Bug Fixes
+
+* 🐛 prevent filesystem race conditions during checks ([#47](https://github.com/jimmy-guzman/mejora/issues/47)) ([ea25ce4](https://github.com/jimmy-guzman/mejora/commit/ea25ce4a525e34c337bc927a673c43dbc15ba4cc))
+
 ## [2.0.1](https://github.com/jimmy-guzman/mejora/compare/v2.0.0...v2.0.1) (2026-01-03)
 
 
