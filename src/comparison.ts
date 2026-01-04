@@ -87,7 +87,11 @@ function compareItems(snapshot: ItemsSnapshot, baseline: BaselineEntry) {
   const removedIds = baselineIds.difference(currentIds);
   const newItems = pickByIds(currentItems, newIds);
   const removedItems = pickByIds(baselineItems, removedIds);
-  const positionChanges = hasRelocation(currentItems, baselineItems);
+
+  const hasCommonItems = currentIds.size > newIds.size;
+  const positionChanges = hasCommonItems
+    ? hasRelocation(currentItems, baselineItems)
+    : false;
 
   return createComparisonResult(newItems, removedItems, positionChanges);
 }
