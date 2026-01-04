@@ -121,8 +121,8 @@ describe("MejoraRunner", () => {
       hasRegression: false,
       hasRelocation: false,
       isInitial: true,
-      newItems: [],
-      removedItems: [],
+      newIssues: [],
+      removedIssues: [],
     });
 
     const runner = new MejoraRunner(mockRegistry);
@@ -146,8 +146,8 @@ describe("MejoraRunner", () => {
       hasRegression: false,
       hasRelocation: false,
       isInitial: true,
-      newItems: [],
-      removedItems: [],
+      newIssues: [],
+      removedIssues: [],
     });
 
     const runner = new MejoraRunner(mockRegistry);
@@ -179,8 +179,8 @@ describe("MejoraRunner", () => {
       hasRegression: false,
       hasRelocation: false,
       isInitial: true,
-      newItems: [],
-      removedItems: [],
+      newIssues: [],
+      removedIssues: [],
     });
 
     const runner = new MejoraRunner(mockRegistry);
@@ -205,8 +205,8 @@ describe("MejoraRunner", () => {
       hasRegression: false,
       hasRelocation: false,
       isInitial: true,
-      newItems: [],
-      removedItems: [],
+      newIssues: [],
+      removedIssues: [],
     });
 
     const runner = new MejoraRunner(mockRegistry);
@@ -241,8 +241,8 @@ describe("MejoraRunner", () => {
       hasRegression: true,
       hasRelocation: false,
       isInitial: false,
-      newItems: [newItem],
-      removedItems: [],
+      newIssues: [newItem],
+      removedIssues: [],
     });
 
     const runner = new MejoraRunner(mockRegistry);
@@ -277,8 +277,8 @@ describe("MejoraRunner", () => {
       hasRegression: true,
       hasRelocation: false,
       isInitial: false,
-      newItems: [newItem],
-      removedItems: [],
+      newIssues: [newItem],
+      removedIssues: [],
     });
 
     const runner = new MejoraRunner(mockRegistry);
@@ -304,8 +304,8 @@ describe("MejoraRunner", () => {
       hasRegression: false,
       hasRelocation: false,
       isInitial: true,
-      newItems: [],
-      removedItems: [],
+      newIssues: [],
+      removedIssues: [],
     });
 
     const runner = new MejoraRunner(mockRegistry);
@@ -332,8 +332,8 @@ describe("MejoraRunner", () => {
       hasRegression: false,
       hasRelocation: false,
       isInitial: true,
-      newItems: [],
-      removedItems: [],
+      newIssues: [],
+      removedIssues: [],
     });
 
     const runner = new MejoraRunner(mockRegistry);
@@ -426,8 +426,8 @@ describe("MejoraRunner", () => {
       hasRegression: false,
       hasRelocation: false,
       isInitial: true,
-      newItems: [item],
-      removedItems: [],
+      newIssues: [item],
+      removedIssues: [],
     });
 
     const runner = new MejoraRunner(mockRegistry);
@@ -486,8 +486,8 @@ describe("MejoraRunner", () => {
       hasRegression: false,
       hasRelocation: false,
       isInitial: false,
-      newItems: [],
-      removedItems: [item1],
+      newIssues: [],
+      removedIssues: [item1],
     });
 
     const runner = new MejoraRunner(mockRegistry);
@@ -531,8 +531,8 @@ describe("MejoraRunner", () => {
       hasRegression: false,
       hasRelocation: false,
       isInitial: true,
-      newItems: [{ ...item, id: "mocked-id" }],
-      removedItems: [],
+      newIssues: [{ ...item, id: "mocked-id" }],
+      removedIssues: [],
     });
 
     const runner = new MejoraRunner(mockRegistry);
@@ -583,11 +583,11 @@ describe("MejoraRunner", () => {
       hasRegression: true,
       hasRelocation: false,
       isInitial: true,
-      newItems: [
+      newIssues: [
         { ...item1, id: "mocked-id-1" },
         { ...item2, id: "mocked-id-2" },
       ],
-      removedItems: [],
+      removedIssues: [],
     });
 
     const runner = new MejoraRunner(mockRegistry);
@@ -648,8 +648,8 @@ describe("MejoraRunner", () => {
       hasRegression: false,
       hasRelocation: false,
       isInitial: true,
-      newItems: [],
-      removedItems: [],
+      newIssues: [],
+      removedIssues: [],
     });
 
     const runner = new MejoraRunner(mockRegistry);
@@ -680,8 +680,8 @@ describe("MejoraRunner", () => {
       hasRegression: false,
       hasRelocation: false,
       isInitial: true,
-      newItems: [],
-      removedItems: [],
+      newIssues: [],
+      removedIssues: [],
     });
 
     const runner = new MejoraRunner(mockRegistry);
@@ -725,8 +725,8 @@ describe("MejoraRunner", () => {
       hasRegression: false,
       hasRelocation: false,
       isInitial: false,
-      newItems: [],
-      removedItems: [],
+      newIssues: [],
+      removedIssues: [],
     });
 
     const config = {

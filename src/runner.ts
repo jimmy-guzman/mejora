@@ -172,8 +172,8 @@ export class MejoraRunner {
             hasRegression: comparison.hasRegression,
             hasRelocation: comparison.hasRelocation,
             isInitial: comparison.isInitial,
-            newItems: comparison.newItems,
-            removedItems: comparison.removedItems,
+            newIssues: comparison.newIssues,
+            removedIssues: comparison.removedIssues,
             snapshot,
           };
         } catch (error) {

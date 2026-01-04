@@ -1,7 +1,7 @@
 import { relative, resolve, sep } from "pathe";
 
 import type { CheckRunner } from "@/check-runner";
-import type { FindingInput, TypeScriptCheckConfig } from "@/types";
+import type { IssueInput, TypeScriptCheckConfig } from "@/types";
 
 import { createCacheKey, getCacheDir } from "@/utils/cache";
 
@@ -111,7 +111,7 @@ export class TypeScriptCheckRunner implements CheckRunner {
       return filePath === workspaceRoot || filePath.startsWith(workspacePrefix);
     });
 
-    const rawItems: FindingInput[] = [];
+    const rawItems: IssueInput[] = [];
 
     for (const diagnostic of workspaceDiagnostics) {
       const message = flattenDiagnosticMessageText(

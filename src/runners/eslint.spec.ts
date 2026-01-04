@@ -83,7 +83,7 @@ describe("ESLintCheckRunner", () => {
     );
   });
 
-  it("should extract violations as FindingInput object (no IDs)", async () => {
+  it("should extract violations as IssueInput object (no IDs)", async () => {
     mockLintFiles.mockResolvedValue([
       {
         filePath: "/test/project/src/file.js",

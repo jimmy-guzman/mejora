@@ -19,7 +19,7 @@ Snapshots are compared against a baseline.
 - New items are regressions and fail the run
 - Removed items are improvements and pass the run
 
-Snapshots use the `items` format with structured findings information:
+Snapshots use the `items` format to represent issues:
 
 ```json
 {
@@ -42,7 +42,7 @@ Snapshots use the `items` format with structured findings information:
 ```
 
 > [!NOTE]
-> Finding identifiers (`id`) are stable across runs and generally insensitive to code movement, while remaining unique for repeated findings.
+> Issue identifiers (`id`) are stable across runs and generally insensitive to code movement, while remaining unique for repeated issues.
 
 The baseline represents the last accepted state and should be committed to the repository.
 
@@ -156,8 +156,8 @@ The object key is the check identifier and is used in the baseline.
 ### ESLint
 
 - Snapshot type: `"items"`
-- Each lint message is treated as an item
-- Regressions are new lint messages
+- Each lint message is treated as an issue
+- Regressions are new issues
 
 > [!NOTE]
 > `eslint` (^9.34.0) is required as a peer dependency when using the ESLint check
@@ -165,8 +165,8 @@ The object key is the check identifier and is used in the baseline.
 ### TypeScript
 
 - Snapshot type: `"items"`
-- Each compiler diagnostic is treated as an item
-- Regressions are new findings
+- Each compiler diagnostic is treated as an issue
+- Regressions are new issues
 - Uses the nearest `tsconfig.json` by default, or an explicit one if provided
 
 > [!NOTE]
@@ -178,11 +178,11 @@ You can add your own checks by implementing `CheckRunner` and returning an `"ite
 
 A custom check is made of two pieces:
 
-- A **runner** (registered in `plugins`) that knows how to execute your check type.
-- A **check config** (declared in `checks`) that includes a matching `type` and any options your runner needs.
+- A **runner** (registered in `runners`) that knows how to execute your check type
+- A **check config** (declared in `checks`) that includes a matching `type` and any options your runner needs
 
 ```ts
-import type { CheckRunner, FindingInput } from "mejora";
+import type { CheckRunner, IssueInput } from "mejora";
 
 interface TodoCheckConfig {
   files: string[];
@@ -193,9 +193,9 @@ class TodoCheckRunner implements CheckRunner {
   readonly type = "todo";
 
   async run(config: TodoCheckConfig) {
-    const items: FindingInput[] = [];
+    const items: IssueInput[] = [];
 
-    // ...produce FindingInput entries (file/line/column/rule/message)
+    // ...produce IssueInput entries (file/line/column/rule/message)
 
     return { type: "items", items };
   }
@@ -221,7 +221,7 @@ export default defineConfig({
 
 ## CI
 
-When running in CI, mejora does not write the baseline.
+When running in CI, `mejora` does not write the baseline.
 
 Instead, it compares the committed baseline to the expected results from the current codebase.
 

@@ -8,11 +8,11 @@ import type { RawSnapshot } from "./types";
  */
 export interface CheckRunner<TConfig = unknown> {
   /**
-   * Execute the check and return a snapshot of findings.
+   * Execute the check and return a snapshot of issues.
    *
    * @param config - Check-specific configuration
    *
-   * @returns Snapshot containing all findings found
+   * @returns Snapshot containing all issues found
    */
   run(config: TConfig): Promise<RawSnapshot>;
 

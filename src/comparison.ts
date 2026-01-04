@@ -1,4 +1,4 @@
-import type { BaselineEntry, Finding, Snapshot } from "./types";
+import type { BaselineEntry, Issue, Snapshot } from "./types";
 
 function createInitialResult() {
   return {
@@ -6,65 +6,65 @@ function createInitialResult() {
     hasRegression: false,
     hasRelocation: false,
     isInitial: true,
-    newItems: [],
-    removedItems: [],
+    newIssues: [],
+    removedIssues: [],
   };
 }
 
 function createComparisonResult(
-  newItems: Finding[],
-  removedItems: Finding[],
+  newIssues: Issue[],
+  removedIssues: Issue[],
   hasRelocation: boolean,
 ) {
   return {
-    hasImprovement: removedItems.length > 0,
-    hasRegression: newItems.length > 0,
+    hasImprovement: removedIssues.length > 0,
+    hasRegression: newIssues.length > 0,
     hasRelocation,
     isInitial: false,
-    newItems: newItems.toSorted((a, b) => a.id.localeCompare(b.id)),
-    removedItems: removedItems.toSorted((a, b) => a.id.localeCompare(b.id)),
+    newIssues: newIssues.toSorted((a, b) => a.id.localeCompare(b.id)),
+    removedIssues: removedIssues.toSorted((a, b) => a.id.localeCompare(b.id)),
   };
 }
 
 /**
- * Creates a keyed lookup for findings.
+ * Creates a keyed lookup for issues.
  *
- * Assumes item IDs are unique within a comparison.
- * Duplicate IDs will be overwritten (last item wins).
+ * Assumes issue IDs are unique within a comparison.
+ * Duplicate IDs will be overwritten (last issue wins).
  */
-function indexItems(items: Finding[] = []) {
-  return new Map(items.map((item) => [item.id, item]));
+function indexIssues(issues: Issue[] = []) {
+  return new Map(issues.map((issue) => [issue.id, issue]));
 }
 
-function idsOf(items: Map<string, Finding>) {
-  return new Set(items.keys());
+function idsOf(issues: Map<string, Issue>) {
+  return new Set(issues.keys());
 }
 
-function pickByIds(items: Map<string, Finding>, ids: Set<string>) {
-  const result: Finding[] = [];
+function pickByIds(issues: Map<string, Issue>, ids: Set<string>) {
+  const result: Issue[] = [];
 
   for (const id of ids) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- we know the id exists in items
-    const item = items.get(id)!;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- we know the id exists in issues
+    const issue = issues.get(id)!;
 
-    result.push(item);
+    result.push(issue);
   }
 
   return result;
 }
 
 function hasRelocation(
-  current: Map<string, Finding>,
-  baseline: Map<string, Finding>,
+  current: Map<string, Issue>,
+  baseline: Map<string, Issue>,
 ) {
-  for (const [id, currentItem] of current) {
-    const baselineItem = baseline.get(id);
+  for (const [id, currentIssue] of current) {
+    const baselineIssue = baseline.get(id);
 
-    if (!baselineItem) continue;
+    if (!baselineIssue) continue;
 
     if (
-      currentItem.line !== baselineItem.line ||
-      currentItem.column !== baselineItem.column
+      currentIssue.line !== baselineIssue.line ||
+      currentIssue.column !== baselineIssue.column
     ) {
       return true;
     }
@@ -73,22 +73,21 @@ function hasRelocation(
   return false;
 }
 
-function compareItems(snapshot: Snapshot, baseline: BaselineEntry) {
-  const currentItems = indexItems(snapshot.items);
-  const baselineItems = indexItems(baseline.items);
-  const currentIds = idsOf(currentItems);
-  const baselineIds = idsOf(baselineItems);
+function compareIssues(snapshot: Snapshot, baseline: BaselineEntry) {
+  const currentIssues = indexIssues(snapshot.items);
+  const baselineIssues = indexIssues(baseline.items);
+  const currentIds = idsOf(currentIssues);
+  const baselineIds = idsOf(baselineIssues);
   const newIds = currentIds.difference(baselineIds);
   const removedIds = baselineIds.difference(currentIds);
-  const newItems = pickByIds(currentItems, newIds);
-  const removedItems = pickByIds(baselineItems, removedIds);
-
-  const hasCommonItems = currentIds.size > newIds.size;
-  const positionChanges = hasCommonItems
-    ? hasRelocation(currentItems, baselineItems)
+  const newIssues = pickByIds(currentIssues, newIds);
+  const removedIssues = pickByIds(baselineIssues, removedIds);
+  const hasCommonIssues = currentIds.size > newIds.size;
+  const positionChanges = hasCommonIssues
+    ? hasRelocation(currentIssues, baselineIssues)
     : false;
 
-  return createComparisonResult(newItems, removedItems, positionChanges);
+  return createComparisonResult(newIssues, removedIssues, positionChanges);
 }
 
 /**
@@ -105,5 +104,5 @@ export function compareSnapshots(snapshot: Snapshot, baseline?: BaselineEntry) {
     return createInitialResult();
   }
 
-  return compareItems(snapshot, baseline);
+  return compareIssues(snapshot, baseline);
 }

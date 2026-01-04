@@ -1,7 +1,7 @@
 import { relative } from "pathe";
 
 import type { CheckRunner } from "@/check-runner";
-import type { ESLintCheckConfig, FindingInput } from "@/types";
+import type { ESLintCheckConfig, IssueInput } from "@/types";
 
 import { createCacheKey, getCacheDir } from "@/utils/cache";
 
@@ -27,7 +27,7 @@ export class ESLintCheckRunner implements CheckRunner {
 
     const results = await eslint.lintFiles(eslintConfig.files);
 
-    const rawItems: FindingInput[] = [];
+    const rawItems: IssueInput[] = [];
 
     for (const { filePath, messages } of results) {
       const file = relative(cwd, filePath);

@@ -1,6 +1,6 @@
 import { relative } from "pathe";
 
-import type { Baseline, Finding } from "../types";
+import type { Baseline, Issue } from "../types";
 
 import { plural } from "../utils/text";
 
@@ -24,7 +24,7 @@ function createMarkdownLink(text: string, href: string) {
   return `[${text}](${href})`;
 }
 
-function formatItemLine(item: Finding, baselineDir: string) {
+function formatItemLine(item: Issue, baselineDir: string) {
   const href = createHref(item.file, baselineDir, item.line);
   const linkText = item.line ? `Line ${item.line}` : item.file;
   const link = createMarkdownLink(linkText, href);
@@ -34,7 +34,7 @@ function formatItemLine(item: Finding, baselineDir: string) {
   return `- ${link} - ${description}`;
 }
 
-function groupItemsByFile(items: Finding[]) {
+function groupItemsByFile(items: Issue[]) {
   const grouped = Object.groupBy(items, (item) => item.file || UNPARSABLE);
 
   return Object.entries(grouped)
@@ -48,7 +48,7 @@ function groupItemsByFile(items: Finding[]) {
     });
 }
 
-function formatUnparsableSection(items: Finding[]) {
+function formatUnparsableSection(items: Issue[]) {
   const lines = [`\n### Other Issues (${items.length})\n`];
 
   for (const item of items) {
@@ -63,7 +63,7 @@ function formatUnparsableSection(items: Finding[]) {
 function formatFileSection(
   fileGroup: {
     filePath: string;
-    items: Finding[];
+    items: Issue[];
   },
   baselineDir: string,
 ) {
@@ -87,7 +87,7 @@ function formatFileSection(
 
 function formatCheckSection(
   checkId: string,
-  items: Finding[],
+  items: Issue[],
   baselineDir: string,
 ) {
   const issueCount = items.length;
@@ -117,7 +117,7 @@ function normalizeMarkdown(markdown: string) {
 /**
  * Generates a Markdown report from the given baseline.
  *
- * @param baseline - The baseline data containing checks and their findings.
+ * @param baseline - The baseline data containing checks and their issues.
  *
  * @param baselineDir - The directory where the baseline is stored. Used to create relative links.
  *

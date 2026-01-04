@@ -3,7 +3,7 @@ import type { CompilerOptions } from "typescript";
 
 import type { CheckRunner } from "./check-runner";
 
-export interface Finding {
+export interface Issue {
   /**
    * 1-indexed column number for display.
    */
@@ -27,7 +27,7 @@ export interface Finding {
    */
   message: string;
   /**
-   * Identifier for the finding (rule name, diagnostic code, etc).
+   * Identifier for the issue (rule name, diagnostic code, etc).
    *
    * @example "no-nested-ternary" (ESLint)
    *
@@ -37,28 +37,27 @@ export interface Finding {
 }
 
 /**
- * Finding produced by a check runner.
+ * Issue produced by a check runner.
  */
-export type FindingInput = Omit<Finding, "id">;
+export type IssueInput = Omit<Issue, "id">;
 
 type SnapshotType = "items";
 
 export interface RawSnapshot {
   /**
-   * Findings found by the check.
-   *
+   * Snapshot items (each item represents an issue produced by the check).
    */
-  items: FindingInput[];
+  items: IssueInput[];
   type: SnapshotType;
 }
 
 export interface Snapshot {
-  items: Finding[];
+  items: Issue[];
   type: SnapshotType;
 }
 
 export interface BaselineEntry {
-  items: Finding[];
+  items: Issue[];
   type: SnapshotType;
 }
 
@@ -242,17 +241,14 @@ export interface CheckResult {
   hasImprovement: boolean;
   hasRegression: boolean;
   /**
-   * Indicates whether any findings were relocated (i.e., their
+   * Indicates whether any issues were relocated (i.e., their
    * file, line, or column changed) compared to the baseline.
    */
   hasRelocation: boolean;
   isInitial: boolean;
-  // TODO: rename to newFindings
-  newItems: Finding[];
-  // TODO: rename to removedFindings
-  removedItems: Finding[];
+  newIssues: Issue[];
+  removedIssues: Issue[];
   snapshot: Snapshot;
-  // TODO: maybe add nested findings object with new and removed?
 }
 
 export interface RunResult {

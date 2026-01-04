@@ -171,7 +171,7 @@ describe("TypeScriptCheckRunner", () => {
     );
   });
 
-  it("should extract diagnostics as FindingInput objects (no ID)", async () => {
+  it("should extract diagnostics as IssueInput objects (no ID)", async () => {
     const mockFile = {
       fileName: "/test/project/src/file.ts",
       getLineAndCharacterOfPosition: vi.fn().mockReturnValue({

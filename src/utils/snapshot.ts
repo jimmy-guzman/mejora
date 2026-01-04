@@ -1,4 +1,4 @@
-import type { Finding, FindingInput, RawSnapshot } from "@/types";
+import type { Issue, IssueInput, RawSnapshot } from "@/types";
 
 import { hash } from "./hash";
 
@@ -20,14 +20,14 @@ function sortByLocation<T extends HasLocation>(a: T, b: T) {
 }
 
 /**
- * Assign stable, deterministic IDs to findings based on their signature and relative position.
- * Findings with identical signatures are distinguished by their sorted location order.
+ * Assign stable, deterministic IDs to items based on their signature and relative position.
+ * issues with identical signatures are distinguished by their sorted location order.
  */
 function assignStableIds(
-  items: (FindingInput & { signature: `${string} - ${string}: ${string}` })[],
+  items: (IssueInput & { signature: `${string} - ${string}: ${string}` })[],
 ) {
   const groups = Map.groupBy(items, (item) => item.signature);
-  const result: Finding[] = [];
+  const result: Issue[] = [];
 
   for (const [signature, group] of groups) {
     group.sort(sortByLocation);
@@ -44,7 +44,7 @@ function assignStableIds(
 }
 
 /**
- * Convert a raw snapshot into normalized form with stable IDs assigned to all findings.
+ * Convert a raw snapshot into normalized form with stable IDs assigned to all issues.
  */
 export function normalizeSnapshot(snapshot: RawSnapshot) {
   const rawItems = snapshot.items.map((item) => {

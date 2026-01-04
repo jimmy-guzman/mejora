@@ -31,8 +31,8 @@ describe("compareSnapshots", () => {
       hasRegression: false,
       hasRelocation: false,
       isInitial: true,
-      newItems: [],
-      removedItems: [],
+      newIssues: [],
+      removedIssues: [],
     });
   });
 
@@ -74,9 +74,9 @@ describe("compareSnapshots", () => {
     const result = compareSnapshots(snapshot, baseline);
 
     expect(result.hasRegression).toBe(true);
-    expect(result.newItems).toStrictEqual([error3]);
+    expect(result.newIssues).toStrictEqual([error3]);
     expect(result.hasImprovement).toBe(false);
-    expect(result.removedItems).toStrictEqual([]);
+    expect(result.removedIssues).toStrictEqual([]);
     expect(result.hasRelocation).toBe(false);
   });
 
@@ -115,9 +115,9 @@ describe("compareSnapshots", () => {
     const result = compareSnapshots(snapshot, baseline);
 
     expect(result.hasImprovement).toBe(true);
-    expect(result.removedItems).toStrictEqual([error2, error3]);
+    expect(result.removedIssues).toStrictEqual([error2, error3]);
     expect(result.hasRegression).toBe(false);
-    expect(result.newItems).toStrictEqual([]);
+    expect(result.newIssues).toStrictEqual([]);
     expect(result.hasRelocation).toBe(false);
   });
 
@@ -157,8 +157,8 @@ describe("compareSnapshots", () => {
 
     expect(result.hasRegression).toBe(true);
     expect(result.hasImprovement).toBe(true);
-    expect(result.newItems).toStrictEqual([error3]);
-    expect(result.removedItems).toStrictEqual([error2]);
+    expect(result.newIssues).toStrictEqual([error3]);
+    expect(result.removedIssues).toStrictEqual([error2]);
     expect(result.hasRelocation).toBe(false);
   });
 
@@ -190,8 +190,8 @@ describe("compareSnapshots", () => {
 
     expect(result.hasRegression).toBe(false);
     expect(result.hasImprovement).toBe(false);
-    expect(result.newItems).toStrictEqual([]);
-    expect(result.removedItems).toStrictEqual([]);
+    expect(result.newIssues).toStrictEqual([]);
+    expect(result.removedIssues).toStrictEqual([]);
     expect(result.hasRelocation).toBe(false);
   });
 
@@ -234,8 +234,8 @@ describe("compareSnapshots", () => {
 
     const result = compareSnapshots(snapshot, baseline);
 
-    expect(result.newItems).toStrictEqual([itemA, itemC]);
-    expect(result.removedItems).toStrictEqual([itemB, itemD]);
+    expect(result.newIssues).toStrictEqual([itemA, itemC]);
+    expect(result.removedIssues).toStrictEqual([itemB, itemD]);
   });
 
   it("should handle empty snapshots", () => {
@@ -254,7 +254,7 @@ describe("compareSnapshots", () => {
     const result = compareSnapshots(snapshot, baseline);
 
     expect(result.hasImprovement).toBe(true);
-    expect(result.removedItems).toStrictEqual([error1]);
+    expect(result.removedIssues).toStrictEqual([error1]);
   });
 
   it("should handle empty baseline", () => {
@@ -273,7 +273,7 @@ describe("compareSnapshots", () => {
     const result = compareSnapshots(snapshot, baseline);
 
     expect(result.hasRegression).toBe(true);
-    expect(result.newItems).toStrictEqual([error1]);
+    expect(result.newIssues).toStrictEqual([error1]);
   });
 
   it("should match items by ID, not by line number", () => {
@@ -301,8 +301,8 @@ describe("compareSnapshots", () => {
 
     expect(result.hasRegression).toBe(false);
     expect(result.hasImprovement).toBe(false);
-    expect(result.newItems).toStrictEqual([]);
-    expect(result.removedItems).toStrictEqual([]);
+    expect(result.newIssues).toStrictEqual([]);
+    expect(result.removedIssues).toStrictEqual([]);
     expect(result.hasRelocation).toBe(true);
   });
 
@@ -427,7 +427,7 @@ describe("compareSnapshots", () => {
     expect(result.hasRegression).toBe(true);
     expect(result.hasImprovement).toBe(false);
     expect(result.hasRelocation).toBe(true);
-    expect(result.newItems).toStrictEqual([error2]);
+    expect(result.newIssues).toStrictEqual([error2]);
   });
 
   it("should detect position changes alongside improvements", () => {
@@ -467,7 +467,7 @@ describe("compareSnapshots", () => {
     expect(result.hasRegression).toBe(false);
     expect(result.hasImprovement).toBe(true);
     expect(result.hasRelocation).toBe(true);
-    expect(result.removedItems).toStrictEqual([error2]);
+    expect(result.removedIssues).toStrictEqual([error2]);
   });
 
   it("should not detect position changes for new items", () => {
