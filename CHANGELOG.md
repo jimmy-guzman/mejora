@@ -1,3 +1,10 @@
+# [2.1.0](https://github.com/jimmy-guzman/mejora/compare/v2.0.5...v2.1.0) (2026-01-04)
+
+
+### Features
+
+* ✨ allow `ESLint`'s `concurrency` to be configurable ([#54](https://github.com/jimmy-guzman/mejora/issues/54)) ([07b8625](https://github.com/jimmy-guzman/mejora/commit/07b8625a49fe168b009cc424f023a1be58d40aa5))
+
 ## [2.0.5](https://github.com/jimmy-guzman/mejora/compare/v2.0.4...v2.0.5) (2026-01-03)
 
 
