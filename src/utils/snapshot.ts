@@ -1,23 +1,52 @@
-import type { Finding, RawSnapshot } from "@/types";
+import type { Finding, FindingInput, RawSnapshot } from "@/types";
 
-import { assignStableIds, sortByLocation } from "@/checks/utils";
+import { hash } from "./hash";
+
+interface HasLocation {
+  column: number;
+  file: string;
+  line: number;
+}
 
 /**
- * Normalize a snapshot by ensuring all items have stable IDs.
- *
- * Converts FindingInput (w/o IDs & w/ signature) to Finding (w/ IDs)
- * using the stable ID assignment algorithm.
- *
- * @param snapshot - Snapshot with items that may lack IDs
- *
- * @returns Snapshot with all items having stable IDs
+ * Compare two objects by their source location (file, line, column).
  */
-export function normalizeSnapshot(snapshot: RawSnapshot): Omit<
-  RawSnapshot,
-  "items"
-> & {
-  items: Finding[];
-} {
+function sortByLocation<T extends HasLocation>(a: T, b: T) {
+  if (a.file !== b.file) return a.file.localeCompare(b.file);
+
+  if (a.line !== b.line) return a.line - b.line;
+
+  return a.column - b.column;
+}
+
+/**
+ * Assign stable, deterministic IDs to findings based on their signature and relative position.
+ * Findings with identical signatures are distinguished by their sorted location order.
+ */
+function assignStableIds(
+  items: (FindingInput & { signature: `${string} - ${string}: ${string}` })[],
+) {
+  const groups = Map.groupBy(items, (item) => item.signature);
+  const result: Finding[] = [];
+
+  for (const [signature, group] of groups) {
+    group.sort(sortByLocation);
+
+    for (const [i, { signature: _sig, ...item }] of group.entries()) {
+      result.push({
+        ...item,
+        id: hash(`${signature}:${i}`),
+      });
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Convert a raw snapshot into normalized form with stable IDs assigned to all findings.
+ */
+export function normalizeSnapshot(snapshot: RawSnapshot) {
   const rawItems = snapshot.items.map((item) => {
     return {
       ...item,
@@ -27,10 +56,8 @@ export function normalizeSnapshot(snapshot: RawSnapshot): Omit<
 
   const itemsWithIds = assignStableIds(rawItems);
 
-  const sortedItems = itemsWithIds.toSorted(sortByLocation);
-
   return {
-    items: sortedItems,
-    type: "items",
+    items: itemsWithIds.toSorted(sortByLocation),
+    type: "items" as const,
   };
 }

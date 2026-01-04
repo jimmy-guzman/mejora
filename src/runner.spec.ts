@@ -2,8 +2,8 @@ import { mkdir } from "node:fs/promises";
 
 import type { BaselineManager as BaselineManagerType } from "./baseline";
 import type { CheckRegistry as CheckRegistryType } from "./check-registry";
-import type { ESLintCheckRunner } from "./checks/eslint";
-import type { TypeScriptCheckRunner } from "./checks/typescript";
+import type { ESLintCheckRunner } from "./runners/eslint";
+import type { TypeScriptCheckRunner } from "./runners/typescript";
 import type { Baseline, BaselineEntry, RawSnapshot } from "./types";
 
 import { logger } from "./utils/logger";

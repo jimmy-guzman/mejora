@@ -2,12 +2,12 @@
 import { parseArgs } from "node:util";
 
 import { CheckRegistry } from "./check-registry";
-import { ESLintCheckRunner } from "./checks/eslint";
-import { TypeScriptCheckRunner } from "./checks/typescript";
 import { loadConfig } from "./config";
 import { formatJsonOutput } from "./outputs/json";
 import { formatTextOutput } from "./outputs/text";
 import { MejoraRunner } from "./runner";
+import { ESLintCheckRunner } from "./runners/eslint";
+import { TypeScriptCheckRunner } from "./runners/typescript";
 import { logger } from "./utils/logger";
 
 const { values } = parseArgs({
