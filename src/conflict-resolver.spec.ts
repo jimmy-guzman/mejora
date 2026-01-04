@@ -53,7 +53,7 @@ describe("resolveBaselineConflict", () => {
 
     expect(result.checks.eslint?.items).toHaveLength(3);
 
-    const ids = result.checks.eslint?.items?.map((i) => i.id).toSorted();
+    const ids = result.checks.eslint?.items.map((i) => i.id).toSorted();
 
     expect(ids).toStrictEqual(["error1-id", "error2-id", "error3-id"]);
   });
@@ -100,9 +100,9 @@ describe("resolveBaselineConflict", () => {
     const result = resolveBaselineConflict(conflictContent);
 
     expect(result.checks.eslint?.items).toHaveLength(1);
-    expect(result.checks.eslint?.items?.[0]?.id).toBe("error1-id");
+    expect(result.checks.eslint?.items[0]?.id).toBe("error1-id");
     expect(result.checks.typescript?.items).toHaveLength(1);
-    expect(result.checks.typescript?.items?.[0]?.id).toBe("error2-id");
+    expect(result.checks.typescript?.items[0]?.id).toBe("error2-id");
   });
 
   it("should merge conflicts with overlapping items", () => {
@@ -164,7 +164,7 @@ describe("resolveBaselineConflict", () => {
 
     expect(result.checks.eslint?.items).toHaveLength(4);
 
-    const ids = result.checks.eslint?.items?.map((i) => i.id).toSorted();
+    const ids = result.checks.eslint?.items.map((i) => i.id).toSorted();
 
     expect(ids).toStrictEqual([
       "error1-id",
@@ -231,7 +231,7 @@ describe("resolveBaselineConflict", () => {
 
     const result = resolveBaselineConflict(conflictContent);
 
-    const ids = result.checks.eslint?.items?.map((i) => i.id);
+    const ids = result.checks.eslint?.items.map((i) => i.id);
 
     expect(ids).toStrictEqual([
       "a-error-id",
@@ -308,13 +308,13 @@ describe("resolveBaselineConflict", () => {
 
     expect(result.checks.eslint?.items).toHaveLength(2);
 
-    const eslintIds = result.checks.eslint?.items?.map((i) => i.id).toSorted();
+    const eslintIds = result.checks.eslint?.items.map((i) => i.id).toSorted();
 
     expect(eslintIds).toStrictEqual(["eslint-error1-id", "eslint-error2-id"]);
 
     expect(result.checks.typescript?.items).toHaveLength(2);
 
-    const tsIds = result.checks.typescript?.items?.map((i) => i.id).toSorted();
+    const tsIds = result.checks.typescript?.items.map((i) => i.id).toSorted();
 
     expect(tsIds).toStrictEqual(["ts-error1-id", "ts-error2-id"]);
   });
@@ -472,7 +472,7 @@ describe("resolveBaselineConflict", () => {
     const result = resolveBaselineConflict(conflictContent);
 
     expect(result.checks.eslint?.items).toHaveLength(1);
-    expect(result.checks.eslint?.items?.[0]?.id).toBe("error1-id");
+    expect(result.checks.eslint?.items[0]?.id).toBe("error1-id");
   });
 
   it("should deduplicate items from both sides by ID", () => {
@@ -526,7 +526,7 @@ describe("resolveBaselineConflict", () => {
 
     expect(result.checks.eslint?.items).toHaveLength(3);
 
-    const ids = result.checks.eslint?.items?.map((i) => i.id).toSorted();
+    const ids = result.checks.eslint?.items.map((i) => i.id).toSorted();
 
     expect(ids).toStrictEqual(["error1-id", "error2-id", "error3-id"]);
   });
@@ -618,7 +618,7 @@ describe("resolveBaselineConflict", () => {
     expect(result.checks.eslint?.type).toBe("items");
     expect(result.checks.eslint?.items).toHaveLength(2);
 
-    const ids = result.checks.eslint?.items?.map((i) => i.id).toSorted();
+    const ids = result.checks.eslint?.items.map((i) => i.id).toSorted();
 
     expect(ids).toStrictEqual(["error1-id", "error2-id"]);
   });
@@ -692,13 +692,13 @@ describe("resolveBaselineConflict", () => {
 
     expect(result.checks.eslint?.items).toHaveLength(2);
 
-    const eslintIds = result.checks.eslint?.items?.map((i) => i.id).toSorted();
+    const eslintIds = result.checks.eslint?.items.map((i) => i.id).toSorted();
 
     expect(eslintIds).toStrictEqual(["eslint-error1-id", "eslint-error2-id"]);
 
     expect(result.checks.typescript?.items).toHaveLength(2);
 
-    const tsIds = result.checks.typescript?.items?.map((i) => i.id).toSorted();
+    const tsIds = result.checks.typescript?.items.map((i) => i.id).toSorted();
 
     expect(tsIds).toStrictEqual(["ts-error1-id", "ts-error2-id"]);
   });
@@ -802,19 +802,19 @@ describe("resolveBaselineConflict", () => {
 
     expect(result.checks.eslint?.items).toHaveLength(2);
 
-    const eslintIds = result.checks.eslint?.items?.map((i) => i.id).toSorted();
+    const eslintIds = result.checks.eslint?.items.map((i) => i.id).toSorted();
 
     expect(eslintIds).toStrictEqual(["eslint-error1-id", "eslint-error2-id"]);
 
     expect(result.checks.typescript?.items).toHaveLength(2);
 
-    const tsIds = result.checks.typescript?.items?.map((i) => i.id).toSorted();
+    const tsIds = result.checks.typescript?.items.map((i) => i.id).toSorted();
 
     expect(tsIds).toStrictEqual(["ts-error1-id", "ts-error2-id"]);
 
     expect(result.checks.custom?.items).toHaveLength(2);
 
-    const customIds = result.checks.custom?.items?.map((i) => i.id).toSorted();
+    const customIds = result.checks.custom?.items.map((i) => i.id).toSorted();
 
     expect(customIds).toStrictEqual(["custom-error1-id", "custom-error2-id"]);
   });
@@ -891,13 +891,13 @@ describe("resolveBaselineConflict", () => {
 
     expect(result.checks.eslint?.items).toHaveLength(2);
 
-    const eslintIds = result.checks.eslint?.items?.map((i) => i.id).toSorted();
+    const eslintIds = result.checks.eslint?.items.map((i) => i.id).toSorted();
 
     expect(eslintIds).toStrictEqual(["eslint-error1-id", "eslint-error2-id"]);
 
     expect(result.checks.typescript?.items).toHaveLength(2);
 
-    const tsIds = result.checks.typescript?.items?.map((i) => i.id).toSorted();
+    const tsIds = result.checks.typescript?.items.map((i) => i.id).toSorted();
 
     expect(tsIds).toStrictEqual(["ts-error1-id", "ts-error2-id"]);
 
@@ -976,7 +976,7 @@ describe("resolveBaselineConflict", () => {
 
     expect(result.checks.eslint?.items).toHaveLength(4);
 
-    const ids = result.checks.eslint?.items?.map((i) => i.id).toSorted();
+    const ids = result.checks.eslint?.items.map((i) => i.id).toSorted();
 
     expect(ids).toStrictEqual(["a-id", "b-id", "c-id", "d-id"]);
     expect(result.version).toBe(BASELINE_VERSION);
@@ -1038,13 +1038,13 @@ describe("resolveBaselineConflict", () => {
 
     expect(result.checks.eslint?.items).toHaveLength(2);
 
-    const eslintIds = result.checks.eslint?.items?.map((i) => i.id).toSorted();
+    const eslintIds = result.checks.eslint?.items.map((i) => i.id).toSorted();
 
     expect(eslintIds).toStrictEqual(["a-id", "b-id"]);
 
     expect(result.checks.typescript?.items).toHaveLength(2);
 
-    const tsIds = result.checks.typescript?.items?.map((i) => i.id).toSorted();
+    const tsIds = result.checks.typescript?.items.map((i) => i.id).toSorted();
 
     expect(tsIds).toStrictEqual(["x-id", "y-id"]);
   });
@@ -1086,11 +1086,11 @@ describe("resolveBaselineConflict", () => {
       "tsc",
     ]);
 
-    expect(merged.checks.eslint?.items?.map((i) => i.id)).toStrictEqual([
+    expect(merged.checks.eslint?.items.map((i) => i.id)).toStrictEqual([
       "a",
       "b",
     ]);
-    expect(merged.checks.tsc?.items?.map((i) => i.id)).toStrictEqual(["x"]);
+    expect(merged.checks.tsc?.items.map((i) => i.id)).toStrictEqual(["x"]);
   });
 
   it("should parse full JSON baselines via the direct JSON fast-path", () => {
@@ -1151,7 +1151,7 @@ describe("resolveBaselineConflict", () => {
 
     const merged = resolveBaselineConflict(content);
 
-    expect(merged.checks.eslint?.items?.map((i) => i.id)).toStrictEqual([
+    expect(merged.checks.eslint?.items.map((i) => i.id)).toStrictEqual([
       "a",
       "b",
     ]);
@@ -1261,6 +1261,6 @@ describe("resolveBaselineConflict", () => {
     const result = resolveBaselineConflict(content);
 
     expect(result.checks.eslint?.items).toHaveLength(1);
-    expect(result.checks.eslint?.items?.[0]?.id).toBe("eslint-1");
+    expect(result.checks.eslint?.items[0]?.id).toBe("eslint-1");
   });
 });

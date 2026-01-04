@@ -11,8 +11,8 @@ export const areBaselineEntriesEquivalent = (
     return false;
   }
 
-  const entryItems = newBaselineEntry.items ?? [];
-  const existingItems = existingBaselineEntry.items ?? [];
+  const entryItems = newBaselineEntry.items;
+  const existingItems = existingBaselineEntry.items;
 
   if (entryItems.length !== existingItems.length) {
     return false;

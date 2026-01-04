@@ -180,6 +180,7 @@ describe("areBaselineEntriesEquivalent", () => {
 
   it("should return false when new entry items are missing", () => {
     const entry = {
+      items: [],
       type: "items" as const,
     };
     const existing = {
@@ -230,6 +231,7 @@ describe("areBaselineEntriesEquivalent", () => {
       type: "items" as const,
     };
     const existing = {
+      items: [],
       type: "items" as const,
     };
 

@@ -58,8 +58,7 @@ export interface Snapshot {
 }
 
 export interface BaselineEntry {
-  // TODO: maybe not make optional
-  items?: Finding[];
+  items: Finding[];
   type: SnapshotType;
 }
 
