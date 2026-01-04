@@ -1,7 +1,5 @@
 import type { ESLint as ESLintType } from "eslint";
 
-import type { ESLintCheckConfig } from "@/types";
-
 const mockLintFiles = vi.fn();
 
 vi.mock("eslint", () => {
@@ -24,9 +22,9 @@ const { ESLint } = await import("eslint");
 
 describe("eslintCheck", () => {
   it("should return config with type 'eslint'", () => {
-    const config: ESLintCheckConfig = {
+    const config = {
       files: ["src/**/*.ts"],
-      overrides: { rules: { "no-console": "error" } },
+      overrides: { rules: { "no-console": "error" as const } },
     };
 
     const result = eslintCheck(config);
@@ -142,12 +140,12 @@ describe("runEslintCheck", () => {
     expect(result.items[1]?.file).toBe("zebra.js");
   });
 
-  it("should configure ESLint with cache and overrides", async () => {
+  it("should configure ESLint with cache, concurrency, and overrides", async () => {
     mockLintFiles.mockResolvedValue([]);
 
-    const config: ESLintCheckConfig = {
+    const config = {
       files: ["*.js"],
-      overrides: { rules: { "no-console": "error" } },
+      overrides: { rules: { "no-console": "error" as const } },
     };
 
     await runEslintCheck(config);
@@ -160,6 +158,23 @@ describe("runEslintCheck", () => {
         ),
         concurrency: "auto",
         overrideConfig: config.overrides,
+      }),
+    );
+  });
+
+  it("should use custom concurrency when provided", async () => {
+    mockLintFiles.mockResolvedValue([]);
+
+    const config = {
+      concurrency: 4,
+      files: ["*.ts"],
+    };
+
+    await runEslintCheck(config);
+
+    expect(ESLint).toHaveBeenCalledWith(
+      expect.objectContaining({
+        concurrency: 4,
       }),
     );
   });
