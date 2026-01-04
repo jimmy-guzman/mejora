@@ -1,6 +1,17 @@
 import type { Linter } from "eslint";
 import type { CompilerOptions } from "typescript";
 
+import type { CheckRunner } from "./check-runner";
+
+/**
+ * Diagnostic item without an ID.
+ *
+ * This is what users provide when creating custom checks.
+ * The ID will be auto-generated using a stable hashing algorithm
+ * that groups items by signature and assigns IDs based on position.
+ */
+export type DiagnosticItemInput = Omit<DiagnosticItem, "id">;
+
 export interface DiagnosticItem {
   /**
    * 1-indexed column number for display.
@@ -34,12 +45,24 @@ export interface DiagnosticItem {
   rule: string;
 }
 
-export interface ItemsSnapshot {
-  items: DiagnosticItem[];
+interface ItemsSnapshot {
+  /**
+   * Diagnostic items found by the check.
+   *
+   * IDs will be auto-generated if not provided.
+   */
+  items: DiagnosticItemInput[];
   type: "items";
 }
 
 export type Snapshot = ItemsSnapshot;
+
+interface NormalizedItemsSnapshot {
+  items: DiagnosticItem[];
+  type: "items";
+}
+
+export type NormalizedSnapshot = NormalizedItemsSnapshot;
 
 export interface BaselineEntry {
   items?: DiagnosticItem[];
@@ -147,7 +170,11 @@ export type CheckConfig =
     })
   | (TypeScriptCheckConfig & {
       type: "typescript";
-    });
+    })
+  | {
+      [key: string]: unknown;
+      type: string;
+    };
 
 /**
  * mejora configuration.
@@ -192,11 +219,28 @@ export interface Config {
    * ```ts
    * {
    *   "eslint > no-console": eslint({ ... }),
-   *   "typescript": typescript({ ... }),
+   *   "typescript": typescriptCheck({ ... }),
    * }
    * ```
    */
   checks: Record<string, CheckConfig>;
+
+  /**
+   * Plugins to register custom check types.
+   *
+   * Built-in checks (eslint, typescript) are always available.
+   *
+   * @example
+   * ```ts
+   * {
+   *   plugins: [myCustomPlugin()],
+   *   checks: {
+   *     "custom": myCheck({ ... })
+   *   }
+   * }
+   * ```
+   */
+  plugins?: CheckRunner[];
 }
 
 export interface CheckResult {
@@ -216,7 +260,7 @@ export interface CheckResult {
   isInitial: boolean;
   newItems: DiagnosticItem[];
   removedItems: DiagnosticItem[];
-  snapshot: Snapshot;
+  snapshot: NormalizedSnapshot;
 }
 
 export interface RunResult {

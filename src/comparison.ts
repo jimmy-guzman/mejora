@@ -1,8 +1,7 @@
 import type {
   BaselineEntry,
   DiagnosticItem,
-  ItemsSnapshot,
-  Snapshot,
+  NormalizedSnapshot,
 } from "./types";
 
 function createInitialResult() {
@@ -78,7 +77,7 @@ function hasRelocation(
   return false;
 }
 
-function compareItems(snapshot: ItemsSnapshot, baseline: BaselineEntry) {
+function compareItems(snapshot: NormalizedSnapshot, baseline: BaselineEntry) {
   const currentItems = indexItems(snapshot.items);
   const baselineItems = indexItems(baseline.items);
   const currentIds = idsOf(currentItems);
@@ -105,7 +104,10 @@ function compareItems(snapshot: ItemsSnapshot, baseline: BaselineEntry) {
  *
  * @returns Comparison result.
  */
-export function compareSnapshots(snapshot: Snapshot, baseline?: BaselineEntry) {
+export function compareSnapshots(
+  snapshot: NormalizedSnapshot,
+  baseline?: BaselineEntry,
+) {
   if (!baseline) {
     return createInitialResult();
   }

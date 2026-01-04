@@ -1,153 +1,180 @@
 import { relative, resolve, sep } from "pathe";
 
+import type { CheckRunner } from "@/check-runner";
 import type { RawDiagnosticItem } from "@/checks/utils";
 import type { TypeScriptCheckConfig } from "@/types";
 
-import { assignStableIds, sortByLocation } from "@/checks/utils";
 import { createCacheKey, getCacheDir } from "@/utils/cache";
 
 const GLOBAL_FILE = "(global)";
 
-export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
-  const {
-    createIncrementalCompilerHost,
-    createIncrementalProgram,
-    findConfigFile,
-    flattenDiagnosticMessageText,
-    getPreEmitDiagnostics,
-    parseJsonConfigFileContent,
-    readConfigFile,
-    sys,
-    version,
-  } = await import("typescript");
+/**
+ * Check runner for TypeScript.
+ */
+export class TypeScriptCheckRunner implements CheckRunner {
+  readonly type = "typescript";
 
-  const cwd = process.cwd();
+  run = async (config: unknown) => {
+    const typescriptConfig = config as TypeScriptCheckConfig;
 
-  const fileExists = sys.fileExists.bind(sys);
-  const readFile = sys.readFile.bind(sys);
+    const {
+      createIncrementalCompilerHost,
+      createIncrementalProgram,
+      findConfigFile,
+      flattenDiagnosticMessageText,
+      getPreEmitDiagnostics,
+      parseJsonConfigFileContent,
+      readConfigFile,
+      sys,
+      version,
+    } = await import("typescript");
 
-  const configPath = config.tsconfig
-    ? resolve(config.tsconfig)
-    : findConfigFile(cwd, fileExists, "tsconfig.json");
+    const cwd = process.cwd();
 
-  if (!configPath) {
-    throw new Error("TypeScript config file not found");
-  }
+    const fileExists = sys.fileExists.bind(sys);
+    const readFile = sys.readFile.bind(sys);
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- TODO: add types to tsconfig or use zod to validate
-  const { config: TSConfig, error } = readConfigFile(configPath, readFile);
+    const configPath = typescriptConfig.tsconfig
+      ? resolve(typescriptConfig.tsconfig)
+      : findConfigFile(cwd, fileExists, "tsconfig.json");
 
-  if (error) {
-    const message =
-      typeof error.messageText === "string"
-        ? error.messageText
-        : flattenDiagnosticMessageText(error.messageText, "\n");
+    if (!configPath) {
+      throw new Error("TypeScript config file not found");
+    }
 
-    throw new TypeError(`Failed to read TypeScript config: ${message}`);
-  }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- TODO: add types to tsconfig or use zod to validate
+    const { config: TSConfig, error } = readConfigFile(configPath, readFile);
 
-  const parseResult = parseJsonConfigFileContent(
-    TSConfig,
-    sys,
-    cwd,
-    config.overrides?.compilerOptions,
-  );
+    if (error) {
+      const message =
+        typeof error.messageText === "string"
+          ? error.messageText
+          : flattenDiagnosticMessageText(error.messageText, "\n");
 
-  const cacheDir = getCacheDir("typescript", cwd);
+      throw new TypeError(`Failed to read TypeScript config: ${message}`);
+    }
 
-  const cacheKey = createCacheKey({
-    configPath,
-    overrides: config.overrides?.compilerOptions ?? {},
-    parsedOptions: parseResult.options,
-    typescriptVersion: version,
-  });
+    const parseResult = parseJsonConfigFileContent(
+      TSConfig,
+      sys,
+      cwd,
+      typescriptConfig.overrides?.compilerOptions,
+    );
 
-  const tsBuildInfoFile = resolve(cacheDir, `${cacheKey}.tsbuildinfo`);
+    const cacheDir = getCacheDir(this.type, cwd);
 
-  const options = {
-    ...parseResult.options,
-    incremental: true,
-    noEmit: true,
-    skipLibCheck: parseResult.options.skipLibCheck ?? true,
-    tsBuildInfoFile,
-  };
+    const cacheKey = createCacheKey({
+      configPath,
+      overrides: typescriptConfig.overrides?.compilerOptions ?? {},
+      parsedOptions: parseResult.options,
+      typescriptVersion: version,
+    });
 
-  const host = createIncrementalCompilerHost(options, sys);
+    const tsBuildInfoFile = resolve(cacheDir, `${cacheKey}.tsbuildinfo`);
 
-  const realWriteFile = host.writeFile.bind(host);
+    const options = {
+      ...parseResult.options,
+      incremental: true,
+      noEmit: true,
+      skipLibCheck: parseResult.options.skipLibCheck ?? true,
+      tsBuildInfoFile,
+    };
 
-  host.writeFile = (fileName, content, ...rest) => {
-    if (resolve(fileName) !== tsBuildInfoFile) return;
+    const host = createIncrementalCompilerHost(options, sys);
 
-    realWriteFile(fileName, content, ...rest);
-  };
+    const realWriteFile = host.writeFile.bind(host);
 
-  const incrementalProgram = createIncrementalProgram({
-    host,
-    options,
-    projectReferences: parseResult.projectReferences ?? [],
-    rootNames: parseResult.fileNames,
-  });
+    host.writeFile = (fileName, content, ...rest) => {
+      if (resolve(fileName) !== tsBuildInfoFile) return;
 
-  const program = incrementalProgram.getProgram();
+      realWriteFile(fileName, content, ...rest);
+    };
 
-  const diagnostics = getPreEmitDiagnostics(program);
+    const incrementalProgram = createIncrementalProgram({
+      host,
+      options,
+      projectReferences: parseResult.projectReferences ?? [],
+      rootNames: parseResult.fileNames,
+    });
 
-  incrementalProgram.emit();
+    const program = incrementalProgram.getProgram();
 
-  const workspaceRoot = resolve(cwd);
-  const workspacePrefix = workspaceRoot + sep;
+    const diagnostics = getPreEmitDiagnostics(program);
 
-  const workspaceDiagnostics = diagnostics.filter((diagnostic) => {
-    if (!diagnostic.file) return true;
+    incrementalProgram.emit();
 
-    const filePath = resolve(diagnostic.file.fileName);
+    const workspaceRoot = resolve(cwd);
+    const workspacePrefix = workspaceRoot + sep;
 
-    return filePath === workspaceRoot || filePath.startsWith(workspacePrefix);
-  });
+    const workspaceDiagnostics = diagnostics.filter((diagnostic) => {
+      if (!diagnostic.file) return true;
 
-  const rawItems: RawDiagnosticItem[] = [];
+      const filePath = resolve(diagnostic.file.fileName);
 
-  for (const diagnostic of workspaceDiagnostics) {
-    const message = flattenDiagnosticMessageText(diagnostic.messageText, "\n");
-    const tsCode = `TS${diagnostic.code}`;
+      return filePath === workspaceRoot || filePath.startsWith(workspacePrefix);
+    });
 
-    if (diagnostic.file && diagnostic.start !== undefined) {
-      const { character, line } = diagnostic.file.getLineAndCharacterOfPosition(
-        diagnostic.start,
+    const rawItems: RawDiagnosticItem[] = [];
+
+    for (const diagnostic of workspaceDiagnostics) {
+      const message = flattenDiagnosticMessageText(
+        diagnostic.messageText,
+        "\n",
       );
+      const tsCode = `TS${diagnostic.code}`;
 
-      const file = relative(cwd, diagnostic.file.fileName);
-      const signature = `${file} - ${tsCode}: ${message}` as const;
+      if (diagnostic.file && diagnostic.start !== undefined) {
+        const { character, line } =
+          diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
 
-      rawItems.push({
-        column: character + 1,
-        file,
-        line: line + 1,
-        message,
-        rule: tsCode,
-        signature,
-      });
-    } else {
-      const signature = `${GLOBAL_FILE} - ${tsCode}: ${message}` as const;
+        const file = relative(cwd, diagnostic.file.fileName);
+        const signature = `${file} - ${tsCode}: ${message}` as const;
 
-      rawItems.push({
-        column: 0,
-        file: GLOBAL_FILE,
-        line: 0,
-        message,
-        rule: tsCode,
-        signature,
-      });
+        rawItems.push({
+          column: character + 1,
+          file,
+          line: line + 1,
+          message,
+          rule: tsCode,
+          signature,
+        });
+      } else {
+        const signature = `${GLOBAL_FILE} - ${tsCode}: ${message}` as const;
+
+        rawItems.push({
+          column: 0,
+          file: GLOBAL_FILE,
+          line: 0,
+          message,
+          rule: tsCode,
+          signature,
+        });
+      }
+    }
+
+    return {
+      items: rawItems,
+      type: "items" as const,
+    };
+  };
+
+  async setup() {
+    const cwd = process.cwd();
+    const cacheDir = getCacheDir(this.type, cwd);
+    const { mkdir } = await import("node:fs/promises");
+
+    await mkdir(cacheDir, { recursive: true });
+  }
+
+  async validate() {
+    try {
+      await import("typescript");
+    } catch {
+      throw new Error(
+        `${this.type} check requires "typescript" package to be installed. Run: npm install typescript`,
+      );
     }
   }
-
-  const items = assignStableIds(rawItems);
-
-  return {
-    items: items.toSorted(sortByLocation),
-    type: "items" as const,
-  };
 }
 
 /**

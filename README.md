@@ -8,7 +8,7 @@
 [![downloads][downloads-badge]][npmtrends]
 [![Install Size][install-size-badge]][packagephobia]
 
-`mejora` runs [checks](#supported-checks), compares them to a stored baseline, and fails only when things get worse.
+`mejora` runs [checks](#supported-checks) or [custom checks](#custom-checks), compares them to a stored baseline, and fails only when things get worse.
 
 ## Behavior
 
@@ -171,6 +171,53 @@ The object key is the check identifier and is used in the baseline.
 
 > [!NOTE]
 > `typescript` (^5.0.0) is required as a peer dependency when using the TypeScript check
+
+### Custom Checks
+
+You can add your own checks by implementing `CheckRunner` and returning an `"items"` snapshot.
+
+A custom check is made of two pieces:
+
+- A **runner** (registered in `plugins`) that knows how to execute your check type.
+- A **check config** (declared in `checks`) that includes a matching `type` and any options your runner needs.
+
+```ts
+import type { CheckRunner, DiagnosticItem } from "mejora";
+
+interface TodoCheckConfig {
+  files: string[];
+  patterns?: string[];
+}
+
+class TodoCheckRunner implements CheckRunner {
+  readonly type = "todo";
+
+  async run(config: TodoCheckConfig) {
+    const items: DiagnosticItem[] = [];
+
+    // ...produce DiagnosticItem entries (file/line/column/rule/message)
+
+    return { type: "items", items };
+  }
+}
+```
+
+Register the runner and declare a check that uses it:
+
+```ts
+import { defineConfig } from "mejora";
+
+export default defineConfig({
+  plugins: [new TodoCheckRunner()],
+  checks: {
+    "todo-comments": {
+      type: "todo",
+      files: ["src/**/*.ts"],
+      patterns: ["TODO", "FIXME"],
+    },
+  },
+});
+```
 
 ## CI
 

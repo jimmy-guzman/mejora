@@ -1,66 +1,27 @@
-import { mkdir } from "node:fs/promises";
-
-import { resolve } from "pathe";
-
 import type { Baseline, CliOptions, Config } from "./types";
 
 import { BaselineManager } from "./baseline";
-import { runEslintCheck } from "./checks/eslint";
-import { runTypescriptCheck } from "./checks/typescript";
+import { CheckRegistry } from "./check-registry";
 import { compareSnapshots } from "./comparison";
 import { logger } from "./utils/logger";
+import { normalizeSnapshot } from "./utils/snapshot";
 
 /**
  * Main runner class for executing code quality checks.
  */
 export class MejoraRunner {
   private baselineManager: BaselineManager;
+  private registry: CheckRegistry;
 
-  constructor(baselinePath?: string) {
+  constructor(registry: CheckRegistry, baselinePath?: string) {
+    this.registry = registry;
     this.baselineManager = new BaselineManager(baselinePath);
   }
 
-  private static async executeChecks(
+  private static filterChecks = (
     checks: Config["checks"],
-    baseline: Baseline | null,
-  ) {
-    const checkPromises = Object.entries(checks).map(
-      async ([checkId, checkConfig]) => {
-        try {
-          const startTime = performance.now();
-          const snapshot = await MejoraRunner.runCheck(checkConfig);
-          const duration = performance.now() - startTime;
-
-          const baselineEntry = BaselineManager.getEntry(baseline, checkId);
-          const comparison = compareSnapshots(snapshot, baselineEntry);
-
-          return {
-            baseline: baselineEntry,
-            checkId,
-            duration,
-            hasImprovement: comparison.hasImprovement,
-            hasRegression: comparison.hasRegression,
-            hasRelocation: comparison.hasRelocation,
-            isInitial: comparison.isInitial,
-            newItems: comparison.newItems,
-            removedItems: comparison.removedItems,
-            snapshot,
-          };
-        } catch (error) {
-          logger.error(`Error running check "${checkId}":`, error);
-          throw error;
-        }
-      },
-    );
-
-    try {
-      return await Promise.all(checkPromises);
-    } catch {
-      return null;
-    }
-  }
-
-  private static filterChecks(checks: Config["checks"], options: CliOptions) {
+    options: CliOptions,
+  ) => {
     const only = options.only
       ? MejoraRunner.resolveRegex(options.only, "--only")
       : null;
@@ -81,11 +42,7 @@ export class MejoraRunner {
         return true;
       }),
     );
-  }
-
-  private static getRequiredCheckTypes(checks: Config["checks"]) {
-    return new Set(Object.values(checks).map((c) => c.type));
-  }
+  };
 
   private static resolveRegex(pattern: string, option: "--only" | "--skip") {
     try {
@@ -95,52 +52,17 @@ export class MejoraRunner {
     }
   }
 
-  private static async runCheck(checkConfig: Config["checks"][string]) {
-    if (checkConfig.type === "eslint") {
-      return runEslintCheck(checkConfig);
-    }
-
-    return runTypescriptCheck(checkConfig);
-  }
-
-  private static async setupInfrastructure(checks: Config["checks"]) {
-    const cwd = process.cwd();
-    const cacheRoot = resolve(cwd, "node_modules", ".cache", "mejora");
-
-    const checkTypes = MejoraRunner.getRequiredCheckTypes(checks);
-
-    const dirs = [
-      cacheRoot,
-      ...[...checkTypes].map((type) => resolve(cacheRoot, type)),
-    ];
-
-    await Promise.all(dirs.map((dir) => mkdir(dir, { recursive: true })));
-  }
-
-  private static async validateAllDeps(checks: Config["checks"]) {
-    const checkTypes = MejoraRunner.getRequiredCheckTypes(checks);
-    const validations = [];
-
-    if (checkTypes.has("eslint")) {
-      validations.push(import("eslint"));
-    }
-
-    if (checkTypes.has("typescript")) {
-      validations.push(import("typescript"));
-    }
-
-    await Promise.all(validations);
-  }
-
   async run(config: Config, options: CliOptions = {}) {
     const startTime = performance.now();
     const baseline = await this.baselineManager.load();
     const checksToRun = MejoraRunner.filterChecks(config.checks, options);
 
     try {
+      const requiredTypes = CheckRegistry.getRequiredTypes(checksToRun);
+
       await Promise.all([
-        MejoraRunner.setupInfrastructure(checksToRun),
-        MejoraRunner.validateAllDeps(checksToRun),
+        this.registry.setupInfrastructure(requiredTypes),
+        this.registry.validateDependencies(requiredTypes),
       ]);
     } catch (error) {
       logger.error("Setup failed:", error);
@@ -160,7 +82,7 @@ export class MejoraRunner {
       `Running ${checkCount} check${checkCount === 1 ? "" : "s"}...`,
     );
 
-    const results = await MejoraRunner.executeChecks(checksToRun, baseline);
+    const results = await this.executeChecks(checksToRun, baseline);
 
     if (!results) {
       return {
@@ -222,5 +144,49 @@ export class MejoraRunner {
       results,
       totalDuration: performance.now() - startTime,
     };
+  }
+
+  private async executeChecks(
+    checks: Config["checks"],
+    baseline: Baseline | null,
+  ) {
+    const checkPromises = Object.entries(checks).map(
+      async ([checkId, checkConfig]) => {
+        try {
+          const startTime = performance.now();
+
+          const runner = this.registry.get(checkConfig.type);
+          const rawSnapshot = await runner.run(checkConfig);
+
+          const duration = performance.now() - startTime;
+
+          const snapshot = normalizeSnapshot(rawSnapshot);
+          const baselineEntry = BaselineManager.getEntry(baseline, checkId);
+          const comparison = compareSnapshots(snapshot, baselineEntry);
+
+          return {
+            baseline: baselineEntry,
+            checkId,
+            duration,
+            hasImprovement: comparison.hasImprovement,
+            hasRegression: comparison.hasRegression,
+            hasRelocation: comparison.hasRelocation,
+            isInitial: comparison.isInitial,
+            newItems: comparison.newItems,
+            removedItems: comparison.removedItems,
+            snapshot,
+          };
+        } catch (error) {
+          logger.error(`Error running check "${checkId}":`, error);
+          throw error;
+        }
+      },
+    );
+
+    try {
+      return await Promise.all(checkPromises);
+    } catch {
+      return null;
+    }
   }
 }

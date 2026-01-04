@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 import { parseArgs } from "node:util";
 
+import { CheckRegistry } from "./check-registry";
+import { ESLintCheckRunner } from "./checks/eslint";
+import { TypeScriptCheckRunner } from "./checks/typescript";
 import { loadConfig } from "./config";
 import { formatJsonOutput } from "./outputs/json";
 import { formatTextOutput } from "./outputs/text";
@@ -58,8 +61,21 @@ Examples:
 }
 
 try {
-  const runner = new MejoraRunner();
+  const registry = new CheckRegistry();
+
+  registry.register(new ESLintCheckRunner());
+  registry.register(new TypeScriptCheckRunner());
+
   const config = await loadConfig();
+
+  if (config.plugins) {
+    for (const plugin of config.plugins) {
+      registry.register(plugin);
+    }
+  }
+
+  const runner = new MejoraRunner(registry);
+
   const result = await runner.run(config, {
     force: values.force,
     json: values.json,

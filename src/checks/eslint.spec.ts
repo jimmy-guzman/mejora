@@ -17,7 +17,7 @@ vi.mock("@/utils/cache", () => {
   };
 });
 
-const { eslintCheck, runEslintCheck } = await import("./eslint");
+const { eslintCheck, ESLintCheckRunner } = await import("./eslint");
 const { ESLint } = await import("eslint");
 
 describe("eslintCheck", () => {
@@ -35,7 +35,7 @@ describe("eslintCheck", () => {
   });
 });
 
-describe("runEslintCheck", () => {
+describe("ESLintCheckRunner", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -43,7 +43,9 @@ describe("runEslintCheck", () => {
   it("should return empty items when no violations", async () => {
     mockLintFiles.mockResolvedValue([]);
 
-    const result = await runEslintCheck({ files: ["*.js"] });
+    const runner = new ESLintCheckRunner();
+
+    const result = await runner.run({ files: ["*.js"] });
 
     expect(result).toStrictEqual({
       items: [],
@@ -51,7 +53,7 @@ describe("runEslintCheck", () => {
     });
   });
 
-  it("should extract violations as DiagnosticItem objects", async () => {
+  it("should extract violations as DiagnosticItemInput objects (no IDs)", async () => {
     mockLintFiles.mockResolvedValue([
       {
         filePath: "/test/project/src/file.js",
@@ -74,25 +76,28 @@ describe("runEslintCheck", () => {
 
     vi.spyOn(process, "cwd").mockReturnValue("/test/project");
 
-    const result = await runEslintCheck({ files: ["src/**/*.js"] });
+    const runner = new ESLintCheckRunner();
+
+    const result = await runner.run({ files: ["src/**/*.js"] });
 
     expect(result.items).toHaveLength(2);
-    expect(result.items[0]).toMatchObject({
+
+    expect(result.items[0]).toStrictEqual({
       column: 5,
       file: "src/file.js",
       line: 1,
       message: "'foo' is not defined.",
       rule: "no-undef",
+      signature: "src/file.js - no-undef: 'foo' is not defined.",
     });
-    expect(result.items[0]?.id).toBeDefined();
-    expect(result.items[1]).toMatchObject({
+    expect(result.items[1]).toStrictEqual({
       column: 10,
       file: "src/file.js",
       line: 2,
       message: "Unexpected console statement.",
       rule: "no-console",
+      signature: "src/file.js - no-console: Unexpected console statement.",
     });
-    expect(result.items[1]?.id).toBeDefined();
   });
 
   it("should filter out messages without ruleId", async () => {
@@ -109,14 +114,16 @@ describe("runEslintCheck", () => {
 
     vi.spyOn(process, "cwd").mockReturnValue("/test/project");
 
-    const result = await runEslintCheck({ files: ["*.js"] });
+    const runner = new ESLintCheckRunner();
+
+    const result = await runner.run({ files: ["*.js"] });
 
     expect(result.items).toHaveLength(2);
     expect(result.items[0]?.rule).toBe("no-undef");
     expect(result.items[1]?.rule).toBe("semi");
   });
 
-  it("should sort items by file name, line number, and column number", async () => {
+  it("should NOT sort items - that happens in normalizeSnapshot()", async () => {
     mockLintFiles.mockResolvedValue([
       {
         filePath: "/test/project/zebra.js",
@@ -134,10 +141,12 @@ describe("runEslintCheck", () => {
 
     vi.spyOn(process, "cwd").mockReturnValue("/test/project");
 
-    const result = await runEslintCheck({ files: ["*.js"] });
+    const runner = new ESLintCheckRunner();
 
-    expect(result.items[0]?.file).toBe("apple.js");
-    expect(result.items[1]?.file).toBe("zebra.js");
+    const result = await runner.run({ files: ["*.js"] });
+
+    expect(result.items[0]?.file).toBe("zebra.js");
+    expect(result.items[1]?.file).toBe("apple.js");
   });
 
   it("should configure ESLint with cache, concurrency, and overrides", async () => {
@@ -148,7 +157,9 @@ describe("runEslintCheck", () => {
       overrides: { rules: { "no-console": "error" as const } },
     };
 
-    await runEslintCheck(config);
+    const runner = new ESLintCheckRunner();
+
+    await runner.run(config);
 
     expect(ESLint).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -170,7 +181,9 @@ describe("runEslintCheck", () => {
       files: ["*.ts"],
     };
 
-    await runEslintCheck(config);
+    const runner = new ESLintCheckRunner();
+
+    await runner.run(config);
 
     expect(ESLint).toHaveBeenCalledWith(
       expect.objectContaining({
