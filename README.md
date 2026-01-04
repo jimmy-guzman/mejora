@@ -8,7 +8,7 @@
 [![downloads][downloads-badge]][npmtrends]
 [![Install Size][install-size-badge]][packagephobia]
 
-`mejora` runs [checks](#supported-checks) or [custom checks](#custom-checks), compares them to a stored baseline, and fails only when things get worse.
+`mejora` runs [checks](#supported-checks), compares them to a stored baseline, and fails only when things get worse.
 
 ## Behavior
 
@@ -208,7 +208,7 @@ Register the runner and declare a check that uses it:
 import { defineConfig } from "mejora";
 
 export default defineConfig({
-  plugins: [new TodoCheckRunner()],
+  runners: [new TodoCheckRunner()],
   checks: {
     "todo-comments": {
       type: "todo",

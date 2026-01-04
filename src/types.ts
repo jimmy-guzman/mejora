@@ -158,7 +158,7 @@ export interface TypeScriptCheckConfig {
   tsconfig?: string;
 }
 
-export type CustomCheckConfig = Record<string, unknown> & { type: string };
+type CustomCheckConfig = Record<string, unknown> & { type: string };
 
 export type CheckConfig =
   | (ESLintCheckConfig & { type: "eslint" })
@@ -216,21 +216,21 @@ export interface Config {
   checks: Record<string, CheckConfig>;
 
   /**
-   * Plugins to register custom check types.
+   * Runners to register custom check types.
    *
    * Built-in checks (eslint, typescript) are always available.
    *
    * @example
    * ```ts
    * {
-   *   plugins: [myCustomPlugin()],
+   *   runners: [myCustomRunner()],
    *   checks: {
    *     "custom": myCheck({ ... })
    *   }
    * }
    * ```
    */
-  plugins?: CheckRunner[];
+  runners?: CheckRunner[];
 }
 
 export interface CheckResult {

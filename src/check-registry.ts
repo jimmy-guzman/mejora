@@ -79,16 +79,18 @@ export class CheckRegistry {
    * @param types - Set of check types to setup
    */
   setupInfrastructure = async (types: Set<string>) => {
-    const setups = [...types]
-      .map((type) => this.get(type))
-      .filter(
-        (runner): runner is CheckRunner & { setup: () => Promise<void> } => {
-          return runner.setup !== undefined;
-        },
-      )
-      .map((runner) => runner.setup());
+    const setupPromises: Promise<void>[] = [];
 
-    await Promise.all(setups);
+    for (const type of types) {
+      const runner = this.get(type);
+      const setupPromise = runner.setup?.();
+
+      if (setupPromise) {
+        setupPromises.push(setupPromise);
+      }
+    }
+
+    await Promise.all(setupPromises);
   };
 
   /**
@@ -100,14 +102,14 @@ export class CheckRegistry {
    * @throws {Error} If any validation fails
    */
   validateDependencies = async (types: Set<string>) => {
-    const validations = [...types].map((type) => {
-      const runner = this.get(type);
+    const validations: Promise<void>[] = [];
 
-      return runner.validate?.();
-    });
+    for (const type of types) {
+      const validation = this.get(type).validate?.();
 
-    await Promise.all(
-      validations.filter((v): v is Promise<void> => v !== undefined),
-    );
+      if (validation) validations.push(validation);
+    }
+
+    await Promise.all(validations);
   };
 }

@@ -20,11 +20,7 @@ export function normalizeSnapshot(snapshot: RawSnapshot): Omit<
 } {
   const rawItems = snapshot.items.map((item) => {
     return {
-      column: item.column,
-      file: item.file,
-      line: item.line,
-      message: item.message,
-      rule: item.rule,
+      ...item,
       signature: `${item.file} - ${item.rule}: ${item.message}` as const,
     };
   });
