@@ -14,10 +14,6 @@ function escapeHtml(text: string) {
     .replaceAll("]", "&#93;");
 }
 
-function createRelativePath(filePath: string, cwd: string) {
-  return relative(cwd, filePath);
-}
-
 function createHref(filePath: string, baselineDir: string, line?: number) {
   const href = relative(baselineDir, filePath);
 
@@ -33,14 +29,14 @@ function formatItemLine(
   cwd: string,
   baselineDir: string,
 ) {
-  const displayPath = createRelativePath(item.file, cwd);
+  const displayPath = relative(cwd, item.file);
   const href = createHref(item.file, baselineDir, item.line);
   const linkText = item.line ? `Line ${item.line}` : displayPath;
   const link = createMarkdownLink(linkText, href);
 
   const description = `${item.rule}: ${escapeHtml(item.message)}`;
 
-  return `- ${link} - ${description}\n`;
+  return `- ${link} - ${description}`;
 }
 
 function groupItemsByFile(items: DiagnosticItem[]) {
@@ -58,13 +54,15 @@ function groupItemsByFile(items: DiagnosticItem[]) {
 }
 
 function formatUnparsableSection(items: DiagnosticItem[]) {
-  let section = `\n### Other Issues (${items.length})\n\n`;
+  const lines = [`\n### Other Issues (${items.length})\n`];
 
   for (const item of items) {
-    section += `- ${item.rule}: ${escapeHtml(item.message)}\n`;
+    lines.push(`- ${item.rule}: ${escapeHtml(item.message)}`);
   }
 
-  return `${section}\n`;
+  lines.push("");
+
+  return lines.join("\n");
 }
 
 function formatFileSection(
@@ -79,17 +77,19 @@ function formatFileSection(
     return formatUnparsableSection(fileGroup.items);
   }
 
-  const displayPath = createRelativePath(fileGroup.filePath, cwd);
+  const displayPath = relative(cwd, fileGroup.filePath);
   const href = createHref(fileGroup.filePath, baselineDir);
   const link = createMarkdownLink(displayPath, href);
 
-  let section = `\n### ${link} (${fileGroup.items.length})\n\n`;
+  const lines = [`\n### ${link} (${fileGroup.items.length})\n`];
 
   for (const item of fileGroup.items) {
-    section += formatItemLine(item, cwd, baselineDir);
+    lines.push(formatItemLine(item, cwd, baselineDir));
   }
 
-  return `${section}\n`;
+  lines.push("");
+
+  return lines.join("\n");
 }
 
 function formatCheckSection(
@@ -101,19 +101,21 @@ function formatCheckSection(
   const issueCount = items.length;
   const issueText = plural(issueCount, "issue");
 
-  let section = `\n## ${checkId} (${issueCount} ${issueText})\n\n`;
+  const lines = [`\n## ${checkId} (${issueCount} ${issueText})\n`];
 
   if (items.length === 0) {
-    return `${section}No issues\n`;
+    lines.push("No issues");
+
+    return lines.join("\n");
   }
 
   const fileGroups = groupItemsByFile(items);
 
   for (const fileGroup of fileGroups) {
-    section += formatFileSection(fileGroup, cwd, baselineDir);
+    lines.push(formatFileSection(fileGroup, cwd, baselineDir));
   }
 
-  return section;
+  return lines.join("\n");
 }
 
 function normalizeMarkdown(markdown: string) {
@@ -135,16 +137,17 @@ export function generateMarkdownReport(
 ) {
   const cwd = process.cwd();
 
-  let markdown =
-    "<!-- prettier-ignore-start -->\n\n" +
-    "# Mejora Baseline\n\n" +
-    "This file represents the current accepted state of the codebase.\n";
+  const sections = [
+    "<!-- prettier-ignore-start -->\n",
+    "# Mejora Baseline\n",
+    "This file represents the current accepted state of the codebase.",
+  ];
 
   for (const [checkId, { items = [] }] of Object.entries(baseline.checks)) {
-    markdown += formatCheckSection(checkId, items, cwd, baselineDir);
+    sections.push(formatCheckSection(checkId, items, cwd, baselineDir));
   }
 
-  markdown += "\n<!-- prettier-ignore-end -->\n";
+  sections.push("\n<!-- prettier-ignore-end -->");
 
-  return normalizeMarkdown(markdown);
+  return normalizeMarkdown(sections.join("\n"));
 }

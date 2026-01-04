@@ -1,6 +1,7 @@
 import type { Baseline, DiagnosticItem } from "./types";
 
 import { BASELINE_VERSION } from "./constants";
+import { balanceBraces } from "./utils/brace-balancer";
 
 function tryParseJson(text: string) {
   try {
@@ -14,39 +15,6 @@ function removeTrailingComma(text: string) {
   const trimmed = text.trim();
 
   return trimmed.endsWith(",") ? trimmed.slice(0, -1) : trimmed;
-}
-
-function removeCloseBraces(json: string, count: number) {
-  let result = json;
-
-  for (let i = 0; i < count; i++) {
-    const trimmed = result.trimEnd();
-
-    if (!trimmed.endsWith("}")) break;
-
-    result = trimmed.slice(0, -1);
-  }
-
-  return result;
-}
-
-function addCloseBraces(json: string, count: number) {
-  return `${json}${"\n}".repeat(count)}`;
-}
-
-function balanceBraces(json: string) {
-  let delta = 0;
-
-  for (const char of json) {
-    if (char === "{") delta++;
-    else if (char === "}") delta--;
-  }
-
-  if (delta === 0) return json;
-
-  return delta < 0
-    ? removeCloseBraces(json, -delta)
-    : addCloseBraces(json, delta);
 }
 
 function wrapInBaselineStructure(fragment: string) {
