@@ -241,11 +241,14 @@ describe("ESLintCheckRunner", () => {
   });
 
   it("should throw helpful error when eslint import fails", async () => {
+    vi.resetModules();
+
     vi.doMock("eslint", () => {
       throw new Error("nope");
     });
 
     const { ESLintCheckRunner: FreshRunner } = await import("./eslint");
+
     const runner = new FreshRunner();
 
     await expect(runner.validate()).rejects.toThrowError(
