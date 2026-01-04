@@ -1,4 +1,4 @@
-import type { Snapshot } from "./types";
+import type { RawSnapshot } from "./types";
 
 /**
  * Interface that all check runners must implement.
@@ -6,15 +6,15 @@ import type { Snapshot } from "./types";
  * Each check type (eslint, typescript, custom) implements this interface
  * to provide consistent lifecycle hooks for execution.
  */
-export interface CheckRunner {
+export interface CheckRunner<TConfig = unknown> {
   /**
-   * Execute the check and return a snapshot of diagnostic items.
+   * Execute the check and return a snapshot of findings.
    *
    * @param config - Check-specific configuration
    *
-   * @returns Snapshot containing all diagnostic items found
+   * @returns Snapshot containing all findings found
    */
-  run(config: unknown): Promise<Snapshot>;
+  run(config: TConfig): Promise<RawSnapshot>;
 
   /**
    * Setup any infrastructure needed for this check.

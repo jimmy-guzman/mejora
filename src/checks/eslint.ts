@@ -1,8 +1,7 @@
 import { relative } from "pathe";
 
 import type { CheckRunner } from "@/check-runner";
-import type { RawDiagnosticItem } from "@/checks/utils";
-import type { ESLintCheckConfig } from "@/types";
+import type { ESLintCheckConfig, FindingInput } from "@/types";
 
 import { createCacheKey, getCacheDir } from "@/utils/cache";
 
@@ -12,9 +11,7 @@ import { createCacheKey, getCacheDir } from "@/utils/cache";
 export class ESLintCheckRunner implements CheckRunner {
   readonly type = "eslint";
 
-  // TODO: does this need to be unknown or can it be ESLintCheckConfig?
-  run = async (config: unknown) => {
-    const eslintConfig = config as ESLintCheckConfig;
+  run = async (eslintConfig: ESLintCheckConfig) => {
     const { ESLint } = await import("eslint");
 
     const cwd = process.cwd();
@@ -30,7 +27,7 @@ export class ESLintCheckRunner implements CheckRunner {
 
     const results = await eslint.lintFiles(eslintConfig.files);
 
-    const rawItems: RawDiagnosticItem[] = [];
+    const rawItems: FindingInput[] = [];
 
     for (const { filePath, messages } of results) {
       const file = relative(cwd, filePath);
@@ -38,15 +35,12 @@ export class ESLintCheckRunner implements CheckRunner {
       for (const { column, line, message, ruleId } of messages) {
         if (!ruleId) continue;
 
-        const signature = `${file} - ${ruleId}: ${message}` as const;
-
         rawItems.push({
           column,
           file,
           line,
           message,
           rule: ruleId,
-          signature,
         });
       }
     }

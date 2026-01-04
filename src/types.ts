@@ -3,16 +3,7 @@ import type { CompilerOptions } from "typescript";
 
 import type { CheckRunner } from "./check-runner";
 
-/**
- * Diagnostic item without an ID.
- *
- * This is what users provide when creating custom checks.
- * The ID will be auto-generated using a stable hashing algorithm
- * that groups items by signature and assigns IDs based on position.
- */
-export type DiagnosticItemInput = Omit<DiagnosticItem, "id">;
-
-export interface DiagnosticItem {
+export interface Finding {
   /**
    * 1-indexed column number for display.
    */
@@ -32,11 +23,11 @@ export interface DiagnosticItem {
    */
   line: number;
   /**
-   *  The diagnostic message.
+   *  The message.
    */
   message: string;
   /**
-   * Rule identifier.
+   * Identifier for the finding (rule name, diagnostic code, etc).
    *
    * @example "no-nested-ternary" (ESLint)
    *
@@ -45,28 +36,31 @@ export interface DiagnosticItem {
   rule: string;
 }
 
-interface ItemsSnapshot {
+/**
+ * Finding produced by a check runner.
+ */
+export type FindingInput = Omit<Finding, "id">;
+
+type SnapshotType = "items";
+
+export interface RawSnapshot {
   /**
-   * Diagnostic items found by the check.
+   * Findings found by the check.
    *
-   * IDs will be auto-generated if not provided.
    */
-  items: DiagnosticItemInput[];
-  type: "items";
+  items: FindingInput[];
+  type: SnapshotType;
 }
 
-export type Snapshot = ItemsSnapshot;
-
-interface NormalizedItemsSnapshot {
-  items: DiagnosticItem[];
-  type: "items";
+export interface Snapshot {
+  items: Finding[];
+  type: SnapshotType;
 }
-
-export type NormalizedSnapshot = NormalizedItemsSnapshot;
 
 export interface BaselineEntry {
-  items?: DiagnosticItem[];
-  type: Snapshot["type"];
+  // TODO: maybe not make optional
+  items?: Finding[];
+  type: SnapshotType;
 }
 
 export interface Baseline {
@@ -164,17 +158,13 @@ export interface TypeScriptCheckConfig {
   tsconfig?: string;
 }
 
+export type CustomCheckConfig = Record<string, unknown> & { type: string };
+
 export type CheckConfig =
-  | (ESLintCheckConfig & {
-      type: "eslint";
-    })
-  | (TypeScriptCheckConfig & {
-      type: "typescript";
-    })
-  | {
-      [key: string]: unknown;
-      type: string;
-    };
+  | (ESLintCheckConfig & { type: "eslint" })
+  | (TypeScriptCheckConfig & { type: "typescript" })
+  // eslint-disable-next-line perfectionist/sort-union-types -- keep related types together for better hover UX
+  | CustomCheckConfig;
 
 /**
  * mejora configuration.
@@ -253,14 +243,17 @@ export interface CheckResult {
   hasImprovement: boolean;
   hasRegression: boolean;
   /**
-   * Indicates whether any diagnostic items were relocated (i.e., their
+   * Indicates whether any findings were relocated (i.e., their
    * file, line, or column changed) compared to the baseline.
    */
   hasRelocation: boolean;
   isInitial: boolean;
-  newItems: DiagnosticItem[];
-  removedItems: DiagnosticItem[];
-  snapshot: NormalizedSnapshot;
+  // TODO: rename to newFindings
+  newItems: Finding[];
+  // TODO: rename to removedFindings
+  removedItems: Finding[];
+  snapshot: Snapshot;
+  // TODO: maybe add nested findings object with new and removed?
 }
 
 export interface RunResult {

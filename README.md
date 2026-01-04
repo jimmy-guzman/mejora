@@ -19,7 +19,7 @@ Snapshots are compared against a baseline.
 - New items are regressions and fail the run
 - Removed items are improvements and pass the run
 
-Snapshots use the `items` format with structured diagnostic information:
+Snapshots use the `items` format with structured findings information:
 
 ```json
 {
@@ -42,7 +42,7 @@ Snapshots use the `items` format with structured diagnostic information:
 ```
 
 > [!NOTE]
-> Diagnostic identifiers (`id`) are stable across runs and generally insensitive to code movement, while remaining unique for repeated diagnostics.
+> Finding identifiers (`id`) are stable across runs and generally insensitive to code movement, while remaining unique for repeated findings.
 
 The baseline represents the last accepted state and should be committed to the repository.
 
@@ -166,7 +166,7 @@ The object key is the check identifier and is used in the baseline.
 
 - Snapshot type: `"items"`
 - Each compiler diagnostic is treated as an item
-- Regressions are new diagnostics
+- Regressions are new findings
 - Uses the nearest `tsconfig.json` by default, or an explicit one if provided
 
 > [!NOTE]
@@ -182,7 +182,7 @@ A custom check is made of two pieces:
 - A **check config** (declared in `checks`) that includes a matching `type` and any options your runner needs.
 
 ```ts
-import type { CheckRunner, DiagnosticItem } from "mejora";
+import type { CheckRunner, FindingInput } from "mejora";
 
 interface TodoCheckConfig {
   files: string[];
@@ -193,9 +193,9 @@ class TodoCheckRunner implements CheckRunner {
   readonly type = "todo";
 
   async run(config: TodoCheckConfig) {
-    const items: DiagnosticItem[] = [];
+    const items: FindingInput[] = [];
 
-    // ...produce DiagnosticItem entries (file/line/column/rule/message)
+    // ...produce FindingInput entries (file/line/column/rule/message)
 
     return { type: "items", items };
   }

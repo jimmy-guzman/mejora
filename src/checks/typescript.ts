@@ -1,8 +1,7 @@
 import { relative, resolve, sep } from "pathe";
 
 import type { CheckRunner } from "@/check-runner";
-import type { RawDiagnosticItem } from "@/checks/utils";
-import type { TypeScriptCheckConfig } from "@/types";
+import type { FindingInput, TypeScriptCheckConfig } from "@/types";
 
 import { createCacheKey, getCacheDir } from "@/utils/cache";
 
@@ -14,9 +13,7 @@ const GLOBAL_FILE = "(global)";
 export class TypeScriptCheckRunner implements CheckRunner {
   readonly type = "typescript";
 
-  run = async (config: unknown) => {
-    const typescriptConfig = config as TypeScriptCheckConfig;
-
+  run = async (typescriptConfig: TypeScriptCheckConfig) => {
     const {
       createIncrementalCompilerHost,
       createIncrementalProgram,
@@ -114,7 +111,7 @@ export class TypeScriptCheckRunner implements CheckRunner {
       return filePath === workspaceRoot || filePath.startsWith(workspacePrefix);
     });
 
-    const rawItems: RawDiagnosticItem[] = [];
+    const rawItems: FindingInput[] = [];
 
     for (const diagnostic of workspaceDiagnostics) {
       const message = flattenDiagnosticMessageText(
@@ -128,7 +125,6 @@ export class TypeScriptCheckRunner implements CheckRunner {
           diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
 
         const file = relative(cwd, diagnostic.file.fileName);
-        const signature = `${file} - ${tsCode}: ${message}` as const;
 
         rawItems.push({
           column: character + 1,
@@ -136,18 +132,14 @@ export class TypeScriptCheckRunner implements CheckRunner {
           line: line + 1,
           message,
           rule: tsCode,
-          signature,
         });
       } else {
-        const signature = `${GLOBAL_FILE} - ${tsCode}: ${message}` as const;
-
         rawItems.push({
           column: 0,
           file: GLOBAL_FILE,
           line: 0,
           message,
           rule: tsCode,
-          signature,
         });
       }
     }

@@ -1,4 +1,4 @@
-import type { DiagnosticItem } from "@/types";
+import type { Finding, FindingInput } from "@/types";
 
 import { hash } from "../utils/hash";
 
@@ -9,7 +9,7 @@ interface HasLocation {
 }
 
 /**
- * Compare two DiagnosticItem objects by their location: file name, line number, and column number.
+ * Compare two objects by their location: file name, line number, and column number.
  *
  * @returns Comparison result: negative if a < b, positive if a > b, zero if equal.
  */
@@ -21,22 +21,21 @@ export function sortByLocation<T extends HasLocation>(a: T, b: T) {
   return a.column - b.column;
 }
 
-export type DiagnosticSignature = `${string} - ${string}: ${string}`;
-export interface RawDiagnosticItem extends Omit<DiagnosticItem, "id"> {
-  signature: DiagnosticSignature;
-}
+export type FindingSignature = `${string} - ${string}: ${string}`;
 
 /**
- * Assign stable IDs to RawDiagnosticItem objects based on their signature and relative location.
+ * Assign stable IDs to FindingInput w/ signature objects based on their signature and relative location.
  *
  * @param items Array of items without IDs but with signatures.
  *
- * @returns Array of DiagnosticItem objects with assigned IDs.
+ * @returns Array of Finding objects with assigned IDs.
  */
-export function assignStableIds(items: RawDiagnosticItem[]) {
+export function assignStableIds(
+  items: (FindingInput & { signature: FindingSignature })[],
+) {
   const groups = Map.groupBy(items, (item) => item.signature);
 
-  const result: DiagnosticItem[] = [];
+  const result: Finding[] = [];
 
   for (const [signature, group] of groups) {
     group.sort(sortByLocation);

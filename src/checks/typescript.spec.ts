@@ -160,7 +160,7 @@ describe("TypeScriptCheckRunner", () => {
     );
   });
 
-  it("should extract diagnostics as RawDiagnosticItem objects (with signature, no ID)", async () => {
+  it("should extract diagnostics as FindingInput objects (no ID)", async () => {
     const mockFile = {
       fileName: "/test/project/src/file.ts",
       getLineAndCharacterOfPosition: vi.fn().mockReturnValue({
@@ -189,14 +189,12 @@ describe("TypeScriptCheckRunner", () => {
     const result = await runner.run({ tsconfig: "tsconfig.json" });
 
     expect(result.items).toHaveLength(1);
-    // Should have signature but NOT id (id added by normalizeSnapshot)
     expect(result.items[0]).toStrictEqual({
       column: 5,
       file: "src/file.ts",
       line: 1,
       message: "Cannot find name 'foo'.",
       rule: "TS2304",
-      signature: "src/file.ts - TS2304: Cannot find name 'foo'.",
     });
   });
 

@@ -1,8 +1,4 @@
-import type {
-  BaselineEntry,
-  DiagnosticItem,
-  NormalizedSnapshot,
-} from "./types";
+import type { BaselineEntry, Finding, Snapshot } from "./types";
 
 function createInitialResult() {
   return {
@@ -16,8 +12,8 @@ function createInitialResult() {
 }
 
 function createComparisonResult(
-  newItems: DiagnosticItem[],
-  removedItems: DiagnosticItem[],
+  newItems: Finding[],
+  removedItems: Finding[],
   hasRelocation: boolean,
 ) {
   return {
@@ -31,21 +27,21 @@ function createComparisonResult(
 }
 
 /**
- * Creates a keyed lookup for diagnostic items.
+ * Creates a keyed lookup for findings.
  *
  * Assumes item IDs are unique within a comparison.
  * Duplicate IDs will be overwritten (last item wins).
  */
-function indexItems(items: DiagnosticItem[] = []) {
+function indexItems(items: Finding[] = []) {
   return new Map(items.map((item) => [item.id, item]));
 }
 
-function idsOf(items: Map<string, DiagnosticItem>) {
+function idsOf(items: Map<string, Finding>) {
   return new Set(items.keys());
 }
 
-function pickByIds(items: Map<string, DiagnosticItem>, ids: Set<string>) {
-  const result: DiagnosticItem[] = [];
+function pickByIds(items: Map<string, Finding>, ids: Set<string>) {
+  const result: Finding[] = [];
 
   for (const id of ids) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- we know the id exists in items
@@ -58,8 +54,8 @@ function pickByIds(items: Map<string, DiagnosticItem>, ids: Set<string>) {
 }
 
 function hasRelocation(
-  current: Map<string, DiagnosticItem>,
-  baseline: Map<string, DiagnosticItem>,
+  current: Map<string, Finding>,
+  baseline: Map<string, Finding>,
 ) {
   for (const [id, currentItem] of current) {
     const baselineItem = baseline.get(id);
@@ -77,7 +73,7 @@ function hasRelocation(
   return false;
 }
 
-function compareItems(snapshot: NormalizedSnapshot, baseline: BaselineEntry) {
+function compareItems(snapshot: Snapshot, baseline: BaselineEntry) {
   const currentItems = indexItems(snapshot.items);
   const baselineItems = indexItems(baseline.items);
   const currentIds = idsOf(currentItems);
@@ -104,10 +100,7 @@ function compareItems(snapshot: NormalizedSnapshot, baseline: BaselineEntry) {
  *
  * @returns Comparison result.
  */
-export function compareSnapshots(
-  snapshot: NormalizedSnapshot,
-  baseline?: BaselineEntry,
-) {
+export function compareSnapshots(snapshot: Snapshot, baseline?: BaselineEntry) {
   if (!baseline) {
     return createInitialResult();
   }

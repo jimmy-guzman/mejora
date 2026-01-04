@@ -53,7 +53,7 @@ describe("ESLintCheckRunner", () => {
     });
   });
 
-  it("should extract violations as DiagnosticItemInput objects (no IDs)", async () => {
+  it("should extract violations as FindingInput object (no IDs)", async () => {
     mockLintFiles.mockResolvedValue([
       {
         filePath: "/test/project/src/file.js",
@@ -88,7 +88,6 @@ describe("ESLintCheckRunner", () => {
       line: 1,
       message: "'foo' is not defined.",
       rule: "no-undef",
-      signature: "src/file.js - no-undef: 'foo' is not defined.",
     });
     expect(result.items[1]).toStrictEqual({
       column: 10,
@@ -96,7 +95,6 @@ describe("ESLintCheckRunner", () => {
       line: 2,
       message: "Unexpected console statement.",
       rule: "no-console",
-      signature: "src/file.js - no-console: Unexpected console statement.",
     });
   });
 

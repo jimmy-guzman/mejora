@@ -4,7 +4,7 @@ import type { BaselineManager as BaselineManagerType } from "./baseline";
 import type { CheckRegistry as CheckRegistryType } from "./check-registry";
 import type { ESLintCheckRunner } from "./checks/eslint";
 import type { TypeScriptCheckRunner } from "./checks/typescript";
-import type { Baseline, BaselineEntry, Snapshot } from "./types";
+import type { Baseline, BaselineEntry, RawSnapshot } from "./types";
 
 import { logger } from "./utils/logger";
 
@@ -51,7 +51,7 @@ vi.mock("./utils/logger");
 
 vi.mock("./utils/snapshot", () => {
   return {
-    normalizeSnapshot: vi.fn((snapshot: Snapshot) => {
+    normalizeSnapshot: vi.fn((snapshot: RawSnapshot) => {
       return {
         ...snapshot,
         items: snapshot.items.map((item) => {

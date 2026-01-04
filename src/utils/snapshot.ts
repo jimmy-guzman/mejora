@@ -1,24 +1,23 @@
-import type { DiagnosticItem, Snapshot } from "@/types";
+import type { Finding, RawSnapshot } from "@/types";
 
 import { assignStableIds, sortByLocation } from "@/checks/utils";
 
 /**
  * Normalize a snapshot by ensuring all items have stable IDs.
  *
- * Converts DiagnosticItemInput (without IDs) to DiagnosticItem (with IDs)
+ * Converts FindingInput (w/o IDs & w/ signature) to Finding (w/ IDs)
  * using the stable ID assignment algorithm.
  *
  * @param snapshot - Snapshot with items that may lack IDs
  *
  * @returns Snapshot with all items having stable IDs
  */
-export function normalizeSnapshot(snapshot: Snapshot): Omit<
-  Snapshot,
+export function normalizeSnapshot(snapshot: RawSnapshot): Omit<
+  RawSnapshot,
   "items"
 > & {
-  items: DiagnosticItem[];
+  items: Finding[];
 } {
-  // Convert inputs to raw items with signatures
   const rawItems = snapshot.items.map((item) => {
     return {
       column: item.column,
@@ -30,7 +29,6 @@ export function normalizeSnapshot(snapshot: Snapshot): Omit<
     };
   });
 
-  // Assign stable IDs using the grouping/sorting algorithm
   const itemsWithIds = assignStableIds(rawItems);
 
   const sortedItems = itemsWithIds.toSorted(sortByLocation);

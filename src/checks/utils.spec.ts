@@ -32,7 +32,7 @@ describe("assignStableIds", () => {
     expect(result[1]?.id).toBe(hash(`${signature}:1`));
   });
 
-  it("should preserve duplicate diagnostics with identical signatures", () => {
+  it("should preserve duplicate findings with identical signatures", () => {
     const signature = "file - rule: - message" as const;
 
     const items = [
@@ -119,7 +119,7 @@ describe("assignStableIds", () => {
     expect(result[1]?.id).toBe(hash(`${signature}:1`));
   });
 
-  it("should return DiagnosticItem objects", () => {
+  it("should return Finding objects", () => {
     const signature = "file - rule: - message" as const;
 
     const items = [

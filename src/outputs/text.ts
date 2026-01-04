@@ -1,6 +1,6 @@
 import { basename, dirname } from "pathe";
 
-import type { CheckResult, DiagnosticItem, RunResult } from "@/types";
+import type { CheckResult, Finding, RunResult } from "@/types";
 
 import {
   blue,
@@ -52,7 +52,7 @@ function formatLocation(file: string, line: number, column: number) {
   return `${dirPart}${namePart}${posPart}`;
 }
 
-function formatItem(item: DiagnosticItem, kind: Kind) {
+function formatItem(item: Finding, kind: Kind) {
   const arrow = formatItemArrow(kind);
   const location = formatLocation(item.file, item.line, item.column);
   const code = dim(item.rule);
@@ -60,7 +60,7 @@ function formatItem(item: DiagnosticItem, kind: Kind) {
   return [`${arrow} ${location}  ${code}`, item.message];
 }
 
-function formatItemList(items: DiagnosticItem[], kind: Kind) {
+function formatItemList(items: Finding[], kind: Kind) {
   const lines: string[] = [];
 
   const itemsToShow = items.slice(0, MAX_ITEMS_TO_DISPLAY);

@@ -5,4 +5,4 @@ export {
   typescriptCheck,
 } from "./checks/typescript";
 export { defineConfig } from "./config";
-export type { Config, DiagnosticItemInput as DiagnosticItem } from "./types";
+export type { Config, FindingInput } from "./types";
