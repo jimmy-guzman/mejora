@@ -24,14 +24,9 @@ function createMarkdownLink(text: string, href: string) {
   return `[${text}](${href})`;
 }
 
-function formatItemLine(
-  item: DiagnosticItem,
-  cwd: string,
-  baselineDir: string,
-) {
-  const displayPath = relative(cwd, item.file);
+function formatItemLine(item: DiagnosticItem, baselineDir: string) {
   const href = createHref(item.file, baselineDir, item.line);
-  const linkText = item.line ? `Line ${item.line}` : displayPath;
+  const linkText = item.line ? `Line ${item.line}` : item.file;
   const link = createMarkdownLink(linkText, href);
 
   const description = `${item.rule}: ${escapeHtml(item.message)}`;
@@ -70,21 +65,19 @@ function formatFileSection(
     filePath: string;
     items: DiagnosticItem[];
   },
-  cwd: string,
   baselineDir: string,
 ) {
   if (fileGroup.filePath === UNPARSABLE) {
     return formatUnparsableSection(fileGroup.items);
   }
 
-  const displayPath = relative(cwd, fileGroup.filePath);
   const href = createHref(fileGroup.filePath, baselineDir);
-  const link = createMarkdownLink(displayPath, href);
+  const link = createMarkdownLink(fileGroup.filePath, href);
 
   const lines = [`\n### ${link} (${fileGroup.items.length})\n`];
 
   for (const item of fileGroup.items) {
-    lines.push(formatItemLine(item, cwd, baselineDir));
+    lines.push(formatItemLine(item, baselineDir));
   }
 
   lines.push("");
@@ -95,7 +88,6 @@ function formatFileSection(
 function formatCheckSection(
   checkId: string,
   items: DiagnosticItem[],
-  cwd: string,
   baselineDir: string,
 ) {
   const issueCount = items.length;
@@ -112,7 +104,7 @@ function formatCheckSection(
   const fileGroups = groupItemsByFile(items);
 
   for (const fileGroup of fileGroups) {
-    lines.push(formatFileSection(fileGroup, cwd, baselineDir));
+    lines.push(formatFileSection(fileGroup, baselineDir));
   }
 
   return lines.join("\n");
@@ -135,8 +127,6 @@ export function generateMarkdownReport(
   baseline: Baseline,
   baselineDir: string,
 ) {
-  const cwd = process.cwd();
-
   const sections = [
     "<!-- prettier-ignore-start -->\n",
     "# Mejora Baseline\n",
@@ -144,7 +134,7 @@ export function generateMarkdownReport(
   ];
 
   for (const [checkId, { items = [] }] of Object.entries(baseline.checks)) {
-    sections.push(formatCheckSection(checkId, items, cwd, baselineDir));
+    sections.push(formatCheckSection(checkId, items, baselineDir));
   }
 
   sections.push("\n<!-- prettier-ignore-end -->");
