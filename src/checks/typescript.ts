@@ -6,6 +6,8 @@ import type { TypeScriptCheckConfig } from "@/types";
 import { assignStableIds, sortByLocation } from "@/checks/utils";
 import { createCacheKey, getCacheDir } from "@/utils/cache";
 
+const GLOBAL_FILE = "(global)";
+
 export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
   const {
     createIncrementalCompilerHost,
@@ -74,10 +76,8 @@ export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
 
   const realWriteFile = host.writeFile.bind(host);
 
-  const resolvedBuildInfoPath = resolve(tsBuildInfoFile);
-
   host.writeFile = (fileName, content, ...rest) => {
-    if (resolve(fileName) !== resolvedBuildInfoPath) return;
+    if (resolve(fileName) !== tsBuildInfoFile) return;
 
     realWriteFile(fileName, content, ...rest);
   };
@@ -129,12 +129,11 @@ export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
         signature,
       });
     } else {
-      const file = "(global)";
-      const signature = `${file} - ${tsCode}: ${message}` as const;
+      const signature = `${GLOBAL_FILE} - ${tsCode}: ${message}` as const;
 
       rawItems.push({
         column: 0,
-        file,
+        file: GLOBAL_FILE,
         line: 0,
         message,
         rule: tsCode,
