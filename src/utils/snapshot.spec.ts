@@ -10,7 +10,6 @@ describe("normalizeSnapshot", () => {
           line: 10,
           message: "Found TODO",
           rule: "TODO",
-          signature: "src/foo.ts - TODO: Found TODO" as const,
         },
         {
           column: 3,
@@ -18,7 +17,6 @@ describe("normalizeSnapshot", () => {
           line: 20,
           message: "Found FIXME",
           rule: "FIXME",
-          signature: "src/bar.ts - FIXME: Found FIXME" as const,
         },
       ],
       type: "items" as const,
@@ -58,7 +56,6 @@ describe("normalizeSnapshot", () => {
           line: 1,
           message: "error",
           rule: "rule1",
-          signature: "zebra.ts - rule1: error" as const,
         },
         {
           column: 1,
@@ -66,7 +63,6 @@ describe("normalizeSnapshot", () => {
           line: 2,
           message: "error",
           rule: "rule2",
-          signature: "apple.ts - rule2: error" as const,
         },
         {
           column: 5,
@@ -74,7 +70,6 @@ describe("normalizeSnapshot", () => {
           line: 1,
           message: "error",
           rule: "rule3",
-          signature: "apple.ts - rule3: error" as const,
         },
         {
           column: 1,
@@ -82,7 +77,6 @@ describe("normalizeSnapshot", () => {
           line: 1,
           message: "error",
           rule: "rule4",
-          signature: "apple.ts - rule4: error" as const,
         },
       ],
       type: "items" as const,
@@ -129,7 +123,7 @@ describe("normalizeSnapshot", () => {
     });
   });
 
-  it("should generate stable IDs for items with same signature", () => {
+  it("should generate stable IDs for items with same rule + message (across different files)", () => {
     const snapshot = {
       items: [
         {
@@ -138,7 +132,6 @@ describe("normalizeSnapshot", () => {
           line: 10,
           message: "Found TODO",
           rule: "TODO",
-          signature: "src/a.ts - TODO: Found TODO" as const,
         },
         {
           column: 3,
@@ -146,7 +139,6 @@ describe("normalizeSnapshot", () => {
           line: 20,
           message: "Found TODO",
           rule: "TODO",
-          signature: "src/b.ts - TODO: Found TODO" as const,
         },
         {
           column: 1,
@@ -154,7 +146,6 @@ describe("normalizeSnapshot", () => {
           line: 5,
           message: "Found TODO",
           rule: "TODO",
-          signature: "src/c.ts - TODO: Found TODO" as const,
         },
       ],
       type: "items" as const,
@@ -163,14 +154,6 @@ describe("normalizeSnapshot", () => {
     const result1 = normalizeSnapshot(snapshot);
     const result2 = normalizeSnapshot(snapshot);
 
-    expect(result1).toMatchObject({
-      items: expect.arrayContaining([
-        expect.objectContaining({ id: expect.any(String) }),
-      ]),
-      type: "items",
-    });
-
-    // still need a real assertion for stability/uniqueness (matchers can’t prove this alone)
     const ids1 = result1.items.map((item) => item.id);
     const ids2 = result2.items.map((item) => item.id);
 
@@ -186,7 +169,7 @@ describe("normalizeSnapshot", () => {
 
     const result = normalizeSnapshot(snapshot);
 
-    expect(result).toMatchObject({
+    expect(result).toStrictEqual({
       items: [],
       type: "items",
     });
@@ -201,7 +184,6 @@ describe("normalizeSnapshot", () => {
           line: 5,
           message: "Test error",
           rule: "test-rule",
-          signature: "test.ts - test-rule: Test error" as const,
         },
       ],
       type: "items" as const,
@@ -233,7 +215,6 @@ describe("normalizeSnapshot", () => {
           line: 1,
           message: "error A",
           rule: "rule1",
-          signature: "file1.ts - rule1: error A" as const,
         },
         {
           column: 2,
@@ -241,7 +222,6 @@ describe("normalizeSnapshot", () => {
           line: 2,
           message: "error A",
           rule: "rule1",
-          signature: "file2.ts - rule1: error A" as const,
         },
         {
           column: 3,
@@ -249,20 +229,12 @@ describe("normalizeSnapshot", () => {
           line: 3,
           message: "error A",
           rule: "rule1",
-          signature: "file3.ts - rule1: error A" as const,
         },
       ],
       type: "items" as const,
     };
 
     const result = normalizeSnapshot(snapshot);
-
-    expect(result).toMatchObject({
-      items: expect.arrayContaining([
-        expect.objectContaining({ id: expect.any(String) }),
-      ]),
-      type: "items",
-    });
 
     const ids = result.items.map((item) => item.id);
 
@@ -272,22 +244,8 @@ describe("normalizeSnapshot", () => {
   it("should maintain stable IDs across multiple calls with same input", () => {
     const snapshot = {
       items: [
-        {
-          column: 1,
-          file: "a.ts",
-          line: 1,
-          message: "error",
-          rule: "rule1",
-          signature: "a.ts - rule1: error" as const,
-        },
-        {
-          column: 2,
-          file: "b.ts",
-          line: 2,
-          message: "error",
-          rule: "rule2",
-          signature: "b.ts - rule2: error" as const,
-        },
+        { column: 1, file: "a.ts", line: 1, message: "error", rule: "rule1" },
+        { column: 2, file: "b.ts", line: 2, message: "error", rule: "rule2" },
       ],
       type: "items" as const,
     };
@@ -295,14 +253,6 @@ describe("normalizeSnapshot", () => {
     const result1 = normalizeSnapshot(snapshot);
     const result2 = normalizeSnapshot(snapshot);
     const result3 = normalizeSnapshot(snapshot);
-
-    expect(result1).toMatchObject({
-      items: [
-        expect.objectContaining({ id: expect.any(String) }),
-        expect.objectContaining({ id: expect.any(String) }),
-      ],
-      type: "items",
-    });
 
     expect(result1.items.map((i) => i.id)).toStrictEqual(
       result2.items.map((i) => i.id),
@@ -321,7 +271,6 @@ describe("normalizeSnapshot", () => {
           line: 1,
           message: "error",
           rule: "rule1",
-          signature: "test.ts - rule1: error" as const,
         },
       ],
       type: "items" as const,
@@ -335,7 +284,7 @@ describe("normalizeSnapshot", () => {
     });
   });
 
-  it("should handle items with identical signatures at different locations", () => {
+  it("should handle items with identical rule + message at different locations", () => {
     const snapshot = {
       items: [
         {
@@ -344,7 +293,6 @@ describe("normalizeSnapshot", () => {
           line: 10,
           message: "Same error",
           rule: "rule1",
-          signature: "file.ts - rule1: Same error" as const,
         },
         {
           column: 10,
@@ -352,7 +300,6 @@ describe("normalizeSnapshot", () => {
           line: 20,
           message: "Same error",
           rule: "rule1",
-          signature: "file.ts - rule1: Same error" as const,
         },
         {
           column: 1,
@@ -360,7 +307,6 @@ describe("normalizeSnapshot", () => {
           line: 5,
           message: "Same error",
           rule: "rule1",
-          signature: "file.ts - rule1: Same error" as const,
         },
       ],
       type: "items" as const,
@@ -368,7 +314,6 @@ describe("normalizeSnapshot", () => {
 
     const result = normalizeSnapshot(snapshot);
 
-    // order matters here -> match the ordered array once
     expect(result).toMatchObject({
       items: [
         expect.objectContaining({ id: expect.any(String), line: 5 }),
