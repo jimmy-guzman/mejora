@@ -75,9 +75,9 @@ describe("MejoraRunner", () => {
     vi.clearAllMocks();
     mockLoad.mockResolvedValue(null);
     mockSave.mockResolvedValue(undefined);
+
     vi.mocked(mkdir).mockResolvedValue(undefined);
 
-    // Create mock runners
     mockEslintRunner = {
       run: vi.fn().mockResolvedValue({ items: [], type: "items" }),
       setup: vi.fn().mockResolvedValue(undefined),
@@ -92,7 +92,6 @@ describe("MejoraRunner", () => {
       validate: vi.fn().mockResolvedValue(undefined),
     };
 
-    // Create mock registry
     mockRegistry = {
       get: vi.fn((type: string) => {
         if (type === "eslint") return mockEslintRunner;
@@ -380,6 +379,26 @@ describe("MejoraRunner", () => {
     );
   });
 
+  it("should return exit code 2 on validation error", async () => {
+    const config = {
+      checks: { check1: { files: ["*.js"], type: "eslint" as const } },
+    };
+
+    vi.mocked(mockRegistry.validateDependencies).mockRejectedValue(
+      new Error("ESLint not installed"),
+    );
+
+    const runner = new MejoraRunner(mockRegistry);
+    const logSpy = vi.spyOn(logger, "error");
+    const result = await runner.run(config);
+
+    expect(result.exitCode).toBe(2);
+    expect(logSpy).toHaveBeenCalledWith(
+      "Setup failed:",
+      new Error("ESLint not installed"),
+    );
+  });
+
   it("should include results for each check", async () => {
     const config = {
       checks: { check1: { files: ["*.js"], type: "eslint" as const } },
@@ -416,7 +435,6 @@ describe("MejoraRunner", () => {
 
     expect(result.results).toHaveLength(1);
     expect(result.results[0]?.checkId).toBe("check1");
-    // Snapshot will have been normalized, so check for structure
     expect(result.results[0]?.snapshot.type).toBe("items");
     expect(result.results[0]?.snapshot.items).toHaveLength(1);
   });
@@ -530,6 +548,61 @@ describe("MejoraRunner", () => {
     );
   });
 
+  it("should save baseline on initial run even with regressions", async () => {
+    const config = {
+      checks: { check1: { files: ["*.js"], type: "eslint" as const } },
+    };
+
+    mockLoad.mockResolvedValue(null);
+
+    const item1 = {
+      column: 1,
+      file: "file1.js",
+      line: 1,
+      message: "error",
+      rule: "no-unused-vars",
+      signature: "file1.js - no-unused-vars: error" as const,
+    };
+
+    const item2 = {
+      column: 2,
+      file: "file2.js",
+      line: 2,
+      message: "error",
+      rule: "no-undef",
+      signature: "file2.js - no-undef: error" as const,
+    };
+
+    vi.mocked(mockEslintRunner.run).mockResolvedValue({
+      items: [item1, item2],
+      type: "items",
+    });
+
+    vi.mocked(compareSnapshots).mockReturnValue({
+      hasImprovement: false,
+      hasRegression: true,
+      hasRelocation: false,
+      isInitial: true,
+      newItems: [
+        { ...item1, id: "mocked-id-1" },
+        { ...item2, id: "mocked-id-2" },
+      ],
+      removedItems: [],
+    });
+
+    const runner = new MejoraRunner(mockRegistry);
+    const result = await runner.run(config);
+
+    expect(mockSave).toHaveBeenCalledWith(
+      expect.objectContaining({
+        checks: expect.any(Object),
+        version: 2,
+      }),
+      undefined,
+    );
+    expect(result.exitCode).toBe(1);
+  });
+
   it("should throw error for invalid regex pattern in --only", async () => {
     const config = {
       checks: {
@@ -556,6 +629,67 @@ describe("MejoraRunner", () => {
     await expect(
       runner.run(config, { skip: "(unclosed" }),
     ).rejects.toThrowError('Invalid regex pattern for --skip: "(unclosed"');
+  });
+
+  it("should accept valid regex pattern in --only", async () => {
+    const config = {
+      checks: {
+        "eslint-main": { files: ["src/**/*.js"], type: "eslint" as const },
+        "eslint-test": { files: ["test/**/*.js"], type: "eslint" as const },
+        "typescript-main": {
+          tsconfig: "tsconfig.json",
+          type: "typescript" as const,
+        },
+      },
+    };
+
+    vi.mocked(compareSnapshots).mockReturnValue({
+      hasImprovement: false,
+      hasRegression: false,
+      hasRelocation: false,
+      isInitial: true,
+      newItems: [],
+      removedItems: [],
+    });
+
+    const runner = new MejoraRunner(mockRegistry);
+
+    await runner.run(config, { only: "^eslint-.*" });
+
+    expect(mockEslintRunner.run).toHaveBeenCalledTimes(2);
+    expect(mockTypescriptRunner.run).not.toHaveBeenCalled();
+  });
+
+  it("should accept valid regex pattern in --skip", async () => {
+    const config = {
+      checks: {
+        "eslint-main": { files: ["src/**/*.js"], type: "eslint" as const },
+        "typescript-main": {
+          tsconfig: "tsconfig.json",
+          type: "typescript" as const,
+        },
+        "typescript-test": {
+          tsconfig: "tsconfig.test.json",
+          type: "typescript" as const,
+        },
+      },
+    };
+
+    vi.mocked(compareSnapshots).mockReturnValue({
+      hasImprovement: false,
+      hasRegression: false,
+      hasRelocation: false,
+      isInitial: true,
+      newItems: [],
+      removedItems: [],
+    });
+
+    const runner = new MejoraRunner(mockRegistry);
+
+    await runner.run(config, { skip: "typescript-.*" });
+
+    expect(mockEslintRunner.run).toHaveBeenCalledOnce();
+    expect(mockTypescriptRunner.run).not.toHaveBeenCalled();
   });
 
   it("should not save baseline when no changes detected", async () => {

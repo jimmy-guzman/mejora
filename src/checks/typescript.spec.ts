@@ -26,12 +26,19 @@ vi.mock("typescript", () => {
   };
 });
 
+const mockCreateCacheKey = vi.fn().mockReturnValue("abc123def456");
+const mockGetCacheDir = vi.fn(() => "node_modules/.cache/mejora/typescript");
+
 vi.mock("@/utils/cache", () => {
   return {
-    createCacheKey: vi.fn().mockReturnValue("abc123def456"),
-    getCacheDir: vi.fn(() => "node_modules/.cache/mejora/typescript"),
+    createCacheKey: mockCreateCacheKey,
+    getCacheDir: mockGetCacheDir,
   };
 });
+
+const mockMkdir = vi.fn();
+
+vi.mock("node:fs/promises", () => ({ mkdir: mockMkdir }));
 
 const { typescriptCheck, TypeScriptCheckRunner } = await import("./typescript");
 
@@ -62,6 +69,10 @@ describe("TypeScriptCheckRunner", () => {
     mockCreateIncrementalProgram.mockReturnValue({
       emit: vi.fn(),
       getProgram: mockGetProgram,
+    });
+
+    mockFlattenDiagnosticMessageText.mockImplementation((msg: unknown) => {
+      return typeof msg === "string" ? msg : String(msg);
     });
   });
 
@@ -259,8 +270,6 @@ describe("TypeScriptCheckRunner", () => {
     const runner = new TypeScriptCheckRunner();
     const result = await runner.run({ tsconfig: "tsconfig.json" });
 
-    // Items are in TypeScript's order, not sorted
-    // Sorting happens in normalizeSnapshot()
     expect(result.items[0]?.file).toBe("zebra.ts");
     expect(result.items[1]?.file).toBe("apple.ts");
   });
@@ -578,6 +587,39 @@ describe("TypeScriptCheckRunner", () => {
     expect(realWriteFile).toHaveBeenCalledExactlyOnceWith(
       "/test/project/node_modules/.cache/mejora/typescript/abc123def456.tsbuildinfo",
       "testing",
+    );
+  });
+
+  it("should create cacheDir recursively", async () => {
+    const runner = new TypeScriptCheckRunner();
+
+    await runner.setup();
+
+    expect(mockGetCacheDir).toHaveBeenCalledWith("typescript", "/test/project");
+    expect(mockMkdir).toHaveBeenCalledWith(
+      "node_modules/.cache/mejora/typescript",
+      { recursive: true },
+    );
+  });
+
+  it("should pass when typescript import succeeds", async () => {
+    const runner = new TypeScriptCheckRunner();
+
+    await expect(runner.validate()).resolves.toBeUndefined();
+  });
+
+  it("should throw helpful error when typescript import fails", async () => {
+    vi.resetModules();
+
+    vi.doMock("typescript", () => {
+      throw new Error("nope");
+    });
+
+    const { TypeScriptCheckRunner: FreshRunner } = await import("./typescript");
+    const runner = new FreshRunner();
+
+    await expect(runner.validate()).rejects.toThrowError(
+      'typescript check requires "typescript" package to be installed. Run: npm install typescript',
     );
   });
 });

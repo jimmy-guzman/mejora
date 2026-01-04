@@ -69,6 +69,7 @@ export class CheckRegistry {
     if (this.runners.has(runner.type)) {
       throw new Error(`Check runner already registered: ${runner.type}`);
     }
+
     this.runners.set(runner.type, runner);
   }
 

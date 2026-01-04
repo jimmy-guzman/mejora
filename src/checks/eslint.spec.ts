@@ -10,12 +10,19 @@ vi.mock("eslint", () => {
   };
 });
 
+const mockCreateCacheKey = vi.fn(() => "abc123def456");
+const mockGetCacheDir = vi.fn(() => "node_modules/.cache/mejora/eslint");
+
 vi.mock("@/utils/cache", () => {
   return {
-    createCacheKey: vi.fn(() => "abc123def456"),
-    getCacheDir: vi.fn(() => "node_modules/.cache/mejora/eslint"),
+    createCacheKey: mockCreateCacheKey,
+    getCacheDir: mockGetCacheDir,
   };
 });
+
+const mockMkdir = vi.fn();
+
+vi.mock("node:fs/promises", () => ({ mkdir: mockMkdir }));
 
 const { eslintCheck, ESLintCheckRunner } = await import("./eslint");
 const { ESLint } = await import("eslint");
@@ -51,6 +58,29 @@ describe("ESLintCheckRunner", () => {
       items: [],
       type: "items",
     });
+  });
+
+  it("should configure cacheLocation using cacheDir + cacheKey", async () => {
+    mockLintFiles.mockResolvedValue([]);
+
+    vi.spyOn(process, "cwd").mockReturnValue("/test/project");
+
+    const runner = new ESLintCheckRunner();
+
+    const config = { files: ["*.js"] };
+
+    await runner.run(config);
+
+    expect(mockGetCacheDir).toHaveBeenCalledWith("eslint", "/test/project");
+    expect(mockCreateCacheKey).toHaveBeenCalledWith(config);
+
+    expect(ESLint).toHaveBeenCalledWith(
+      expect.objectContaining({
+        cache: true,
+        cacheLocation:
+          "node_modules/.cache/mejora/eslint/abc123def456.eslintcache",
+      }),
+    );
   });
 
   it("should extract violations as FindingInput object (no IDs)", async () => {
@@ -187,6 +217,39 @@ describe("ESLintCheckRunner", () => {
       expect.objectContaining({
         concurrency: 4,
       }),
+    );
+  });
+
+  it("should create cacheDir recursively", async () => {
+    vi.spyOn(process, "cwd").mockReturnValue("/test/project");
+
+    const runner = new ESLintCheckRunner();
+
+    await runner.setup();
+
+    expect(mockGetCacheDir).toHaveBeenCalledWith("eslint", "/test/project");
+    expect(mockMkdir).toHaveBeenCalledWith(
+      "node_modules/.cache/mejora/eslint",
+      { recursive: true },
+    );
+  });
+
+  it("should pass when eslint import succeeds", async () => {
+    const runner = new ESLintCheckRunner();
+
+    await expect(runner.validate()).resolves.toBeUndefined();
+  });
+
+  it("should throw helpful error when eslint import fails", async () => {
+    vi.doMock("eslint", () => {
+      throw new Error("nope");
+    });
+
+    const { ESLintCheckRunner: FreshRunner } = await import("./eslint");
+    const runner = new FreshRunner();
+
+    await expect(runner.validate()).rejects.toThrowError(
+      'eslint check requires "eslint" package to be installed. Run: npm install eslint',
     );
   });
 });
