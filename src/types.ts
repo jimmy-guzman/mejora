@@ -68,6 +68,15 @@ export interface Baseline {
  */
 export interface ESLintCheckConfig {
   /**
+   * Concurrency setting for ESLint.
+   *
+   * @see https://eslint.org/blog/2025/08/multithread-linting/#cli-multithreading-support
+   *
+   * @default "auto"
+   */
+  concurrency?: "auto" | "off" | number;
+
+  /**
    * Glob patterns for files to lint.
    *
    * Passed directly to ESLint's `lintFiles()` method.

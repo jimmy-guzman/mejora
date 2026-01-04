@@ -16,7 +16,7 @@ export async function runEslintCheck(config: ESLintCheckConfig) {
   const eslint = new ESLint({
     cache: true,
     cacheLocation: `${cacheDir}/${cacheKey}.eslintcache`,
-    concurrency: "auto",
+    concurrency: config.concurrency ?? "auto",
     overrideConfig: config.overrides,
   });
 
