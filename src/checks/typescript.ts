@@ -74,10 +74,10 @@ export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
 
   const realWriteFile = host.writeFile.bind(host);
 
-  host.writeFile = (fileName, content, ...rest) => {
-    const out = resolve(fileName);
+  const resolvedBuildInfoPath = resolve(tsBuildInfoFile);
 
-    if (out !== resolve(tsBuildInfoFile)) return;
+  host.writeFile = (fileName, content, ...rest) => {
+    if (resolve(fileName) !== resolvedBuildInfoPath) return;
 
     realWriteFile(fileName, content, ...rest);
   };
@@ -95,15 +95,15 @@ export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
 
   incrementalProgram.emit();
 
+  const workspaceRoot = resolve(cwd);
+  const workspacePrefix = workspaceRoot + sep;
+
   const workspaceDiagnostics = diagnostics.filter((diagnostic) => {
     if (!diagnostic.file) return true;
 
     const filePath = resolve(diagnostic.file.fileName);
-    const workspaceRoot = resolve(cwd);
 
-    return (
-      filePath === workspaceRoot || filePath.startsWith(workspaceRoot + sep)
-    );
+    return filePath === workspaceRoot || filePath.startsWith(workspacePrefix);
   });
 
   const rawItems: RawDiagnosticItem[] = [];
