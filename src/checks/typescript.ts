@@ -6,6 +6,8 @@ import type { TypeScriptCheckConfig } from "@/types";
 import { assignStableIds, sortByLocation } from "@/checks/utils";
 import { createCacheKey, getCacheDir } from "@/utils/cache";
 
+const GLOBAL_FILE = "(global)";
+
 export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
   const {
     createIncrementalCompilerHost,
@@ -75,9 +77,7 @@ export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
   const realWriteFile = host.writeFile.bind(host);
 
   host.writeFile = (fileName, content, ...rest) => {
-    const out = resolve(fileName);
-
-    if (out !== resolve(tsBuildInfoFile)) return;
+    if (resolve(fileName) !== tsBuildInfoFile) return;
 
     realWriteFile(fileName, content, ...rest);
   };
@@ -95,15 +95,15 @@ export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
 
   incrementalProgram.emit();
 
+  const workspaceRoot = resolve(cwd);
+  const workspacePrefix = workspaceRoot + sep;
+
   const workspaceDiagnostics = diagnostics.filter((diagnostic) => {
     if (!diagnostic.file) return true;
 
     const filePath = resolve(diagnostic.file.fileName);
-    const workspaceRoot = resolve(cwd);
 
-    return (
-      filePath === workspaceRoot || filePath.startsWith(workspaceRoot + sep)
-    );
+    return filePath === workspaceRoot || filePath.startsWith(workspacePrefix);
   });
 
   const rawItems: RawDiagnosticItem[] = [];
@@ -129,12 +129,11 @@ export async function runTypescriptCheck(config: TypeScriptCheckConfig) {
         signature,
       });
     } else {
-      const file = "(global)";
-      const signature = `${file} - ${tsCode}: ${message}` as const;
+      const signature = `${GLOBAL_FILE} - ${tsCode}: ${message}` as const;
 
       rawItems.push({
         column: 0,
-        file,
+        file: GLOBAL_FILE,
         line: 0,
         message,
         rule: tsCode,
