@@ -62,16 +62,21 @@ export class RegexCheckRunner implements CheckRunner {
 
             for (const { message, pattern, regex, rule } of compiledPatterns) {
               regex.lastIndex = 0;
+
               let match: null | RegExpExecArray;
 
               while ((match = regex.exec(line)) !== null) {
                 const column = match.index + 1;
+                const messageText =
+                  typeof message === "function"
+                    ? message(match)
+                    : (message ?? `Pattern matched: ${match[0]}`);
 
                 items.push({
                   column,
                   file: filePath,
                   line: lineNumber,
-                  message: message ?? `Pattern matched: ${match[0]}`,
+                  message: messageText,
                   rule: rule ?? pattern.source,
                 });
               }
@@ -90,6 +95,7 @@ export class RegexCheckRunner implements CheckRunner {
       type: "items" as const,
     };
   }
+
   async validate() {
     try {
       await import("tinyglobby");

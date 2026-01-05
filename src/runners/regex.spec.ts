@@ -1,10 +1,10 @@
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { join, relative } from "node:path";
 
-import { regexCheck, RegexCheckRunner } from "./regex";
+import { regexCheck, regexRunner } from "./regex";
 
 describe("regexCheck", () => {
-  it("should return config with type 'eslint'", () => {
+  it("should return config with type 'regex'", () => {
     const testDir = join(process.cwd(), ".test-regex");
 
     const config = {
@@ -25,32 +25,29 @@ describe("regexCheck", () => {
 
     const result = regexCheck(config);
 
-    expect(result).toMatchInlineSnapshot(String.raw`
-      {
-        "files": [
-          ".test-regex/**/*.ts",
-        ],
-        "patterns": [
-          {
-            "message": "TODO comment found",
-            "pattern": /\\/\\/\\s\*TODO:/gi,
-            "rule": "no-todos",
-          },
-          {
-            "message": "console.log statement",
-            "pattern": /console\\\.log/g,
-            "rule": "no-console",
-          },
-        ],
-        "type": "regex",
-      }
-    `);
+    expect(result.type).toBe("regex");
+    expect(result.files).toStrictEqual([".test-regex/**/*.ts"]);
+    expect(result.patterns).toHaveLength(2);
+
+    expect(result.patterns[0]).toMatchObject({
+      message: "TODO comment found",
+      rule: "no-todos",
+    });
+    expect(result.patterns[0]?.pattern.source).toBe(String.raw`\/\/\s*TODO:`);
+    expect(result.patterns[0]?.pattern.flags).toBe("gi");
+
+    expect(result.patterns[1]).toMatchObject({
+      message: "console.log statement",
+      rule: "no-console",
+    });
+    expect(result.patterns[1]?.pattern.source).toBe(String.raw`console\.log`);
+    expect(result.patterns[1]?.pattern.flags).toBe("g");
   });
 });
 
 describe("RegexCheckRunner", () => {
   const testDir = join(process.cwd(), ".test-regex");
-  const runner = new RegexCheckRunner();
+  const runner = regexRunner();
 
   beforeEach(async () => {
     await mkdir(testDir, { recursive: true });
@@ -279,7 +276,6 @@ const bar = 1;
   it("should skip binary files gracefully", async () => {
     const binaryFile = join(testDir, "binary.bin");
 
-    // Write some binary content
     await writeFile(binaryFile, Buffer.from([0x00, 0x01, 0x02, 0xff]));
 
     const textFile = join(testDir, "text.ts");
@@ -296,7 +292,6 @@ const bar = 1;
       ],
     });
 
-    // Should only find the TODO in the text file
     expect(result.items).toHaveLength(1);
     expect(result.items[0]?.file).toContain("text.ts");
   });
@@ -310,13 +305,12 @@ const bar = 1;
       files: [relative(process.cwd(), join(testDir, "**/*.ts"))],
       patterns: [
         {
-          pattern: /TODO/, // no 'g' flag
+          pattern: /TODO/,
           rule: "no-todos",
         },
       ],
     });
 
-    // Should find all three matches because we add the 'g' flag
     expect(result.items).toHaveLength(3);
   });
 
@@ -377,9 +371,135 @@ const bar = 1;
     }
   });
 
-  it("should pass when tinyglobby import succeeds", async () => {
-    const runner = new RegexCheckRunner();
+  it("should handle large numbers of files efficiently", async () => {
+    const fileCount = 150;
+    const createPromises = [];
 
+    for (let i = 0; i < fileCount; i++) {
+      createPromises.push(
+        writeFile(join(testDir, `file${i}.ts`), `// TODO: file ${i}`),
+      );
+    }
+
+    await Promise.all(createPromises);
+
+    const result = await runner.run({
+      files: [relative(process.cwd(), join(testDir, "**/*.ts"))],
+      patterns: [
+        {
+          pattern: /TODO/g,
+          rule: "no-todos",
+        },
+      ],
+    });
+
+    expect(result.items).toHaveLength(fileCount);
+
+    const firstBatchFile = result.items.find((item) => {
+      return item.file.includes("file0.ts");
+    });
+    const secondBatchFile = result.items.find((item) => {
+      return item.file.includes("file120.ts");
+    });
+
+    expect(firstBatchFile).toBeDefined();
+    expect(secondBatchFile).toBeDefined();
+  });
+
+  it("should support message as a callback function", async () => {
+    const testFile = join(testDir, "callback.ts");
+
+    await writeFile(
+      testFile,
+      `
+// TODO(jimmy): my task
+// TODO(alice): her task
+console.log("test");
+console.warn("warning");
+`.trim(),
+    );
+
+    const result = await runner.run({
+      files: [relative(process.cwd(), join(testDir, "**/*.ts"))],
+      patterns: [
+        {
+          message: (match) => `TODO assigned to ${match.groups?.owner}`,
+          pattern: /TODO\((?<owner>\w+)\):/g,
+          rule: "todo-with-owner",
+        },
+        {
+          message: (match) => `console.${match.groups?.method}() found`,
+          pattern: /console\.(?<method>\w+)/g,
+          rule: "no-console",
+        },
+      ],
+    });
+
+    expect(result.items).toHaveLength(4);
+
+    const jimmyTodo = result.items.find((item) =>
+      item.message.includes("jimmy"),
+    );
+    const aliceTodo = result.items.find((item) =>
+      item.message.includes("alice"),
+    );
+    const logStatement = result.items.find((item) => {
+      return item.message.includes("console.log()");
+    });
+    const warnStatement = result.items.find((item) => {
+      return item.message.includes("console.warn()");
+    });
+
+    expect(jimmyTodo).toMatchObject({
+      message: "TODO assigned to jimmy",
+      rule: "todo-with-owner",
+    });
+
+    expect(aliceTodo).toMatchObject({
+      message: "TODO assigned to alice",
+      rule: "todo-with-owner",
+    });
+
+    expect(logStatement).toMatchObject({
+      message: "console.log() found",
+      rule: "no-console",
+    });
+
+    expect(warnStatement).toMatchObject({
+      message: "console.warn() found",
+      rule: "no-console",
+    });
+  });
+
+  it("should handle callback that accesses match details", async () => {
+    const testFile = join(testDir, "match-details.ts");
+
+    await writeFile(
+      testFile,
+      'const url = "https://api.example.com/v1/users";',
+    );
+
+    const result = await runner.run({
+      files: [relative(process.cwd(), join(testDir, "**/*.ts"))],
+      patterns: [
+        {
+          message: (match) => {
+            const domain = match.groups?.domain;
+            const path = match.groups?.path;
+
+            return `URL: ${domain}${path}`;
+          },
+          pattern: /https?:\/\/(?<domain>[^/]+)(?<path>[^\s"']*)/g,
+          rule: "hardcoded-url",
+        },
+      ],
+    });
+
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0]?.message).toBe("URL: api.example.com/v1/users");
+  });
+
+  it("should pass when tinyglobby import succeeds", async () => {
     await expect(runner.validate()).resolves.toBeUndefined();
   });
 
@@ -390,8 +510,8 @@ const bar = 1;
       throw new Error("nope");
     });
 
-    const { RegexCheckRunner: FreshRunner } = await import("./regex");
-    const runner = new FreshRunner();
+    const { regexRunner: freshRunner } = await import("./regex");
+    const runner = freshRunner();
 
     await expect(runner.validate()).rejects.toThrowError(
       'regex check requires "tinyglobby" package to be installed. Run: npm install tinyglobby',

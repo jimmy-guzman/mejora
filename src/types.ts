@@ -166,8 +166,10 @@ export interface RegexPattern {
    * @example "TODO comment found"
    *
    * @example "console.log statement"
+   *
+   * @example (match) => `Found TODO at line ${match.index + 1}`
    */
-  message?: string;
+  message?: ((match: RegExpExecArray) => string) | string;
 
   /**
    * The regex pattern to match.
