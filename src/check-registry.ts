@@ -107,8 +107,8 @@ export class CheckRegistry {
     const promises: Promise<void>[] = [];
 
     for (const type of types) {
-      const method = this.get(type)[name];
-      const promise = method?.();
+      const runner = this.get(type);
+      const promise = runner[name]?.();
 
       if (promise) {
         promises.push(promise);
