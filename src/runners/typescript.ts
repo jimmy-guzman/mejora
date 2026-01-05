@@ -4,6 +4,7 @@ import type { CheckRunner } from "@/check-runner";
 import type { IssueInput, TypeScriptCheckConfig } from "@/types";
 
 import { createCacheKey, getCacheDir } from "@/utils/cache";
+import { normalizeDiagnosticMessage } from "@/utils/typescript";
 
 const GLOBAL_FILE = "(global)";
 
@@ -130,7 +131,7 @@ export class TypeScriptCheckRunner implements CheckRunner {
           column: character + 1,
           file,
           line: line + 1,
-          message,
+          message: normalizeDiagnosticMessage(message, cwd),
           rule: tsCode,
         });
       } else {
@@ -138,7 +139,7 @@ export class TypeScriptCheckRunner implements CheckRunner {
           column: 0,
           file: GLOBAL_FILE,
           line: 0,
-          message,
+          message: normalizeDiagnosticMessage(message, cwd),
           rule: tsCode,
         });
       }

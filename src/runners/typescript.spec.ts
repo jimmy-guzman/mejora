@@ -608,18 +608,56 @@ describe("TypeScriptCheckRunner", () => {
     await expect(runner.validate()).resolves.toBeUndefined();
   });
 
-  it("should throw helpful error when typescript import fails", async () => {
-    vi.resetModules();
+  it("should normalize absolute import paths in diagnostic messages", async () => {
+    const mockFile = {
+      fileName: "/test/project/src/file.ts",
+      getLineAndCharacterOfPosition: vi.fn().mockReturnValue({
+        character: 4,
+        line: 0,
+      }),
+    };
 
-    vi.doMock("typescript", () => {
-      throw new Error("nope");
+    mockFindConfigFile.mockReturnValue("/test/project/tsconfig.json");
+    mockReadConfigFile.mockReturnValue({ config: {} });
+    mockParseJsonConfigFileContent.mockReturnValue({
+      fileNames: ["src/file.ts"],
+      options: {},
     });
-
-    const { TypeScriptCheckRunner: FreshRunner } = await import("./typescript");
-    const runner = new FreshRunner();
-
-    await expect(runner.validate()).rejects.toThrowError(
-      'typescript check requires "typescript" package to be installed. Run: npm install typescript',
+    mockGetPreEmitDiagnostics.mockReturnValue([
+      {
+        code: 7053,
+        file: mockFile,
+        messageText:
+          "Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'typeof import(\"/test/project/src/actions\")'.",
+        start: 4,
+      },
+    ]);
+    mockFlattenDiagnosticMessageText.mockReturnValue(
+      "Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'typeof import(\"/test/project/src/actions\")'.",
     );
+
+    const runner = new TypeScriptCheckRunner();
+    const result = await runner.run({ tsconfig: "tsconfig.json" });
+
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0]?.message).toBe(
+      "Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'typeof import(\"src/actions\")'.",
+    );
+  });
+
+  describe("TypeScriptCheckRunner - validation", () => {
+    it("should throw helpful error when typescript import fails", async () => {
+      vi.resetModules();
+      vi.doMock("typescript", () => {
+        throw new Error("nope");
+      });
+      const { TypeScriptCheckRunner: FreshRunner } =
+        await import("./typescript");
+      const runner = new FreshRunner();
+
+      await expect(runner.validate()).rejects.toThrowError(
+        'typescript check requires "typescript" package to be installed. Run: npm install typescript',
+      );
+    });
   });
 });
