@@ -11,7 +11,7 @@ import { createCacheKey, getCacheDir } from "@/utils/cache";
 export class ESLintCheckRunner implements CheckRunner {
   readonly type = "eslint";
 
-  run = async (eslintConfig: ESLintCheckConfig) => {
+  async run(eslintConfig: ESLintCheckConfig) {
     const { ESLint } = await import("eslint");
 
     const cwd = process.cwd();
@@ -49,7 +49,7 @@ export class ESLintCheckRunner implements CheckRunner {
       items: rawItems,
       type: "items" as const,
     };
-  };
+  }
 
   async setup() {
     const cwd = process.cwd();

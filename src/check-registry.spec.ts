@@ -158,7 +158,7 @@ describe("CheckRegistry", () => {
       registry.register(eslintRunner);
       registry.register(typescriptRunner);
 
-      await registry.setupInfrastructure(new Set(["eslint", "typescript"]));
+      await registry.setup(new Set(["eslint", "typescript"]));
 
       expect(eslintSetup).toHaveBeenCalledOnce();
       expect(typescriptSetup).toHaveBeenCalledOnce();
@@ -175,7 +175,7 @@ describe("CheckRegistry", () => {
       registry.register(eslintRunner);
 
       await expect(
-        registry.setupInfrastructure(new Set(["eslint"])),
+        registry.setup(new Set(["eslint"])),
       ).resolves.toBeUndefined();
     });
 
@@ -200,7 +200,7 @@ describe("CheckRegistry", () => {
       registry.register(eslintRunner);
       registry.register(typescriptRunner);
 
-      await registry.setupInfrastructure(new Set(["eslint"]));
+      await registry.setup(new Set(["eslint"]));
 
       expect(eslintSetup).toHaveBeenCalledOnce();
       expect(typescriptSetup).not.toHaveBeenCalled();
@@ -240,7 +240,7 @@ describe("CheckRegistry", () => {
       registry.register(eslintRunner);
       registry.register(typescriptRunner);
 
-      await registry.setupInfrastructure(new Set(["eslint", "typescript"]));
+      await registry.setup(new Set(["eslint", "typescript"]));
 
       expect(eslintSetup).toHaveBeenCalledOnce();
       expect(typescriptSetup).toHaveBeenCalledOnce();
@@ -260,16 +260,16 @@ describe("CheckRegistry", () => {
 
       registry.register(eslintRunner);
 
-      await expect(
-        registry.setupInfrastructure(new Set(["eslint"])),
-      ).rejects.toThrowError("Setup failed");
+      await expect(registry.setup(new Set(["eslint"]))).rejects.toThrowError(
+        "Setup failed",
+      );
     });
 
     it("should throw error for unregistered type", async () => {
       const registry = new CheckRegistry();
 
       await expect(
-        registry.setupInfrastructure(new Set(["nonexistent"])),
+        registry.setup(new Set(["nonexistent"])),
       ).rejects.toThrowError("Unknown check type: nonexistent");
     });
   });
@@ -296,7 +296,7 @@ describe("CheckRegistry", () => {
       registry.register(eslintRunner);
       registry.register(typescriptRunner);
 
-      await registry.validateDependencies(new Set(["eslint", "typescript"]));
+      await registry.validate(new Set(["eslint", "typescript"]));
 
       expect(eslintValidate).toHaveBeenCalledOnce();
       expect(typescriptValidate).toHaveBeenCalledOnce();
@@ -313,7 +313,7 @@ describe("CheckRegistry", () => {
       registry.register(eslintRunner);
 
       await expect(
-        registry.validateDependencies(new Set(["eslint"])),
+        registry.validate(new Set(["eslint"])),
       ).resolves.toBeUndefined();
     });
 
@@ -338,7 +338,7 @@ describe("CheckRegistry", () => {
       registry.register(eslintRunner);
       registry.register(typescriptRunner);
 
-      await registry.validateDependencies(new Set(["eslint"]));
+      await registry.validate(new Set(["eslint"]));
 
       expect(eslintValidate).toHaveBeenCalledOnce();
       expect(typescriptValidate).not.toHaveBeenCalled();
@@ -378,7 +378,7 @@ describe("CheckRegistry", () => {
       registry.register(eslintRunner);
       registry.register(typescriptRunner);
 
-      await registry.validateDependencies(new Set(["eslint", "typescript"]));
+      await registry.validate(new Set(["eslint", "typescript"]));
 
       expect(eslintValidate).toHaveBeenCalledOnce();
       expect(typescriptValidate).toHaveBeenCalledOnce();
@@ -400,16 +400,16 @@ describe("CheckRegistry", () => {
 
       registry.register(eslintRunner);
 
-      await expect(
-        registry.validateDependencies(new Set(["eslint"])),
-      ).rejects.toThrowError("ESLint not installed");
+      await expect(registry.validate(new Set(["eslint"]))).rejects.toThrowError(
+        "ESLint not installed",
+      );
     });
 
     it("should throw error for unregistered type", async () => {
       const registry = new CheckRegistry();
 
       await expect(
-        registry.validateDependencies(new Set(["nonexistent"])),
+        registry.validate(new Set(["nonexistent"])),
       ).rejects.toThrowError("Unknown check type: nonexistent");
     });
   });

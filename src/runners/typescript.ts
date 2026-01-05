@@ -13,7 +13,7 @@ const GLOBAL_FILE = "(global)";
 export class TypeScriptCheckRunner implements CheckRunner {
   readonly type = "typescript";
 
-  run = async (typescriptConfig: TypeScriptCheckConfig) => {
+  async run(typescriptConfig: TypeScriptCheckConfig) {
     const {
       createIncrementalCompilerHost,
       createIncrementalProgram,
@@ -148,7 +148,7 @@ export class TypeScriptCheckRunner implements CheckRunner {
       items: rawItems,
       type: "items" as const,
     };
-  };
+  }
 
   async setup() {
     const cwd = process.cwd();

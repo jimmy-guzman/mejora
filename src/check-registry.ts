@@ -74,43 +74,47 @@ export class CheckRegistry {
   }
 
   /**
-   * Setup infrastructure for all required check types.
-   * Runs setup in parallel if multiple types need it.
+   * Setup all required check types.
    *
    * @param types - Set of check types to setup
+   *
+   * @throws {Error} If any setup fails
    */
-  setupInfrastructure = async (types: Set<string>) => {
-    const setupPromises: Promise<void>[] = [];
-
-    for (const type of types) {
-      const runner = this.get(type);
-      const setupPromise = runner.setup?.();
-
-      if (setupPromise) {
-        setupPromises.push(setupPromise);
-      }
-    }
-
-    await Promise.all(setupPromises);
-  };
+  async setup(types: Set<string>) {
+    await this.runLifecycle(types, "setup");
+  }
 
   /**
-   * Validate all dependencies for the given check types.
-   * Runs validation in parallel and throws on first failure.
+   * Validate all required check types.
    *
    * @param types - Set of check types to validate
    *
    * @throws {Error} If any validation fails
    */
-  validateDependencies = async (types: Set<string>) => {
-    const validations: Promise<void>[] = [];
+  async validate(types: Set<string>) {
+    await this.runLifecycle(types, "validate");
+  }
+
+  /**
+   * Run an optional lifecycle method on all check runners of given types.
+   * Executes in parallel and waits for all to complete.
+   *
+   * @param types - Set of check types to operate on
+   *
+   * @param name - Name of the optional method to invoke
+   */
+  private async runLifecycle(types: Set<string>, name: "setup" | "validate") {
+    const promises: Promise<void>[] = [];
 
     for (const type of types) {
-      const validation = this.get(type).validate?.();
+      const method = this.get(type)[name];
+      const promise = method?.();
 
-      if (validation) validations.push(validation);
+      if (promise) {
+        promises.push(promise);
+      }
     }
 
-    await Promise.all(validations);
-  };
+    await Promise.all(promises);
+  }
 }

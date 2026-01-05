@@ -61,8 +61,8 @@ export class MejoraRunner {
       const requiredTypes = CheckRegistry.getRequiredTypes(checksToRun);
 
       await Promise.all([
-        this.registry.setupInfrastructure(requiredTypes),
-        this.registry.validateDependencies(requiredTypes),
+        this.registry.setup(requiredTypes),
+        this.registry.validate(requiredTypes),
       ]);
     } catch (error) {
       logger.error("Setup failed:", error);

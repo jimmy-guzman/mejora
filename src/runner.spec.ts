@@ -102,8 +102,8 @@ describe("MejoraRunner", () => {
       getTypes: vi.fn(),
       has: vi.fn(),
       register: vi.fn(),
-      setupInfrastructure: vi.fn().mockResolvedValue(undefined),
-      validateDependencies: vi.fn().mockResolvedValue(undefined),
+      setup: vi.fn().mockResolvedValue(undefined),
+      validate: vi.fn().mockResolvedValue(undefined),
     } as unknown as CheckRegistryType;
 
     CheckRegistry.getRequiredTypes = vi.fn().mockReturnValue(new Set());
@@ -187,12 +187,9 @@ describe("MejoraRunner", () => {
 
     await runner.run(config);
 
-    expect(mockRegistry.setupInfrastructure).toHaveBeenCalledWith(
-      requiredTypes,
-    );
-    expect(mockRegistry.validateDependencies).toHaveBeenCalledWith(
-      requiredTypes,
-    );
+    expect(mockRegistry.setup).toHaveBeenCalledWith(requiredTypes);
+
+    expect(mockRegistry.validate).toHaveBeenCalledWith(requiredTypes);
   });
 
   it("should return exit code 0 when no regressions", async () => {
@@ -364,7 +361,7 @@ describe("MejoraRunner", () => {
       checks: { check1: { files: ["*.js"], type: "eslint" as const } },
     };
 
-    vi.mocked(mockRegistry.setupInfrastructure).mockRejectedValue(
+    vi.mocked(mockRegistry.setup).mockRejectedValue(
       new Error("Permission denied"),
     );
 
@@ -384,7 +381,7 @@ describe("MejoraRunner", () => {
       checks: { check1: { files: ["*.js"], type: "eslint" as const } },
     };
 
-    vi.mocked(mockRegistry.validateDependencies).mockRejectedValue(
+    vi.mocked(mockRegistry.validate).mockRejectedValue(
       new Error("ESLint not installed"),
     );
 
