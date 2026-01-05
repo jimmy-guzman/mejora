@@ -2,10 +2,22 @@ import type { ESLint as ESLintType } from "eslint";
 
 const mockLintFiles = vi.fn();
 
+interface MockESLintOptions {
+  cache?: boolean;
+  cacheLocation?: string;
+  concurrency?: "auto" | number;
+  overrideConfig?: unknown;
+  ruleFilter?: (context: { ruleId: string; severity: number }) => boolean;
+}
+
 vi.mock("eslint", () => {
   return {
-    ESLint: vi.fn(function (this: ESLintType) {
+    ESLint: vi.fn(function (
+      this: ESLintType & { options?: MockESLintOptions },
+      options: MockESLintOptions,
+    ) {
       this.lintFiles = mockLintFiles;
+      this.options = options;
     }),
   };
 });
@@ -177,7 +189,7 @@ describe("ESLintCheckRunner", () => {
     expect(result.items[1]?.file).toBe("apple.js");
   });
 
-  it("should configure ESLint with cache, concurrency, and overrides", async () => {
+  it("should configure ESLint with cache and overrides", async () => {
     mockLintFiles.mockResolvedValue([]);
 
     const config = {
@@ -195,18 +207,125 @@ describe("ESLintCheckRunner", () => {
         cacheLocation: expect.stringContaining(
           "node_modules/.cache/mejora/eslint/",
         ),
-        concurrency: "auto",
         overrideConfig: config.overrides,
       }),
     );
   });
 
-  it("should use custom concurrency when provided", async () => {
+  it("should use ruleFilter when rules are specified in overrides", async () => {
+    mockLintFiles.mockResolvedValue([]);
+
+    const config = {
+      files: ["*.js"],
+      overrides: {
+        rules: {
+          "no-console": "error" as const,
+          "no-debugger": "error" as const,
+        },
+      },
+    };
+
+    const runner = new ESLintCheckRunner();
+
+    await runner.run(config);
+
+    const mockESLintConstructor = vi.mocked(ESLint);
+    const callArgs = mockESLintConstructor.mock.calls[0]?.[0] as
+      | MockESLintOptions
+      | undefined;
+
+    expect(callArgs).toHaveProperty("ruleFilter");
+
+    expect(callArgs?.ruleFilter?.({ ruleId: "no-console", severity: 2 })).toBe(
+      true,
+    );
+    expect(callArgs?.ruleFilter?.({ ruleId: "no-debugger", severity: 2 })).toBe(
+      true,
+    );
+    expect(callArgs?.ruleFilter?.({ ruleId: "semi", severity: 2 })).toBe(false);
+  });
+
+  it("should NOT use ruleFilter when no rules are specified", async () => {
+    mockLintFiles.mockResolvedValue([]);
+
+    const config = {
+      files: ["*.js"],
+      overrides: {},
+    };
+
+    const runner = new ESLintCheckRunner();
+
+    await runner.run(config);
+
+    const mockESLintConstructor = vi.mocked(ESLint);
+    const callArgs = mockESLintConstructor.mock.calls[0]?.[0] as
+      | MockESLintOptions
+      | undefined;
+
+    expect(callArgs).not.toHaveProperty("ruleFilter");
+  });
+
+  it("should extract rules from array of overrides", async () => {
+    mockLintFiles.mockResolvedValue([]);
+
+    const config = {
+      files: ["*.js"],
+      overrides: [
+        { rules: { "no-console": "error" as const } },
+        { rules: { "no-debugger": "error" as const } },
+      ],
+    };
+
+    const runner = new ESLintCheckRunner();
+
+    await runner.run(config);
+
+    const mockESLintConstructor = vi.mocked(ESLint);
+    const callArgs = mockESLintConstructor.mock.calls[0]?.[0] as
+      | MockESLintOptions
+      | undefined;
+
+    expect(callArgs).toHaveProperty("ruleFilter");
+
+    expect(callArgs?.ruleFilter?.({ ruleId: "no-console", severity: 2 })).toBe(
+      true,
+    );
+    expect(callArgs?.ruleFilter?.({ ruleId: "no-debugger", severity: 2 })).toBe(
+      true,
+    );
+    expect(callArgs?.ruleFilter?.({ ruleId: "semi", severity: 2 })).toBe(false);
+  });
+
+  it("should NOT set concurrency when using ruleFilter", async () => {
     mockLintFiles.mockResolvedValue([]);
 
     const config = {
       concurrency: 4,
-      files: ["*.ts"],
+      files: ["*.js"],
+      overrides: {
+        rules: { "no-console": "error" as const },
+      },
+    };
+
+    const runner = new ESLintCheckRunner();
+
+    await runner.run(config);
+
+    const mockESLintConstructor = vi.mocked(ESLint);
+    const callArgs = mockESLintConstructor.mock.calls[0]?.[0] as
+      | MockESLintOptions
+      | undefined;
+
+    expect(callArgs).toHaveProperty("ruleFilter");
+    expect(callArgs).not.toHaveProperty("concurrency");
+  });
+
+  it("should use concurrency when NOT using ruleFilter", async () => {
+    mockLintFiles.mockResolvedValue([]);
+
+    const config = {
+      concurrency: 4,
+      files: ["*.js"],
     };
 
     const runner = new ESLintCheckRunner();
@@ -216,6 +335,24 @@ describe("ESLintCheckRunner", () => {
     expect(ESLint).toHaveBeenCalledWith(
       expect.objectContaining({
         concurrency: 4,
+      }),
+    );
+  });
+
+  it("should default concurrency to 'auto' when no rules are specified", async () => {
+    mockLintFiles.mockResolvedValue([]);
+
+    const config = {
+      files: ["*.js"],
+    };
+
+    const runner = new ESLintCheckRunner();
+
+    await runner.run(config);
+
+    expect(ESLint).toHaveBeenCalledWith(
+      expect.objectContaining({
+        concurrency: "auto",
       }),
     );
   });
