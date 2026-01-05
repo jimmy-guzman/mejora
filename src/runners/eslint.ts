@@ -18,11 +18,35 @@ export class ESLintCheckRunner implements CheckRunner {
     const cacheDir = getCacheDir(this.type, cwd);
     const cacheKey = createCacheKey(eslintConfig);
 
+    const rulesToTrack = new Set<string>();
+
+    if (eslintConfig.overrides) {
+      const configs = Array.isArray(eslintConfig.overrides)
+        ? eslintConfig.overrides
+        : [eslintConfig.overrides];
+
+      for (const config of configs) {
+        if (config.rules) {
+          for (const ruleId of Object.keys(config.rules)) {
+            rulesToTrack.add(ruleId);
+          }
+        }
+      }
+    }
+
+    const hasRuleFilter = rulesToTrack.size > 0;
+
     const eslint = new ESLint({
       cache: true,
       cacheLocation: `${cacheDir}/${cacheKey}.eslintcache`,
-      concurrency: eslintConfig.concurrency ?? "auto",
       overrideConfig: eslintConfig.overrides,
+      //  When concurrency is enabled, all options must be cloneable values (JSON values)
+      ...(!hasRuleFilter && {
+        concurrency: eslintConfig.concurrency ?? "auto",
+      }),
+      ...(hasRuleFilter && {
+        ruleFilter: ({ ruleId }) => rulesToTrack.has(ruleId),
+      }),
     });
 
     const results = await eslint.lintFiles(eslintConfig.files);
