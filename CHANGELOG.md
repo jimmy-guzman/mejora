@@ -1,3 +1,10 @@
+# [2.2.0](https://github.com/jimmy-guzman/mejora/compare/v2.1.0...v2.2.0) (2026-01-05)
+
+
+### Features
+
+* ✨ add support for custom checks ([#56](https://github.com/jimmy-guzman/mejora/issues/56)) ([2215633](https://github.com/jimmy-guzman/mejora/commit/2215633402270213372eb5775a0df1e4e3c4a0ae))
+
 # [2.1.0](https://github.com/jimmy-guzman/mejora/compare/v2.0.5...v2.1.0) (2026-01-04)
 
 
