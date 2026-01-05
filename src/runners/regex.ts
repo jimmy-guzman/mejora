@@ -7,7 +7,7 @@ import type { IssueInput, RegexCheckConfig } from "@/types";
 /**
  * Check runner for regex pattern matching.
  */
-export class RegexCheckRunner implements CheckRunner {
+class RegexCheckRunner implements CheckRunner {
   readonly type = "regex";
 
   // eslint-disable-next-line class-methods-use-this -- implements interface
