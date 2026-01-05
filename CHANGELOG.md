@@ -1,3 +1,10 @@
+## [2.2.2](https://github.com/jimmy-guzman/mejora/compare/v2.2.1...v2.2.2) (2026-01-05)
+
+
+### Bug Fixes
+
+* 🐛 normalize absolute paths in typescript diagnostics ([#58](https://github.com/jimmy-guzman/mejora/issues/58)) ([70c5aa4](https://github.com/jimmy-guzman/mejora/commit/70c5aa4f16f210b68a18be28fe4d96d72c086d81))
+
 ## [2.2.1](https://github.com/jimmy-guzman/mejora/compare/v2.2.0...v2.2.1) (2026-01-05)
 
 
