@@ -5,4 +5,4 @@ export {
   typescriptCheck as typescript,
   typescriptCheck,
 } from "./runners/typescript";
-export type { Config, Issue, IssueInput, Snapshot } from "./types";
+export type { Config, Issue, IssueInput, RawSnapshot, Snapshot } from "./types";

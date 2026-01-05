@@ -69,8 +69,8 @@ try {
   const config = await loadConfig();
 
   if (config.runners) {
-    for (const plugin of config.runners) {
-      registry.register(plugin);
+    for (const runner of config.runners) {
+      registry.register(runner);
     }
   }
 
