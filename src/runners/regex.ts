@@ -27,7 +27,6 @@ export class RegexCheckRunner implements CheckRunner {
       ],
     });
 
-    // Compile regex patterns once
     const compiledPatterns = regexConfig.patterns.map((patternConfig) => {
       const { message, pattern, rule } = patternConfig;
       const regex = new RegExp(
@@ -38,7 +37,6 @@ export class RegexCheckRunner implements CheckRunner {
       return { message, pattern, regex, rule };
     });
 
-    // Process files in parallel (batched)
     const batchSize = 100;
 
     for (let i = 0; i < filePaths.length; i += batchSize) {
