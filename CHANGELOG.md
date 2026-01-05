@@ -1,3 +1,10 @@
+## [2.2.3](https://github.com/jimmy-guzman/mejora/compare/v2.2.2...v2.2.3) (2026-01-05)
+
+
+### Bug Fixes
+
+* 🐛 only run ESLint rules specified in overrides ([#59](https://github.com/jimmy-guzman/mejora/issues/59)) ([8000867](https://github.com/jimmy-guzman/mejora/commit/8000867d417cc3f6c8da6f77d5c11049f2db4f53))
+
 ## [2.2.2](https://github.com/jimmy-guzman/mejora/compare/v2.2.1...v2.2.2) (2026-01-05)
 
 
