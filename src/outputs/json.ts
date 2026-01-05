@@ -1,4 +1,4 @@
-import type { DiagnosticItem, RunResult } from "@/types";
+import type { Issue, RunResult } from "@/types";
 
 import { average } from "./average";
 
@@ -8,8 +8,8 @@ interface Check {
   hasImprovement: boolean;
   hasRegression: boolean;
   isInitial: boolean;
-  newItems: DiagnosticItem[];
-  removedItems: DiagnosticItem[];
+  newIssues: Issue[];
+  removedIssues: Issue[];
   totalIssues: number;
 }
 
@@ -39,12 +39,12 @@ export function formatJsonOutput(result: RunResult) {
       initialChecks.push(check.checkId);
     } else {
       if (check.hasImprovement) {
-        improvements += check.removedItems.length;
+        improvements += check.removedIssues.length;
         improvementChecks.push(check.checkId);
       }
 
       if (check.hasRegression) {
-        regressions += check.newItems.length;
+        regressions += check.newIssues.length;
         regressionChecks.push(check.checkId);
       }
 
@@ -60,8 +60,8 @@ export function formatJsonOutput(result: RunResult) {
       hasImprovement: check.hasImprovement,
       hasRegression: check.hasRegression,
       isInitial: check.isInitial,
-      newItems: check.newItems,
-      removedItems: check.removedItems,
+      newIssues: check.newIssues,
+      removedIssues: check.removedIssues,
       totalIssues: issues,
     });
   }

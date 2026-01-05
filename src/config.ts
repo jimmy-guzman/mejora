@@ -2,6 +2,9 @@ import { pathToFileURL } from "node:url";
 
 import { lilconfig } from "lilconfig";
 
+import type { CheckRunner } from "./check-runner";
+import type { ESLintCheckRunner } from "./runners/eslint";
+import type { TypeScriptCheckRunner } from "./runners/typescript";
 import type { Config } from "./types";
 
 const loader = async (filepath: string) => {
@@ -15,16 +18,47 @@ const loader = async (filepath: string) => {
   return imported;
 };
 
+type ExtractRunnerByType<
+  TRunners extends readonly CheckRunner[],
+  TType extends string,
+> = Extract<TRunners[number], { type: TType }>;
+
+type ExtractConfig<TRunner> = TRunner extends CheckRunner<infer C> ? C : never;
+
+type CheckConfig<
+  TRunners extends readonly CheckRunner[],
+  TType extends TRunners[number]["type"],
+> = ExtractConfig<ExtractRunnerByType<TRunners, TType>> & {
+  type: TType;
+};
+
+type InternalRunners = readonly [ESLintCheckRunner, TypeScriptCheckRunner];
+
 /**
  * Define mejora configuration.
  *
  * @param config - mejora configuration object.
  *
+ * @param config.runners - Optional array of custom check runners to register.
+ *
+ * @param config.checks - Map of check names to their configurations.
+ *
  * @returns The provided configuration object.
  */
-export const defineConfig = (config: Config) => {
+export function defineConfig<
+  const TRunners extends readonly CheckRunner[],
+>(config: {
+  checks: Record<
+    string,
+    CheckConfig<
+      [...InternalRunners, ...TRunners],
+      [...InternalRunners, ...TRunners][number]["type"]
+    >
+  >;
+  runners?: TRunners;
+}) {
   return config;
-};
+}
 
 export const loadConfig = async () => {
   const explorer = lilconfig("mejora", {

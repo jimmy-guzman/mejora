@@ -1,4 +1,4 @@
-import type { Baseline, DiagnosticItem } from "./types";
+import type { Baseline, Issue } from "./types";
 
 import { BASELINE_VERSION } from "./constants";
 import { balanceBraces } from "./utils/brace-balancer";
@@ -92,7 +92,7 @@ function extractConflictSections(content: string) {
 }
 
 function mergeBaselines(baselines: Baseline[]) {
-  const itemsByCheck = new Map<string, Map<string, DiagnosticItem>>();
+  const itemsByCheck = new Map<string, Map<string, Issue>>();
 
   for (const baseline of baselines) {
     for (const [checkId, { items = [] }] of Object.entries(baseline.checks)) {
@@ -101,7 +101,7 @@ function mergeBaselines(baselines: Baseline[]) {
       let itemsById = itemsByCheck.get(checkId);
 
       if (!itemsById) {
-        itemsById = new Map<string, DiagnosticItem>();
+        itemsById = new Map<string, Issue>();
         itemsByCheck.set(checkId, itemsById);
       }
 

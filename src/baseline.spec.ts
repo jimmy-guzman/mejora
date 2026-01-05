@@ -919,7 +919,7 @@ describe("BaselineManager", () => {
       const manager = new BaselineManager(".mejora/baseline.json");
       const result = await manager.load();
 
-      const ids = result?.checks.eslint?.items?.map((i) => i.id);
+      const ids = result?.checks.eslint?.items.map((i) => i.id);
 
       expect(ids).toStrictEqual(["aaa111", "bbb222", "mmm555", "zzz999"]);
     });

@@ -1,6 +1,6 @@
 import { basename, dirname } from "pathe";
 
-import type { CheckResult, DiagnosticItem, RunResult } from "@/types";
+import type { CheckResult, Issue, RunResult } from "@/types";
 
 import {
   blue,
@@ -52,7 +52,7 @@ function formatLocation(file: string, line: number, column: number) {
   return `${dirPart}${namePart}${posPart}`;
 }
 
-function formatItem(item: DiagnosticItem, kind: Kind) {
+function formatItem(item: Issue, kind: Kind) {
   const arrow = formatItemArrow(kind);
   const location = formatLocation(item.file, item.line, item.column);
   const code = dim(item.rule);
@@ -60,7 +60,7 @@ function formatItem(item: DiagnosticItem, kind: Kind) {
   return [`${arrow} ${location}  ${code}`, item.message];
 }
 
-function formatItemList(items: DiagnosticItem[], kind: Kind) {
+function formatItemList(items: Issue[], kind: Kind) {
   const lines: string[] = [];
 
   const itemsToShow = items.slice(0, MAX_ITEMS_TO_DISPLAY);
@@ -100,22 +100,22 @@ function formatMetadata(check: CheckResult) {
 function formatRegressions(check: CheckResult) {
   if (!check.hasRegression) return [];
 
-  const count = check.newItems.length;
+  const count = check.newIssues.length;
 
   return [
     `${SECTION_INDENT}${red(count)} new ${plural(count, "issue")} (${plural(count, "regression")}):`,
-    ...formatItemList(check.newItems, "regression"),
+    ...formatItemList(check.newIssues, "regression"),
   ];
 }
 
 function formatImprovements(check: CheckResult) {
   if (!check.hasImprovement) return [];
 
-  const count = check.removedItems.length;
+  const count = check.removedIssues.length;
 
   return [
     `${SECTION_INDENT}${green(count)} ${plural(count, "issue")} fixed (${plural(count, "improvement")}):`,
-    ...formatItemList(check.removedItems, "improvement"),
+    ...formatItemList(check.removedIssues, "improvement"),
   ];
 }
 
@@ -224,11 +224,11 @@ function formatSummary(result: RunResult, wasForced: boolean) {
     const { hasImprovement, hasRegression } = check;
 
     if (hasImprovement) {
-      acc.totalImprovements += check.removedItems.length;
+      acc.totalImprovements += check.removedIssues.length;
     }
 
     if (hasRegression) {
-      acc.totalRegressions += check.newItems.length;
+      acc.totalRegressions += check.newIssues.length;
     }
   }
 

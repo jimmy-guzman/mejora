@@ -20,8 +20,8 @@ describe("formatTextOutput", () => {
           hasRegression: false,
           hasRelocation: false,
           isInitial: true,
-          newItems: [],
-          removedItems: [],
+          newIssues: [],
+          removedIssues: [],
           snapshot: {
             items: [
               {
@@ -93,8 +93,8 @@ describe("formatTextOutput", () => {
           hasRegression: false,
           hasRelocation: false,
           isInitial: true,
-          newItems: [],
-          removedItems: [],
+          newIssues: [],
+          removedIssues: [],
           snapshot: {
             items: [],
             type: "items" as const,
@@ -145,8 +145,8 @@ describe("formatTextOutput", () => {
           hasRegression: false,
           hasRelocation: false,
           isInitial: true,
-          newItems: [],
-          removedItems: [],
+          newIssues: [],
+          removedIssues: [],
           snapshot: { items, type: "items" as const },
         },
       ],
@@ -175,7 +175,7 @@ describe("formatTextOutput", () => {
           hasRegression: true,
           hasRelocation: false,
           isInitial: false,
-          newItems: [
+          newIssues: [
             {
               column: 1,
               file: "src/a.ts",
@@ -193,7 +193,7 @@ describe("formatTextOutput", () => {
               rule: "no-undef",
             },
           ],
-          removedItems: [],
+          removedIssues: [],
           snapshot: {
             items: [
               {
@@ -276,8 +276,8 @@ describe("formatTextOutput", () => {
           hasRegression: false,
           hasRelocation: false,
           isInitial: false,
-          newItems: [],
-          removedItems: [
+          newIssues: [],
+          removedIssues: [
             {
               column: 1,
               file: "src/a.ts",
@@ -357,7 +357,7 @@ describe("formatTextOutput", () => {
           hasRegression: true,
           hasRelocation: false,
           isInitial: false,
-          newItems: [
+          newIssues: [
             {
               column: 1,
               file: "src/c.ts",
@@ -367,7 +367,7 @@ describe("formatTextOutput", () => {
               rule: "semi",
             },
           ],
-          removedItems: [
+          removedIssues: [
             {
               column: 1,
               file: "src/a.ts",
@@ -452,8 +452,8 @@ describe("formatTextOutput", () => {
           hasRegression: false,
           hasRelocation: false,
           isInitial: false,
-          newItems: [],
-          removedItems: [],
+          newIssues: [],
+          removedIssues: [],
           snapshot: {
             items: [
               {
@@ -511,8 +511,8 @@ describe("formatTextOutput", () => {
           hasRegression: false,
           hasRelocation: false,
           isInitial: false,
-          newItems: [],
-          removedItems: [],
+          newIssues: [],
+          removedIssues: [],
           snapshot: {
             items: [
               {
@@ -559,8 +559,8 @@ describe("formatTextOutput", () => {
           hasRegression: false,
           hasRelocation: false,
           isInitial: false,
-          newItems: [],
-          removedItems: [],
+          newIssues: [],
+          removedIssues: [],
           snapshot: { items: [], type: "items" as const },
         },
         {
@@ -583,8 +583,8 @@ describe("formatTextOutput", () => {
           hasRegression: false,
           hasRelocation: false,
           isInitial: false,
-          newItems: [],
-          removedItems: [],
+          newIssues: [],
+          removedIssues: [],
           snapshot: {
             items: [
               {
@@ -655,8 +655,8 @@ describe("formatTextOutput", () => {
           hasRegression: false,
           hasRelocation: false,
           isInitial: false,
-          newItems: [],
-          removedItems: [],
+          newIssues: [],
+          removedIssues: [],
           snapshot: { items: [], type: "items" as const },
         },
       ],
@@ -703,8 +703,8 @@ describe("formatTextOutput", () => {
           hasRegression: true,
           hasRelocation: false,
           isInitial: false,
-          newItems: items,
-          removedItems: [],
+          newIssues: items,
+          removedIssues: [],
           snapshot: { items, type: "items" as const },
         },
       ],
@@ -743,8 +743,8 @@ describe("formatTextOutput", () => {
           hasRegression: false,
           hasRelocation: false,
           isInitial: false,
-          newItems: [],
-          removedItems: items,
+          newIssues: [],
+          removedIssues: items,
           snapshot: { items: [], type: "items" as const },
         },
       ],
@@ -808,7 +808,7 @@ describe("formatTextOutput", () => {
           hasRegression: true,
           hasRelocation: false,
           isInitial: false,
-          newItems: [
+          newIssues: [
             {
               column: 1,
               file: "src/a.ts",
@@ -818,7 +818,7 @@ describe("formatTextOutput", () => {
               rule: "no-unused-vars",
             },
           ],
-          removedItems: [],
+          removedIssues: [],
           snapshot: {
             items: [
               {
@@ -853,8 +853,8 @@ describe("formatTextOutput", () => {
           hasRegression: false,
           hasRelocation: false,
           isInitial: false,
-          newItems: [],
-          removedItems: [
+          newIssues: [],
+          removedIssues: [
             {
               column: 1,
               file: "src/b.ts",
@@ -913,8 +913,8 @@ describe("formatTextOutput", () => {
           hasRegression: false,
           hasRelocation: false,
           isInitial: true,
-          newItems: [],
-          removedItems: [],
+          newIssues: [],
+          removedIssues: [],
           snapshot: { items: [], type: "items" as const },
         },
       ],
@@ -950,8 +950,8 @@ describe("formatTextOutput", () => {
           hasRegression: false,
           hasRelocation: false,
           isInitial: false,
-          newItems: [],
-          removedItems: [
+          newIssues: [],
+          removedIssues: [
             {
               column: 1,
               file: "src/a.ts",
@@ -985,8 +985,8 @@ describe("formatTextOutput", () => {
           hasRegression: false,
           hasRelocation: false,
           isInitial: false,
-          newItems: [],
-          removedItems: [],
+          newIssues: [],
+          removedIssues: [],
           snapshot: { items: [], type: "items" as const },
         },
       ],
@@ -1010,8 +1010,8 @@ describe("formatTextOutput", () => {
           hasRegression: false,
           hasRelocation: false,
           isInitial: true,
-          newItems: [],
-          removedItems: [],
+          newIssues: [],
+          removedIssues: [],
           snapshot: {
             items: [
               {
@@ -1033,8 +1033,8 @@ describe("formatTextOutput", () => {
           hasRegression: false,
           hasRelocation: false,
           isInitial: true,
-          newItems: [],
-          removedItems: [],
+          newIssues: [],
+          removedIssues: [],
           snapshot: {
             items: [
               {
@@ -1082,8 +1082,8 @@ describe("formatTextOutput", () => {
           hasRegression: false,
           hasRelocation: false,
           isInitial: false,
-          newItems: [],
-          removedItems: [
+          newIssues: [],
+          removedIssues: [
             {
               column: 1,
               file: "src/a.ts",
@@ -1114,8 +1114,8 @@ describe("formatTextOutput", () => {
           hasRegression: false,
           hasRelocation: false,
           isInitial: false,
-          newItems: [],
-          removedItems: [
+          newIssues: [],
+          removedIssues: [
             {
               column: 1,
               file: "src/b.ts",
@@ -1185,8 +1185,8 @@ describe("formatTextOutput", () => {
           hasRegression: false,
           hasRelocation: false,
           isInitial: false,
-          newItems: [],
-          removedItems: [
+          newIssues: [],
+          removedIssues: [
             {
               column: 1,
               file: "src/a.ts",
@@ -1230,7 +1230,7 @@ describe("formatTextOutput", () => {
           hasRegression: true,
           hasRelocation: false,
           isInitial: false,
-          newItems: [
+          newIssues: [
             {
               column: 1,
               file: "src/b.ts",
@@ -1256,7 +1256,7 @@ describe("formatTextOutput", () => {
               rule: "TS2304",
             },
           ],
-          removedItems: [],
+          removedIssues: [],
           snapshot: {
             items: [
               {
@@ -1314,8 +1314,8 @@ describe("formatTextOutput", () => {
           hasRegression: false,
           hasRelocation: false,
           isInitial: false,
-          newItems: [],
-          removedItems: [],
+          newIssues: [],
+          removedIssues: [],
           snapshot: {
             items: [
               {
@@ -1345,8 +1345,8 @@ describe("formatTextOutput", () => {
           hasRegression: false,
           hasRelocation: false,
           isInitial: true,
-          newItems: [],
-          removedItems: [],
+          newIssues: [],
+          removedIssues: [],
           snapshot: {
             items: [
               {
@@ -1418,7 +1418,7 @@ describe("formatTextOutput", () => {
           hasRegression: true,
           hasRelocation: false,
           isInitial: false,
-          newItems: [
+          newIssues: [
             {
               column: 0,
               file: "(global)",
@@ -1428,7 +1428,7 @@ describe("formatTextOutput", () => {
               rule: "config-error",
             },
           ],
-          removedItems: [],
+          removedIssues: [],
           snapshot: {
             items: [
               {
@@ -1480,8 +1480,8 @@ describe("formatTextOutput", () => {
           hasRegression: false,
           hasRelocation: false,
           isInitial: true,
-          newItems: [],
-          removedItems: [],
+          newIssues: [],
+          removedIssues: [],
           snapshot: {
             items: [
               {
@@ -1519,7 +1519,7 @@ describe("formatTextOutput", () => {
           hasRegression: true,
           hasRelocation: false,
           isInitial: false,
-          newItems: [
+          newIssues: [
             {
               column: 1,
               file: "src/a.ts",
@@ -1537,7 +1537,7 @@ describe("formatTextOutput", () => {
               rule: "no-undef",
             },
           ],
-          removedItems: [],
+          removedIssues: [],
           snapshot: {
             items: [
               {

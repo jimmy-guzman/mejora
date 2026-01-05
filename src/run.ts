@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 import { parseArgs } from "node:util";
 
+import { CheckRegistry } from "./check-registry";
 import { loadConfig } from "./config";
 import { formatJsonOutput } from "./outputs/json";
 import { formatTextOutput } from "./outputs/text";
 import { MejoraRunner } from "./runner";
+import { ESLintCheckRunner } from "./runners/eslint";
+import { TypeScriptCheckRunner } from "./runners/typescript";
 import { logger } from "./utils/logger";
 
 const { values } = parseArgs({
@@ -58,8 +61,21 @@ Examples:
 }
 
 try {
-  const runner = new MejoraRunner();
+  const registry = new CheckRegistry();
+
+  registry.register(new ESLintCheckRunner());
+  registry.register(new TypeScriptCheckRunner());
+
   const config = await loadConfig();
+
+  if (config.runners) {
+    for (const runner of config.runners) {
+      registry.register(runner);
+    }
+  }
+
+  const runner = new MejoraRunner(registry);
+
   const result = await runner.run(config, {
     force: values.force,
     json: values.json,

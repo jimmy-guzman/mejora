@@ -1,7 +1,9 @@
 import type { Linter } from "eslint";
 import type { CompilerOptions } from "typescript";
 
-export interface DiagnosticItem {
+import type { CheckRunner } from "./check-runner";
+
+export interface Issue {
   /**
    * 1-indexed column number for display.
    */
@@ -21,11 +23,11 @@ export interface DiagnosticItem {
    */
   line: number;
   /**
-   *  The diagnostic message.
+   *  The message.
    */
   message: string;
   /**
-   * Rule identifier.
+   * Identifier for the issue (rule name, diagnostic code, etc).
    *
    * @example "no-nested-ternary" (ESLint)
    *
@@ -34,16 +36,29 @@ export interface DiagnosticItem {
   rule: string;
 }
 
-export interface ItemsSnapshot {
-  items: DiagnosticItem[];
-  type: "items";
+/**
+ * Issue produced by a check runner.
+ */
+export type IssueInput = Omit<Issue, "id">;
+
+type SnapshotType = "items";
+
+export interface RawSnapshot {
+  /**
+   * Snapshot items (each item represents an issue produced by the check).
+   */
+  items: IssueInput[];
+  type: SnapshotType;
 }
 
-export type Snapshot = ItemsSnapshot;
+export interface Snapshot {
+  items: Issue[];
+  type: SnapshotType;
+}
 
 export interface BaselineEntry {
-  items?: DiagnosticItem[];
-  type: Snapshot["type"];
+  items: Issue[];
+  type: SnapshotType;
 }
 
 export interface Baseline {
@@ -141,13 +156,13 @@ export interface TypeScriptCheckConfig {
   tsconfig?: string;
 }
 
+type CustomCheckConfig = Record<string, unknown> & { type: string };
+
 export type CheckConfig =
-  | (ESLintCheckConfig & {
-      type: "eslint";
-    })
-  | (TypeScriptCheckConfig & {
-      type: "typescript";
-    });
+  | (ESLintCheckConfig & { type: "eslint" })
+  | (TypeScriptCheckConfig & { type: "typescript" })
+  // eslint-disable-next-line perfectionist/sort-union-types -- keep related types together for better hover UX
+  | CustomCheckConfig;
 
 /**
  * mejora configuration.
@@ -192,11 +207,28 @@ export interface Config {
    * ```ts
    * {
    *   "eslint > no-console": eslint({ ... }),
-   *   "typescript": typescript({ ... }),
+   *   "typescript": typescriptCheck({ ... }),
    * }
    * ```
    */
   checks: Record<string, CheckConfig>;
+
+  /**
+   * Runners to register custom check types.
+   *
+   * Built-in checks (eslint, typescript) are always available.
+   *
+   * @example
+   * ```ts
+   * {
+   *   runners: [myCustomRunner()],
+   *   checks: {
+   *     "custom": myCheck({ ... })
+   *   }
+   * }
+   * ```
+   */
+  runners?: CheckRunner[];
 }
 
 export interface CheckResult {
@@ -209,13 +241,13 @@ export interface CheckResult {
   hasImprovement: boolean;
   hasRegression: boolean;
   /**
-   * Indicates whether any diagnostic items were relocated (i.e., their
+   * Indicates whether any issues were relocated (i.e., their
    * file, line, or column changed) compared to the baseline.
    */
   hasRelocation: boolean;
   isInitial: boolean;
-  newItems: DiagnosticItem[];
-  removedItems: DiagnosticItem[];
+  newIssues: Issue[];
+  removedIssues: Issue[];
   snapshot: Snapshot;
 }
 

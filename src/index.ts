@@ -1,7 +1,8 @@
-export { eslintCheck as eslint, eslintCheck } from "./checks/eslint";
+export type { CheckRunner } from "./check-runner";
+export { defineConfig } from "./config";
+export { eslintCheck as eslint, eslintCheck } from "./runners/eslint";
 export {
   typescriptCheck as typescript,
   typescriptCheck,
-} from "./checks/typescript";
-export { defineConfig } from "./config";
-export type { Config } from "./types";
+} from "./runners/typescript";
+export type { Config, Issue, IssueInput, RawSnapshot, Snapshot } from "./types";

@@ -10,14 +10,21 @@ vi.mock("eslint", () => {
   };
 });
 
+const mockCreateCacheKey = vi.fn(() => "abc123def456");
+const mockGetCacheDir = vi.fn(() => "node_modules/.cache/mejora/eslint");
+
 vi.mock("@/utils/cache", () => {
   return {
-    createCacheKey: vi.fn(() => "abc123def456"),
-    getCacheDir: vi.fn(() => "node_modules/.cache/mejora/eslint"),
+    createCacheKey: mockCreateCacheKey,
+    getCacheDir: mockGetCacheDir,
   };
 });
 
-const { eslintCheck, runEslintCheck } = await import("./eslint");
+const mockMkdir = vi.fn();
+
+vi.mock("node:fs/promises", () => ({ mkdir: mockMkdir }));
+
+const { eslintCheck, ESLintCheckRunner } = await import("./eslint");
 const { ESLint } = await import("eslint");
 
 describe("eslintCheck", () => {
@@ -35,7 +42,7 @@ describe("eslintCheck", () => {
   });
 });
 
-describe("runEslintCheck", () => {
+describe("ESLintCheckRunner", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -43,7 +50,9 @@ describe("runEslintCheck", () => {
   it("should return empty items when no violations", async () => {
     mockLintFiles.mockResolvedValue([]);
 
-    const result = await runEslintCheck({ files: ["*.js"] });
+    const runner = new ESLintCheckRunner();
+
+    const result = await runner.run({ files: ["*.js"] });
 
     expect(result).toStrictEqual({
       items: [],
@@ -51,7 +60,30 @@ describe("runEslintCheck", () => {
     });
   });
 
-  it("should extract violations as DiagnosticItem objects", async () => {
+  it("should configure cacheLocation using cacheDir + cacheKey", async () => {
+    mockLintFiles.mockResolvedValue([]);
+
+    vi.spyOn(process, "cwd").mockReturnValue("/test/project");
+
+    const runner = new ESLintCheckRunner();
+
+    const config = { files: ["*.js"] };
+
+    await runner.run(config);
+
+    expect(mockGetCacheDir).toHaveBeenCalledWith("eslint", "/test/project");
+    expect(mockCreateCacheKey).toHaveBeenCalledWith(config);
+
+    expect(ESLint).toHaveBeenCalledWith(
+      expect.objectContaining({
+        cache: true,
+        cacheLocation:
+          "node_modules/.cache/mejora/eslint/abc123def456.eslintcache",
+      }),
+    );
+  });
+
+  it("should extract violations as IssueInput object (no IDs)", async () => {
     mockLintFiles.mockResolvedValue([
       {
         filePath: "/test/project/src/file.js",
@@ -74,25 +106,26 @@ describe("runEslintCheck", () => {
 
     vi.spyOn(process, "cwd").mockReturnValue("/test/project");
 
-    const result = await runEslintCheck({ files: ["src/**/*.js"] });
+    const runner = new ESLintCheckRunner();
+
+    const result = await runner.run({ files: ["src/**/*.js"] });
 
     expect(result.items).toHaveLength(2);
-    expect(result.items[0]).toMatchObject({
+
+    expect(result.items[0]).toStrictEqual({
       column: 5,
       file: "src/file.js",
       line: 1,
       message: "'foo' is not defined.",
       rule: "no-undef",
     });
-    expect(result.items[0]?.id).toBeDefined();
-    expect(result.items[1]).toMatchObject({
+    expect(result.items[1]).toStrictEqual({
       column: 10,
       file: "src/file.js",
       line: 2,
       message: "Unexpected console statement.",
       rule: "no-console",
     });
-    expect(result.items[1]?.id).toBeDefined();
   });
 
   it("should filter out messages without ruleId", async () => {
@@ -109,14 +142,16 @@ describe("runEslintCheck", () => {
 
     vi.spyOn(process, "cwd").mockReturnValue("/test/project");
 
-    const result = await runEslintCheck({ files: ["*.js"] });
+    const runner = new ESLintCheckRunner();
+
+    const result = await runner.run({ files: ["*.js"] });
 
     expect(result.items).toHaveLength(2);
     expect(result.items[0]?.rule).toBe("no-undef");
     expect(result.items[1]?.rule).toBe("semi");
   });
 
-  it("should sort items by file name, line number, and column number", async () => {
+  it("should NOT sort items - that happens in normalizeSnapshot()", async () => {
     mockLintFiles.mockResolvedValue([
       {
         filePath: "/test/project/zebra.js",
@@ -134,10 +169,12 @@ describe("runEslintCheck", () => {
 
     vi.spyOn(process, "cwd").mockReturnValue("/test/project");
 
-    const result = await runEslintCheck({ files: ["*.js"] });
+    const runner = new ESLintCheckRunner();
 
-    expect(result.items[0]?.file).toBe("apple.js");
-    expect(result.items[1]?.file).toBe("zebra.js");
+    const result = await runner.run({ files: ["*.js"] });
+
+    expect(result.items[0]?.file).toBe("zebra.js");
+    expect(result.items[1]?.file).toBe("apple.js");
   });
 
   it("should configure ESLint with cache, concurrency, and overrides", async () => {
@@ -148,7 +185,9 @@ describe("runEslintCheck", () => {
       overrides: { rules: { "no-console": "error" as const } },
     };
 
-    await runEslintCheck(config);
+    const runner = new ESLintCheckRunner();
+
+    await runner.run(config);
 
     expect(ESLint).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -170,12 +209,50 @@ describe("runEslintCheck", () => {
       files: ["*.ts"],
     };
 
-    await runEslintCheck(config);
+    const runner = new ESLintCheckRunner();
+
+    await runner.run(config);
 
     expect(ESLint).toHaveBeenCalledWith(
       expect.objectContaining({
         concurrency: 4,
       }),
+    );
+  });
+
+  it("should create cacheDir recursively", async () => {
+    vi.spyOn(process, "cwd").mockReturnValue("/test/project");
+
+    const runner = new ESLintCheckRunner();
+
+    await runner.setup();
+
+    expect(mockGetCacheDir).toHaveBeenCalledWith("eslint", "/test/project");
+    expect(mockMkdir).toHaveBeenCalledWith(
+      "node_modules/.cache/mejora/eslint",
+      { recursive: true },
+    );
+  });
+
+  it("should pass when eslint import succeeds", async () => {
+    const runner = new ESLintCheckRunner();
+
+    await expect(runner.validate()).resolves.toBeUndefined();
+  });
+
+  it("should throw helpful error when eslint import fails", async () => {
+    vi.resetModules();
+
+    vi.doMock("eslint", () => {
+      throw new Error("nope");
+    });
+
+    const { ESLintCheckRunner: FreshRunner } = await import("./eslint");
+
+    const runner = new FreshRunner();
+
+    await expect(runner.validate()).rejects.toThrowError(
+      'eslint check requires "eslint" package to be installed. Run: npm install eslint',
     );
   });
 });

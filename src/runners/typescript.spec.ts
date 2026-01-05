@@ -26,14 +26,21 @@ vi.mock("typescript", () => {
   };
 });
 
+const mockCreateCacheKey = vi.fn().mockReturnValue("abc123def456");
+const mockGetCacheDir = vi.fn(() => "node_modules/.cache/mejora/typescript");
+
 vi.mock("@/utils/cache", () => {
   return {
-    createCacheKey: vi.fn().mockReturnValue("abc123def456"),
-    getCacheDir: vi.fn(() => "node_modules/.cache/mejora/typescript"),
+    createCacheKey: mockCreateCacheKey,
+    getCacheDir: mockGetCacheDir,
   };
 });
 
-const { runTypescriptCheck, typescriptCheck } = await import("./typescript");
+const mockMkdir = vi.fn();
+
+vi.mock("node:fs/promises", () => ({ mkdir: mockMkdir }));
+
+const { typescriptCheck, TypeScriptCheckRunner } = await import("./typescript");
 
 describe("typescriptCheck", () => {
   it("should return config with type 'typescript'", () => {
@@ -50,7 +57,7 @@ describe("typescriptCheck", () => {
   });
 });
 
-describe("runTypescriptCheck", () => {
+describe("TypeScriptCheckRunner", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.spyOn(process, "cwd").mockReturnValue("/test/project");
@@ -62,6 +69,10 @@ describe("runTypescriptCheck", () => {
     mockCreateIncrementalProgram.mockReturnValue({
       emit: vi.fn(),
       getProgram: mockGetProgram,
+    });
+
+    mockFlattenDiagnosticMessageText.mockImplementation((msg: unknown) => {
+      return typeof msg === "string" ? msg : String(msg);
     });
   });
 
@@ -78,7 +89,8 @@ describe("runTypescriptCheck", () => {
     });
     mockGetPreEmitDiagnostics.mockReturnValue([]);
 
-    const result = await runTypescriptCheck({ tsconfig: "tsconfig.json" });
+    const runner = new TypeScriptCheckRunner();
+    const result = await runner.run({ tsconfig: "tsconfig.json" });
 
     expect(result).toStrictEqual({
       items: [],
@@ -95,7 +107,9 @@ describe("runTypescriptCheck", () => {
     });
     mockGetPreEmitDiagnostics.mockReturnValue([]);
 
-    await runTypescriptCheck({ tsconfig: "tsconfig.json" });
+    const runner = new TypeScriptCheckRunner();
+
+    await runner.run({ tsconfig: "tsconfig.json" });
 
     expect(mockCreateIncrementalProgram).toHaveBeenCalledWith({
       host: expect.anything(),
@@ -124,7 +138,9 @@ describe("runTypescriptCheck", () => {
     });
     mockGetPreEmitDiagnostics.mockReturnValue([]);
 
-    await runTypescriptCheck({ tsconfig: "tsconfig.json" });
+    const runner = new TypeScriptCheckRunner();
+
+    await runner.run({ tsconfig: "tsconfig.json" });
 
     expect(mockCreateIncrementalProgram).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -142,7 +158,9 @@ describe("runTypescriptCheck", () => {
     });
     mockGetPreEmitDiagnostics.mockReturnValue([]);
 
-    await runTypescriptCheck({ tsconfig: "tsconfig.json" });
+    const runner = new TypeScriptCheckRunner();
+
+    await runner.run({ tsconfig: "tsconfig.json" });
 
     expect(mockCreateIncrementalProgram).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -153,7 +171,7 @@ describe("runTypescriptCheck", () => {
     );
   });
 
-  it("should extract diagnostics as DiagnosticItem objects", async () => {
+  it("should extract diagnostics as IssueInput objects (no ID)", async () => {
     const mockFile = {
       fileName: "/test/project/src/file.ts",
       getLineAndCharacterOfPosition: vi.fn().mockReturnValue({
@@ -178,17 +196,17 @@ describe("runTypescriptCheck", () => {
     ]);
     mockFlattenDiagnosticMessageText.mockReturnValue("Cannot find name 'foo'.");
 
-    const result = await runTypescriptCheck({ tsconfig: "tsconfig.json" });
+    const runner = new TypeScriptCheckRunner();
+    const result = await runner.run({ tsconfig: "tsconfig.json" });
 
     expect(result.items).toHaveLength(1);
-    expect(result.items[0]).toMatchObject({
+    expect(result.items[0]).toStrictEqual({
       column: 5,
       file: "src/file.ts",
       line: 1,
       message: "Cannot find name 'foo'.",
       rule: "TS2304",
     });
-    expect(result.items[0]?.id).toBeDefined();
   });
 
   it("should handle diagnostics without file location", async () => {
@@ -208,7 +226,8 @@ describe("runTypescriptCheck", () => {
       "Cannot find the common subdirectory path",
     );
 
-    const result = await runTypescriptCheck({ tsconfig: "tsconfig.json" });
+    const runner = new TypeScriptCheckRunner();
+    const result = await runner.run({ tsconfig: "tsconfig.json" });
 
     expect(result.items).toHaveLength(1);
     expect(result.items[0]).toMatchObject({
@@ -220,7 +239,7 @@ describe("runTypescriptCheck", () => {
     });
   });
 
-  it("should sort items by file name, line number, and column number", async () => {
+  it("should NOT sort items - that happens in normalizeSnapshot()", async () => {
     const mockFile1 = {
       fileName: "/test/project/zebra.ts",
       getLineAndCharacterOfPosition: vi.fn().mockReturnValue({
@@ -248,10 +267,11 @@ describe("runTypescriptCheck", () => {
     ]);
     mockFlattenDiagnosticMessageText.mockReturnValue("error");
 
-    const result = await runTypescriptCheck({ tsconfig: "tsconfig.json" });
+    const runner = new TypeScriptCheckRunner();
+    const result = await runner.run({ tsconfig: "tsconfig.json" });
 
-    expect(result.items[0]?.file).toBe("apple.ts");
-    expect(result.items[1]?.file).toBe("zebra.ts");
+    expect(result.items[0]?.file).toBe("zebra.ts");
+    expect(result.items[1]?.file).toBe("apple.ts");
   });
 
   it("should use custom tsconfig path when provided", async () => {
@@ -263,7 +283,9 @@ describe("runTypescriptCheck", () => {
     });
     mockGetPreEmitDiagnostics.mockReturnValue([]);
 
-    await runTypescriptCheck({ tsconfig: "tsconfig.build.json" });
+    const runner = new TypeScriptCheckRunner();
+
+    await runner.run({ tsconfig: "tsconfig.build.json" });
 
     expect(mockReadConfigFile).toHaveBeenCalledWith(
       "/test/project/tsconfig.build.json",
@@ -274,7 +296,9 @@ describe("runTypescriptCheck", () => {
   it("should throw when tsconfig not found", async () => {
     mockFindConfigFile.mockReturnValue(undefined);
 
-    await expect(runTypescriptCheck({})).rejects.toThrowError(
+    const runner = new TypeScriptCheckRunner();
+
+    await expect(runner.run({})).rejects.toThrowError(
       "TypeScript config file not found",
     );
   });
@@ -285,8 +309,10 @@ describe("runTypescriptCheck", () => {
       error: { messageText: "Syntax error in config" },
     });
 
+    const runner = new TypeScriptCheckRunner();
+
     await expect(
-      runTypescriptCheck({ tsconfig: "tsconfig.json" }),
+      runner.run({ tsconfig: "tsconfig.json" }),
     ).rejects.toThrowError(
       "Failed to read TypeScript config: Syntax error in config",
     );
@@ -303,7 +329,9 @@ describe("runTypescriptCheck", () => {
 
     const overrides = { compilerOptions: { strict: true } };
 
-    await runTypescriptCheck({ overrides, tsconfig: "tsconfig.json" });
+    const runner = new TypeScriptCheckRunner();
+
+    await runner.run({ overrides, tsconfig: "tsconfig.json" });
 
     expect(mockParseJsonConfigFileContent).toHaveBeenCalledWith(
       {},
@@ -333,7 +361,8 @@ describe("runTypescriptCheck", () => {
     ]);
     mockFlattenDiagnosticMessageText.mockReturnValue("error");
 
-    const result = await runTypescriptCheck({ tsconfig: "tsconfig.json" });
+    const runner = new TypeScriptCheckRunner();
+    const result = await runner.run({ tsconfig: "tsconfig.json" });
 
     expect(result.items[0]?.line).toBe(10);
     expect(result.items[0]?.column).toBe(20);
@@ -364,7 +393,8 @@ describe("runTypescriptCheck", () => {
     ]);
     mockFlattenDiagnosticMessageText.mockReturnValue("Flattened error message");
 
-    const result = await runTypescriptCheck({ tsconfig: "tsconfig.json" });
+    const runner = new TypeScriptCheckRunner();
+    const result = await runner.run({ tsconfig: "tsconfig.json" });
 
     expect(result.items[0]?.message).toBe("Flattened error message");
     expect(mockFlattenDiagnosticMessageText).toHaveBeenCalledWith(
@@ -380,8 +410,10 @@ describe("runTypescriptCheck", () => {
     });
     mockFlattenDiagnosticMessageText.mockReturnValue("Flattened complex error");
 
+    const runner = new TypeScriptCheckRunner();
+
     await expect(
-      runTypescriptCheck({ tsconfig: "tsconfig.json" }),
+      runner.run({ tsconfig: "tsconfig.json" }),
     ).rejects.toThrowError(
       "Failed to read TypeScript config: Flattened complex error",
     );
@@ -427,7 +459,8 @@ describe("runTypescriptCheck", () => {
       .mockReturnValueOnce("error inside")
       .mockReturnValueOnce("error outside");
 
-    const result = await runTypescriptCheck({ tsconfig: "tsconfig.json" });
+    const runner = new TypeScriptCheckRunner();
+    const result = await runner.run({ tsconfig: "tsconfig.json" });
 
     expect(result.items).toHaveLength(1);
     expect(result.items[0]?.file).toBe("src/file.ts");
@@ -475,7 +508,8 @@ describe("runTypescriptCheck", () => {
       return typeof msg === "string" ? msg : String(msg);
     });
 
-    const result = await runTypescriptCheck({ tsconfig: "tsconfig.json" });
+    const runner = new TypeScriptCheckRunner();
+    const result = await runner.run({ tsconfig: "tsconfig.json" });
 
     expect(result.items).toHaveLength(1);
     expect(result.items[0]?.file).toBe("src/file.ts");
@@ -501,7 +535,9 @@ describe("runTypescriptCheck", () => {
     });
     mockGetPreEmitDiagnostics.mockReturnValue([]);
 
-    await runTypescriptCheck({ tsconfig: "tsconfig.json" });
+    const runner = new TypeScriptCheckRunner();
+
+    await runner.run({ tsconfig: "tsconfig.json" });
 
     expect(emit).toHaveBeenCalledOnce();
   });
@@ -544,11 +580,46 @@ describe("runTypescriptCheck", () => {
     });
     mockGetPreEmitDiagnostics.mockReturnValue([]);
 
-    await runTypescriptCheck({ tsconfig: "tsconfig.json" });
+    const runner = new TypeScriptCheckRunner();
+
+    await runner.run({ tsconfig: "tsconfig.json" });
 
     expect(realWriteFile).toHaveBeenCalledExactlyOnceWith(
       "/test/project/node_modules/.cache/mejora/typescript/abc123def456.tsbuildinfo",
       "testing",
+    );
+  });
+
+  it("should create cacheDir recursively", async () => {
+    const runner = new TypeScriptCheckRunner();
+
+    await runner.setup();
+
+    expect(mockGetCacheDir).toHaveBeenCalledWith("typescript", "/test/project");
+    expect(mockMkdir).toHaveBeenCalledWith(
+      "node_modules/.cache/mejora/typescript",
+      { recursive: true },
+    );
+  });
+
+  it("should pass when typescript import succeeds", async () => {
+    const runner = new TypeScriptCheckRunner();
+
+    await expect(runner.validate()).resolves.toBeUndefined();
+  });
+
+  it("should throw helpful error when typescript import fails", async () => {
+    vi.resetModules();
+
+    vi.doMock("typescript", () => {
+      throw new Error("nope");
+    });
+
+    const { TypeScriptCheckRunner: FreshRunner } = await import("./typescript");
+    const runner = new FreshRunner();
+
+    await expect(runner.validate()).rejects.toThrowError(
+      'typescript check requires "typescript" package to be installed. Run: npm install typescript',
     );
   });
 });
