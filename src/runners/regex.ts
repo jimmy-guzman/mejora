@@ -55,7 +55,7 @@ class RegexCheckRunner implements CheckRunner {
           }
 
           const items: IssueInput[] = [];
-          const lines = content.split("\n");
+          const lines = content.split(/\r?\n/);
 
           for (const [lineIndex, line] of lines.entries()) {
             const lineNumber = lineIndex + 1;
