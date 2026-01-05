@@ -1,3 +1,10 @@
+## [2.2.1](https://github.com/jimmy-guzman/mejora/compare/v2.2.0...v2.2.1) (2026-01-05)
+
+
+### Bug Fixes
+
+* 🐛 preserve runner context in lifecycle methods ([#57](https://github.com/jimmy-guzman/mejora/issues/57)) ([f5884f9](https://github.com/jimmy-guzman/mejora/commit/f5884f9dc9b93d6d1d5917c88845ac98cfc6844c))
+
 # [2.2.0](https://github.com/jimmy-guzman/mejora/compare/v2.1.0...v2.2.0) (2026-01-05)
 
 
