@@ -33,7 +33,7 @@ export function createCacheKey(input: unknown): string {
 /**
  * Get the cache directory path for a given check type.
  *
- * Note: The directory must already exist. The runner's setupInfrastructure()
+ * Note: The directory must already exist. The runner's setup()
  * method ensures all cache directories are created before checks run.
  */
 export function getCacheDir(checkType: string, cwd: string = process.cwd()) {
