@@ -1,3 +1,10 @@
+## [2.3.2](https://github.com/jimmy-guzman/mejora/compare/v2.3.1...v2.3.2) (2026-01-06)
+
+
+### Bug Fixes
+
+* 🐛 no duplicate markdown reports headings ([#65](https://github.com/jimmy-guzman/mejora/issues/65)) ([82c491f](https://github.com/jimmy-guzman/mejora/commit/82c491f78a04360e5142178776411b73b60a70e8)), closes [#64](https://github.com/jimmy-guzman/mejora/issues/64)
+
 ## [2.3.1](https://github.com/jimmy-guzman/mejora/compare/v2.3.0...v2.3.1) (2026-01-06)
 
 
