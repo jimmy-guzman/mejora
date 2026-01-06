@@ -1,3 +1,10 @@
+## [2.3.1](https://github.com/jimmy-guzman/mejora/compare/v2.3.0...v2.3.1) (2026-01-06)
+
+
+### Bug Fixes
+
+* 🐛 stable heading anchors in markdown reports ([#63](https://github.com/jimmy-guzman/mejora/issues/63)) ([4bcaf9b](https://github.com/jimmy-guzman/mejora/commit/4bcaf9b1e4236a12f7e7864415983aa65d264822)), closes [#61](https://github.com/jimmy-guzman/mejora/issues/61)
+
 # [2.3.0](https://github.com/jimmy-guzman/mejora/compare/v2.2.3...v2.3.0) (2026-01-06)
 
 
