@@ -149,14 +149,14 @@ export default defineConfig({
       files: ["src/**/*"],
       patterns: [
         {
-          pattern: /\/\/\s*TODO:/gi,
+          pattern: /\/\/\s*TODO(?:\((?<owner>[^)]+)\))?:\s*(?<task>.*)/gi,
           message: (match) => {
             const task = match.groups?.task?.trim() || "no description";
             const owner = match.groups?.owner;
             const truncated =
               task.length > 80 ? `${task.slice(0, 80)}...` : task;
 
-            return scope ? `[${scope}] ${truncated}` : truncated;
+            return owner ? `[${owner}] ${truncated}` : truncated;
           },
           rule: "todo",
         },
