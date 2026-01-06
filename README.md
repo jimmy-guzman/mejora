@@ -125,9 +125,10 @@ Create one of:
 Example:
 
 ```ts
-import { defineConfig, eslint, typescript } from "mejora";
+import { defineConfig, eslint, regex, regexRunner, typescript } from "mejora";
 
 export default defineConfig({
+  runners: [regexRunner()],
   checks: {
     "eslint > no-nested-ternary": eslint({
       files: ["src/**/*.{ts,tsx,js,jsx}"],
@@ -137,18 +138,36 @@ export default defineConfig({
         },
       },
     }),
-    "typescript": typescript({
+    "typescript > noImplicitAny": typescript({
       overrides: {
         compilerOptions: {
           noImplicitAny: true,
         },
       },
     }),
+    "no-todos": regex({
+      files: ["src/**/*"],
+      patterns: [
+        {
+          pattern: /\/\/\s*TODO(?:\((?<owner>[^)]+)\))?:\s*(?<task>.*)/gi,
+          message: (match) => {
+            const task = match.groups?.task?.trim() || "no description";
+            const owner = match.groups?.owner;
+            const truncated =
+              task.length > 80 ? `${task.slice(0, 80)}...` : task;
+
+            return owner ? `[${owner}] ${truncated}` : truncated;
+          },
+          rule: "todo",
+        },
+      ],
+    }),
   },
 });
 ```
 
 Each entry in `checks` is an explicit check.
+
 The object key is the check identifier and is used in the baseline.
 
 ## Supported Checks
@@ -172,6 +191,13 @@ The object key is the check identifier and is used in the baseline.
 > [!NOTE]
 > `typescript` (^5.0.0) is required as a peer dependency when using the TypeScript check
 
+### Regex
+
+- Snapshot type: `"items"`
+- Each pattern match is treated as an issue
+- Regressions are new matches
+- Works on any file type (not just code)
+
 ### Custom Checks
 
 You can add your own checks by implementing `CheckRunner` and returning an `"items"` snapshot.
@@ -184,19 +210,17 @@ A custom check is made of two pieces:
 ```ts
 import type { CheckRunner, IssueInput } from "mejora";
 
-interface TodoCheckConfig {
+interface CustomCheckConfig {
   files: string[];
-  patterns?: string[];
+  // your custom options
 }
 
-class TodoCheckRunner implements CheckRunner {
-  readonly type = "todo";
+class CustomCheckRunner implements CheckRunner {
+  readonly type = "custom";
 
-  async run(config: TodoCheckConfig) {
+  async run(config: CustomCheckConfig) {
     const items: IssueInput[] = [];
-
     // ...produce IssueInput entries (file/line/column/rule/message)
-
     return { type: "items", items };
   }
 }
@@ -208,12 +232,12 @@ Register the runner and declare a check that uses it:
 import { defineConfig } from "mejora";
 
 export default defineConfig({
-  runners: [new TodoCheckRunner()],
+  runners: [new CustomCheckRunner()],
   checks: {
-    "todo-comments": {
-      type: "todo",
+    "my-custom-check": {
+      type: "custom",
       files: ["src/**/*.ts"],
-      patterns: ["TODO", "FIXME"],
+      // your custom options
     },
   },
 });

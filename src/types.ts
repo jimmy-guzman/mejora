@@ -156,6 +156,72 @@ export interface TypeScriptCheckConfig {
   tsconfig?: string;
 }
 
+/**
+ * A regex pattern configuration.
+ */
+export interface RegexPattern {
+  /**
+   * Human-readable message for matches.
+   *
+   * @example "TODO comment found"
+   *
+   * @example "console.log statement"
+   *
+   * @example (match) => `Found TODO at line ${match.index + 1}`
+   */
+  message?: ((match: RegExpExecArray) => string) | string;
+
+  /**
+   * The regex pattern to match.
+   *
+   * @example /\/\/\s*TODO:/gi
+   *
+   * @example /console\.log/g
+   */
+  pattern: RegExp;
+
+  /**
+   * Rule identifier for this pattern.
+   * If not provided, uses the pattern source as the rule ID.
+   *
+   * @example "no-todos"
+   *
+   * @example "no-console-log"
+   */
+  rule?: string;
+}
+
+/**
+ * Configuration for regex pattern matching check.
+ */
+export interface RegexCheckConfig {
+  /**
+   * Concurrency for processing files.
+   *
+   * @default 10
+   */
+  concurrency?: number;
+
+  /**
+   * Array of glob patterns for files to check.
+   *
+   * @example ["src/**\/*.ts", "lib/**\/*.js"]
+   */
+  files: string[];
+
+  /**
+   * Array of glob patterns to ignore.
+   *
+   * @default ["**\/node_modules/**", "**\/dist/**", "**\/.git/**"]
+   */
+  ignore?: string[];
+
+  /**
+   * Array of regex patterns to match.
+   */
+  patterns: RegexPattern[];
+}
+
 type CustomCheckConfig = Record<string, unknown> & { type: string };
 
 export type CheckConfig =
