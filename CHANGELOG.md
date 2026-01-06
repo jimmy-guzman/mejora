@@ -1,3 +1,10 @@
+# [2.3.0](https://github.com/jimmy-guzman/mejora/compare/v2.2.3...v2.3.0) (2026-01-06)
+
+
+### Features
+
+* ✨ add built in `regex` runner ([#62](https://github.com/jimmy-guzman/mejora/issues/62)) ([17901ff](https://github.com/jimmy-guzman/mejora/commit/17901ffa9c1f9e399432d42c5cd4299aa291dff1))
+
 ## [2.2.3](https://github.com/jimmy-guzman/mejora/compare/v2.2.2...v2.2.3) (2026-01-05)
 
 
