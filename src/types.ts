@@ -196,6 +196,13 @@ export interface RegexPattern {
  */
 export interface RegexCheckConfig {
   /**
+   * Concurrency for processing files.
+   *
+   * @default 10
+   */
+  concurrency?: number;
+
+  /**
    * Array of glob patterns for files to check.
    *
    * @example ["src/**\/*.ts", "lib/**\/*.js"]

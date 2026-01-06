@@ -27,7 +27,7 @@ type RegexCache = Record<string, RegexCacheEntry>;
 /**
  * Check runner for regex pattern matching.
  */
-export class RegexCheckRunner implements CheckRunner {
+class RegexCheckRunner implements CheckRunner {
   readonly type = "regex";
 
   async run(config: RegexCheckConfig) {
@@ -64,72 +64,76 @@ export class RegexCheckRunner implements CheckRunner {
     const existingCache = await loadCache<RegexCache>(cachePath);
     const newCache: RegexCache = {};
 
-    const results = await poolMap(filePaths, 10, async (filePath) => {
-      const absolutePath = join(cwd, filePath);
-      const fileHash = await getFileHash(absolutePath);
+    const results = await poolMap(
+      filePaths,
+      config.concurrency ?? 10,
+      async (filePath) => {
+        const absolutePath = join(cwd, filePath);
+        const fileHash = await getFileHash(absolutePath);
 
-      if (!fileHash) {
-        return [];
-      }
-
-      const cachedEntry = existingCache[filePath];
-
-      if (cachedEntry?.hash === fileHash) {
-        newCache[filePath] = cachedEntry;
-
-        return cachedEntry.items;
-      }
-
-      try {
-        const items: IssueInput[] = [];
-
-        const rl = createInterface({
-          crlfDelay: Infinity,
-          input: createReadStream(absolutePath, { encoding: "utf8" }),
-        });
-
-        let line = 0;
-
-        try {
-          for await (const text of rl) {
-            line++;
-
-            for (const compiled of compiledPatterns) {
-              compiled.regex.lastIndex = 0;
-
-              let match: null | RegExpExecArray;
-
-              while ((match = compiled.regex.exec(text)) !== null) {
-                const column = match.index + 1;
-                const message =
-                  typeof compiled.message === "function"
-                    ? compiled.message(match)
-                    : (compiled.message ?? `Pattern matched: ${match[0]}`);
-
-                items.push({
-                  column,
-                  file: filePath,
-                  line,
-                  message,
-                  rule: compiled.ruleText,
-                });
-              }
-            }
-          }
-        } finally {
-          rl.close();
+        if (!fileHash) {
+          return [];
         }
 
-        newCache[filePath] = {
-          hash: fileHash,
-          items,
-        };
+        const cachedEntry = existingCache[filePath];
 
-        return items;
-      } catch {
-        return [];
-      }
-    });
+        if (cachedEntry?.hash === fileHash) {
+          newCache[filePath] = cachedEntry;
+
+          return cachedEntry.items;
+        }
+
+        try {
+          const items: IssueInput[] = [];
+
+          const rl = createInterface({
+            crlfDelay: Infinity,
+            input: createReadStream(absolutePath, { encoding: "utf8" }),
+          });
+
+          let line = 0;
+
+          try {
+            for await (const text of rl) {
+              line++;
+
+              for (const compiled of compiledPatterns) {
+                compiled.regex.lastIndex = 0;
+
+                let match: null | RegExpExecArray;
+
+                while ((match = compiled.regex.exec(text)) !== null) {
+                  const column = match.index + 1;
+                  const message =
+                    typeof compiled.message === "function"
+                      ? compiled.message(match)
+                      : (compiled.message ?? `Pattern matched: ${match[0]}`);
+
+                  items.push({
+                    column,
+                    file: filePath,
+                    line,
+                    message,
+                    rule: compiled.ruleText,
+                  });
+                }
+              }
+            }
+          } finally {
+            rl.close();
+          }
+
+          newCache[filePath] = {
+            hash: fileHash,
+            items,
+          };
+
+          return items;
+        } catch {
+          return [];
+        }
+      },
+    );
 
     const rawItems: IssueInput[] = [];
 
