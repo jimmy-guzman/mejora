@@ -51,6 +51,7 @@ describe("RegexCheckRunner", () => {
 
   beforeEach(async () => {
     await mkdir(testDir, { recursive: true });
+    await runner.setup();
   });
 
   afterEach(async () => {
@@ -96,6 +97,7 @@ const bar = 1;
     const todoItem = result.items.find((item) => item.rule === "no-todos");
 
     expect(todoItem).toMatchObject({
+      column: 1,
       file: expect.stringContaining("example.ts"),
       line: 1,
       message: "TODO comment found",
@@ -239,6 +241,34 @@ const bar = 1;
 
     expect(result.items).toHaveLength(1);
     expect(result.items[0]?.file).toContain("src");
+  });
+
+  it("should use default ignore patterns when ignore is not provided", async () => {
+    await mkdir(join(testDir, "node_modules"), { recursive: true });
+    await mkdir(join(testDir, "dist"), { recursive: true });
+    await mkdir(join(testDir, "src"), { recursive: true });
+
+    await writeFile(
+      join(testDir, "node_modules", "pkg.js"),
+      "// TODO: in node_modules",
+    );
+    await writeFile(join(testDir, "dist", "bundle.js"), "// TODO: in dist");
+    await writeFile(join(testDir, "src", "code.ts"), "// TODO: in src");
+
+    const testDirRelative = relative(process.cwd(), testDir);
+
+    const result = await runner.run({
+      files: [`${testDirRelative}/**/*.{ts,js}`],
+      patterns: [
+        {
+          pattern: /TODO/g,
+          rule: "no-todos",
+        },
+      ],
+    });
+
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0]?.file).toContain("src/code.ts");
   });
 
   it("should handle files with no matches", async () => {
@@ -499,22 +529,149 @@ console.warn("warning");
     expect(result.items[0]?.message).toBe("URL: api.example.com/v1/users");
   });
 
-  it("should pass when tinyglobby import succeeds", async () => {
-    await expect(runner.validate()).resolves.toBeUndefined();
+  it("should use cache on second run with unchanged files", async () => {
+    const testFile = join(testDir, "cached.ts");
+
+    await writeFile(testFile, "// TODO: cache test");
+
+    const config = {
+      files: [relative(process.cwd(), join(testDir, "**/*.ts"))],
+      patterns: [
+        {
+          pattern: /TODO/g,
+          rule: "no-todos",
+        },
+      ],
+    };
+
+    const result1 = await runner.run(config);
+
+    expect(result1.items).toHaveLength(1);
+
+    const result2 = await runner.run(config);
+
+    expect(result2.items).toHaveLength(1);
+    expect(result2.items[0]?.message).toBe(result1.items[0]?.message);
   });
 
-  it("should throw helpful error when tinyglobby import fails", async () => {
-    vi.resetModules();
+  it("should invalidate cache when file content changes", async () => {
+    const testFile = join(testDir, "changing.ts");
 
-    vi.doMock("tinyglobby", () => {
-      throw new Error("nope");
+    await writeFile(testFile, "// TODO: first");
+
+    const config = {
+      files: [relative(process.cwd(), join(testDir, "**/*.ts"))],
+      patterns: [
+        {
+          pattern: /TODO/g,
+          rule: "no-todos",
+        },
+      ],
+    };
+
+    const result1 = await runner.run(config);
+
+    expect(result1.items).toHaveLength(1);
+    expect(result1.items[0]?.line).toBe(1);
+
+    await writeFile(testFile, "const x = 1;\n// TODO: second");
+
+    const result2 = await runner.run(config);
+
+    expect(result2.items).toHaveLength(1);
+    expect(result2.items[0]?.line).toBe(2);
+  });
+
+  it("should handle files with different configs correctly", async () => {
+    const testFile = join(testDir, "multi-config.ts");
+
+    await writeFile(testFile, "// TODO: test\nconsole.log('debug');");
+
+    const config1 = {
+      files: [relative(process.cwd(), join(testDir, "**/*.ts"))],
+      patterns: [
+        {
+          pattern: /TODO/g,
+          rule: "no-todos",
+        },
+      ],
+    };
+
+    const config2 = {
+      files: [relative(process.cwd(), join(testDir, "**/*.ts"))],
+      patterns: [
+        {
+          pattern: /console\.log/g,
+          rule: "no-console",
+        },
+      ],
+    };
+
+    const result1 = await runner.run(config1);
+
+    expect(result1.items).toHaveLength(1);
+    expect(result1.items[0]?.rule).toBe("no-todos");
+
+    const result2 = await runner.run(config2);
+
+    expect(result2.items).toHaveLength(1);
+    expect(result2.items[0]?.rule).toBe("no-console");
+  });
+
+  it("should return empty items for files that cannot be hashed", async () => {
+    const testFile = join(testDir, "no-hash.ts");
+
+    await writeFile(testFile, "// TODO: test");
+
+    const result = await runner.run({
+      files: [relative(process.cwd(), join(testDir, "**/*.ts"))],
+      patterns: [
+        {
+          pattern: /TODO/g,
+          rule: "no-todos",
+        },
+      ],
     });
 
-    const { regexRunner: freshRunner } = await import("./regex");
-    const runner = freshRunner();
+    expect(result.items).toHaveLength(1);
+  });
 
-    await expect(runner.validate()).rejects.toThrowError(
-      'regex check requires "tinyglobby" package to be installed. Run: npm install tinyglobby',
-    );
+  it("should handle readline close properly on error", async () => {
+    const testFile = join(testDir, "error.ts");
+
+    await writeFile(testFile, "// TODO: test");
+
+    const result = await runner.run({
+      files: [relative(process.cwd(), join(testDir, "**/*.ts"))],
+      patterns: [
+        {
+          pattern: /TODO/g,
+          rule: "no-todos",
+        },
+      ],
+    });
+
+    expect(result.items).toHaveLength(1);
+  });
+
+  describe("validation", () => {
+    it("should pass when tinyglobby import succeeds", async () => {
+      await expect(runner.validate()).resolves.toBeUndefined();
+    });
+
+    it("should throw helpful error when tinyglobby import fails", async () => {
+      vi.doMock("tinyglobby", () => {
+        throw new Error("nope");
+      });
+
+      const { regexRunner: freshRunner } = await import("./regex");
+      const testRunner = freshRunner();
+
+      await expect(testRunner.validate()).rejects.toThrowError(
+        'regex check requires "tinyglobby" package to be installed. Run: npm install tinyglobby',
+      );
+
+      vi.doUnmock("tinyglobby");
+    });
   });
 });

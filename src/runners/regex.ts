@@ -1,99 +1,155 @@
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
+import { createReadStream } from "node:fs";
+import { mkdir } from "node:fs/promises";
+import { createInterface } from "node:readline/promises";
+
+import { join } from "pathe";
 
 import type { CheckRunner } from "@/check-runner";
 import type { IssueInput, RegexCheckConfig } from "@/types";
 
+import {
+  createCacheKey,
+  getCacheDir,
+  getFileHash,
+  loadCache,
+  saveCache,
+} from "@/utils/cache";
+import { resolveIgnorePatterns } from "@/utils/ignore-patterns";
+import { poolMap } from "@/utils/pool-map";
+
+interface RegexCacheEntry {
+  hash: string;
+  items: IssueInput[];
+}
+
+type RegexCache = Record<string, RegexCacheEntry>;
+
 /**
  * Check runner for regex pattern matching.
  */
-class RegexCheckRunner implements CheckRunner {
+export class RegexCheckRunner implements CheckRunner {
   readonly type = "regex";
 
-  // eslint-disable-next-line class-methods-use-this -- implements interface
-  async run(regexConfig: RegexCheckConfig) {
+  async run(config: RegexCheckConfig) {
     const cwd = process.cwd();
-    const rawItems: IssueInput[] = [];
 
     const { glob } = await import("tinyglobby");
 
-    const filePaths = await glob(regexConfig.files, {
+    const ignore = resolveIgnorePatterns(config.files, config.ignore);
+
+    const filePaths = await glob(config.files, {
       absolute: false,
       cwd,
-      ignore: regexConfig.ignore ?? [
-        "**/node_modules/**",
-        "**/dist/**",
-        "**/.git/**",
-      ],
+      ignore,
     });
 
-    const compiledPatterns = regexConfig.patterns.map((patternConfig) => {
-      const { message, pattern, rule } = patternConfig;
-      const regex = new RegExp(
-        pattern.source,
-        pattern.flags.includes("g") ? pattern.flags : `${pattern.flags}g`,
-      );
+    const compiledPatterns = config.patterns.map(
+      ({ message, pattern, rule }) => {
+        const flags = pattern.flags.includes("g")
+          ? pattern.flags
+          : `${pattern.flags}g`;
 
-      return { message, pattern, regex, rule };
-    });
+        return {
+          message,
+          regex: new RegExp(pattern.source, flags),
+          ruleText: rule ?? pattern.source,
+        };
+      },
+    );
 
-    const batchSize = 100;
+    const cacheDir = getCacheDir(this.type, cwd);
+    const cacheKey = createCacheKey(config);
+    const cachePath = join(cacheDir, `${cacheKey}.json`);
 
-    for (let i = 0; i < filePaths.length; i += batchSize) {
-      const batch = filePaths.slice(i, i + batchSize);
+    const existingCache = await loadCache<RegexCache>(cachePath);
+    const newCache: RegexCache = {};
 
-      const results = await Promise.all(
-        batch.map(async (filePath) => {
-          const absolutePath = join(cwd, filePath);
+    const results = await poolMap(filePaths, 10, async (filePath) => {
+      const absolutePath = join(cwd, filePath);
+      const fileHash = await getFileHash(absolutePath);
 
-          let content: string;
+      if (!fileHash) {
+        return [];
+      }
 
-          try {
-            content = await readFile(absolutePath, "utf8");
-          } catch {
-            return [];
-          }
+      const cachedEntry = existingCache[filePath];
 
-          const items: IssueInput[] = [];
-          const lines = content.split(/\r?\n/);
+      if (cachedEntry?.hash === fileHash) {
+        newCache[filePath] = cachedEntry;
 
-          for (const [lineIndex, line] of lines.entries()) {
-            const lineNumber = lineIndex + 1;
+        return cachedEntry.items;
+      }
 
-            for (const { message, pattern, regex, rule } of compiledPatterns) {
-              regex.lastIndex = 0;
+      try {
+        const items: IssueInput[] = [];
+
+        const rl = createInterface({
+          crlfDelay: Infinity,
+          input: createReadStream(absolutePath, { encoding: "utf8" }),
+        });
+
+        let line = 0;
+
+        try {
+          for await (const text of rl) {
+            line++;
+
+            for (const compiled of compiledPatterns) {
+              compiled.regex.lastIndex = 0;
 
               let match: null | RegExpExecArray;
 
-              while ((match = regex.exec(line)) !== null) {
+              while ((match = compiled.regex.exec(text)) !== null) {
                 const column = match.index + 1;
-                const messageText =
-                  typeof message === "function"
-                    ? message(match)
-                    : (message ?? `Pattern matched: ${match[0]}`);
+                const message =
+                  typeof compiled.message === "function"
+                    ? compiled.message(match)
+                    : (compiled.message ?? `Pattern matched: ${match[0]}`);
 
                 items.push({
                   column,
                   file: filePath,
-                  line: lineNumber,
-                  message: messageText,
-                  rule: rule ?? pattern.source,
+                  line,
+                  message,
+                  rule: compiled.ruleText,
                 });
               }
             }
           }
+        } finally {
+          rl.close();
+        }
 
-          return items;
-        }),
-      );
+        newCache[filePath] = {
+          hash: fileHash,
+          items,
+        };
 
-      rawItems.push(...results.flat());
+        return items;
+      } catch {
+        return [];
+      }
+    });
+
+    const rawItems: IssueInput[] = [];
+
+    for (const items of results) {
+      rawItems.push(...items);
     }
+
+    await saveCache(cachePath, newCache);
 
     return {
       items: rawItems,
       type: "items" as const,
     };
+  }
+
+  async setup() {
+    const cwd = process.cwd();
+    const cacheDir = getCacheDir(this.type, cwd);
+
+    await mkdir(cacheDir, { recursive: true });
   }
 
   async validate() {
