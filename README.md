@@ -138,7 +138,7 @@ export default defineConfig({
         },
       },
     }),
-    "typescript": typescript({
+    "typescript > noImplicitAny": typescript({
       overrides: {
         compilerOptions: {
           noImplicitAny: true,
@@ -150,7 +150,14 @@ export default defineConfig({
       patterns: [
         {
           pattern: /\/\/\s*TODO:/gi,
-          message: "TODO comment found",
+          message: (match) => {
+            const task = match.groups?.task?.trim() || "no description";
+            const owner = match.groups?.owner;
+            const truncated =
+              task.length > 80 ? `${task.slice(0, 80)}...` : task;
+
+            return scope ? `[${scope}] ${truncated}` : truncated;
+          },
           rule: "todo",
         },
       ],
