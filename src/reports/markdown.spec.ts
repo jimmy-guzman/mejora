@@ -22,7 +22,7 @@ describe("generateMarkdownReport", () => {
 
       This file represents the current accepted state of the codebase.
 
-      ## eslint (0 issues)
+      ## eslint
 
       No issues
 
@@ -60,11 +60,16 @@ describe("generateMarkdownReport", () => {
 
       This file represents the current accepted state of the codebase.
 
-      ## eslint (1 issue)
+      ## eslint
 
-      ### [src/index.ts](../src/index.ts) (1)
+      ### [src/index.ts](../src/index.ts)
 
       - [Line 10](../src/index.ts#L10) - no-unused-vars: 'foo' is never used
+
+      1 issue in src/index.ts
+
+      ---
+      1 total issue for eslint
 
       <!-- prettier-ignore-end -->
       "
@@ -100,11 +105,16 @@ describe("generateMarkdownReport", () => {
 
       This file represents the current accepted state of the codebase.
 
-      ## typescript (1 issue)
+      ## typescript
 
-      ### [src/types.ts](../src/types.ts) (1)
+      ### [src/types.ts](../src/types.ts)
 
       - [src/types.ts](../src/types.ts) - 2304: Type error
+
+      1 issue in src/types.ts
+
+      ---
+      1 total issue for typescript
 
       <!-- prettier-ignore-end -->
       "
@@ -153,17 +163,27 @@ describe("generateMarkdownReport", () => {
 
       This file represents the current accepted state of the codebase.
 
-      ## eslint (1 issue)
+      ## eslint
 
-      ### [src/a.ts](../src/a.ts) (1)
+      ### [src/a.ts](../src/a.ts)
 
       - [Line 1](../src/a.ts#L1) - error-a: error a
 
-      ## typescript (1 issue)
+      1 issue in src/a.ts
 
-      ### [src/b.ts](../src/b.ts) (1)
+      ---
+      1 total issue for eslint
+
+      ## typescript
+
+      ### [src/b.ts](../src/b.ts)
 
       - [Line 2](../src/b.ts#L2) - 2304: error b
+
+      1 issue in src/b.ts
+
+      ---
+      1 total issue for typescript
 
       <!-- prettier-ignore-end -->
       "
@@ -221,15 +241,22 @@ describe("generateMarkdownReport", () => {
 
       This file represents the current accepted state of the codebase.
 
-      ## eslint (2 issues)
+      ## eslint
 
-      ### [src/valid.ts](../src/valid.ts) (1)
+      ### [src/valid.ts](../src/valid.ts)
 
       - [Line 10](../src/valid.ts#L10) - some-error: valid error
 
-      ### Other Issues (1)
+      1 issue in src/valid.ts
+
+      ### Other Issues
 
       - unknown: invalid item without path
+
+      1 issue in Other Issues
+
+      ---
+      2 total issues for eslint
 
       <!-- prettier-ignore-end -->
       "
@@ -281,16 +308,23 @@ describe("generateMarkdownReport", () => {
 
       This file represents the current accepted state of the codebase.
 
-      ## eslint (3 issues)
+      ## eslint
 
-      ### [src/index.ts](../src/index.ts) (2)
+      ### [src/index.ts](../src/index.ts)
 
       - [Line 10](../src/index.ts#L10) - error-1: error 1
       - [Line 20](../src/index.ts#L20) - error-2: error 2
 
-      ### [src/utils.ts](../src/utils.ts) (1)
+      2 issues in src/index.ts
+
+      ### [src/utils.ts](../src/utils.ts)
 
       - [Line 5](../src/utils.ts#L5) - error-3: error 3
+
+      1 issue in src/utils.ts
+
+      ---
+      3 total issues for eslint
 
       <!-- prettier-ignore-end -->
       "
@@ -331,11 +365,16 @@ describe("generateMarkdownReport", () => {
 
       This file represents the current accepted state of the codebase.
 
-      ## eslint (1 issue)
+      ## eslint
 
-      ### [src/index.ts](../src/index.ts) (1)
+      ### [src/index.ts](../src/index.ts)
 
       - [Line 10](../src/index.ts#L10) - no-unused-vars: 'foo' is never used
+
+      1 issue in src/index.ts
+
+      ---
+      1 total issue for eslint
 
       <!-- prettier-ignore-end -->
       "
@@ -376,11 +415,16 @@ describe("generateMarkdownReport", () => {
 
       This file represents the current accepted state of the codebase.
 
-      ## typescript (1 issue)
+      ## typescript
 
-      ### [types.ts](../types.ts) (1)
+      ### [types.ts](../types.ts)
 
       - [types.ts](../types.ts) - 2304: Type error
+
+      1 issue in types.ts
+
+      ---
+      1 total issue for typescript
 
       <!-- prettier-ignore-end -->
       "
@@ -437,16 +481,23 @@ describe("generateMarkdownReport", () => {
 
       This file represents the current accepted state of the codebase.
 
-      ## eslint (3 issues)
+      ## eslint
 
-      ### [src/index.ts](../src/index.ts) (2)
+      ### [src/index.ts](../src/index.ts)
 
       - [Line 10](../src/index.ts#L10) - error-1: error 1
       - [Line 20](../src/index.ts#L20) - error-2: error 2
 
-      ### [src/utils.ts](../src/utils.ts) (1)
+      2 issues in src/index.ts
+
+      ### [src/utils.ts](../src/utils.ts)
 
       - [Line 5](../src/utils.ts#L5) - error-3: error 3
+
+      1 issue in src/utils.ts
+
+      ---
+      3 total issues for eslint
 
       <!-- prettier-ignore-end -->
       "
@@ -521,11 +572,16 @@ describe("generateMarkdownReport", () => {
 
       This file represents the current accepted state of the codebase.
 
-      ## typescript (1 issue)
+      ## typescript
 
-      ### [src/form.tsx](../src/form.tsx) (1)
+      ### [src/form.tsx](../src/form.tsx)
 
       - [Line 71](../src/form.tsx#L71) - 7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'string | FormikErrors&lt;ItemGroupUploadFormikRow&gt;'.
+
+      1 issue in src/form.tsx
+
+      ---
+      1 total issue for typescript
 
       <!-- prettier-ignore-end -->
       "
@@ -566,11 +622,16 @@ describe("generateMarkdownReport", () => {
 
       This file represents the current accepted state of the codebase.
 
-      ## typescript (1 issue)
+      ## typescript
 
-      ### [src/test.ts](../src/test.ts) (1)
+      ### [src/test.ts](../src/test.ts)
 
       - [Line 125](../src/test.ts#L125) - 2345: The types returned by '&#91;Symbol.iterator&#93;().next(...)' are incompatible.
+
+      1 issue in src/test.ts
+
+      ---
+      1 total issue for typescript
 
       <!-- prettier-ignore-end -->
       "
@@ -633,21 +694,33 @@ describe("generateMarkdownReport", () => {
 
       This file represents the current accepted state of the codebase.
 
-      ## eslint (2 issues)
+      ## eslint
 
-      ### [src/a.ts](../src/a.ts) (1)
+      ### [src/a.ts](../src/a.ts)
 
       - [Line 1](../src/a.ts#L1) - error-a: error a
 
-      ### [src/b.ts](../src/b.ts) (1)
+      1 issue in src/a.ts
+
+      ### [src/b.ts](../src/b.ts)
 
       - [Line 2](../src/b.ts#L2) - error-b: error b
 
-      ## typescript (1 issue)
+      1 issue in src/b.ts
 
-      ### [src/c.ts](../src/c.ts) (1)
+      ---
+      2 total issues for eslint
+
+      ## typescript
+
+      ### [src/c.ts](../src/c.ts)
 
       - [Line 3](../src/c.ts#L3) - 2304: error c
+
+      1 issue in src/c.ts
+
+      ---
+      1 total issue for typescript
 
       <!-- prettier-ignore-end -->
       "
@@ -762,11 +835,16 @@ describe("generateMarkdownReport", () => {
 
       This file represents the current accepted state of the codebase.
 
-      ## eslint (1 issue)
+      ## eslint
 
-      ### [src/index.ts](../src/index.ts) (1)
+      ### [src/index.ts](../src/index.ts)
 
       - [Line 4](../src/index.ts#L4) - @typescript-eslint/no-unused-vars: 'foo' is declared but never used
+
+      1 issue in src/index.ts
+
+      ---
+      1 total issue for eslint
 
       <!-- prettier-ignore-end -->
       "
