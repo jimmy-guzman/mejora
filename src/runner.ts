@@ -1,10 +1,26 @@
-import type { Baseline, CliOptions, Config } from "./types";
+import { fileURLToPath } from "node:url";
+
+import { Tinypool } from "tinypool";
+
+import type {
+  Baseline,
+  CheckResult,
+  CliOptions,
+  Config,
+  WorkerResult,
+} from "./types";
 
 import { BaselineManager } from "./baseline";
 import { CheckRegistry } from "./check-registry";
 import { compareSnapshots } from "./comparison";
 import { logger } from "./utils/logger";
 import { normalizeSnapshot } from "./utils/snapshot";
+
+const workerPath = fileURLToPath(new URL("check-worker.mjs", import.meta.url));
+
+const pool = new Tinypool({
+  filename: workerPath,
+});
 
 /**
  * Main runner class for executing code quality checks.
@@ -16,6 +32,44 @@ export class MejoraRunner {
   constructor(registry: CheckRegistry, baselinePath?: string) {
     this.registry = registry;
     this.baselineManager = new BaselineManager(baselinePath);
+  }
+
+  private static async executeChecksParallel(
+    checks: Config["checks"],
+    baseline: Baseline | null,
+  ) {
+    const checkIds = Object.keys(checks);
+
+    try {
+      const workerPromises = checkIds.map(async (checkId) => {
+        const workerResult = (await pool.run({ checkId })) as WorkerResult;
+
+        const snapshot = normalizeSnapshot(workerResult.snapshot);
+        const baselineEntry = BaselineManager.getEntry(baseline, checkId);
+        const comparison = compareSnapshots(snapshot, baselineEntry);
+
+        return {
+          baseline: baselineEntry,
+          checkId,
+          duration: workerResult.duration,
+          hasImprovement: comparison.hasImprovement,
+          hasRegression: comparison.hasRegression,
+          hasRelocation: comparison.hasRelocation,
+          isInitial: comparison.isInitial,
+          newIssues: comparison.newIssues,
+          removedIssues: comparison.removedIssues,
+          snapshot,
+        };
+      });
+
+      return await Promise.all(workerPromises);
+    } catch (error) {
+      logger.error("Parallel execution failed:", error);
+
+      return null;
+    } finally {
+      await pool.destroy();
+    }
   }
 
   private static filterChecks = (
@@ -56,33 +110,16 @@ export class MejoraRunner {
     const startTime = performance.now();
     const baseline = await this.baselineManager.load();
     const checksToRun = MejoraRunner.filterChecks(config.checks, options);
-
-    try {
-      const requiredTypes = CheckRegistry.getRequiredTypes(checksToRun);
-
-      await Promise.all([
-        this.registry.setup(requiredTypes),
-        this.registry.validate(requiredTypes),
-      ]);
-    } catch (error) {
-      logger.error("Setup failed:", error);
-
-      return {
-        exitCode: 2,
-        hasImprovement: false,
-        hasRegression: true,
-        results: [],
-        totalDuration: performance.now() - startTime,
-      };
-    }
-
     const checkCount = Object.keys(checksToRun).length;
 
     logger.start(
       `Running ${checkCount} check${checkCount === 1 ? "" : "s"}...`,
     );
 
-    const results = await this.executeChecks(checksToRun, baseline);
+    const results =
+      checkCount > 1
+        ? await MejoraRunner.executeChecksParallel(checksToRun, baseline)
+        : await this.executeChecksSequential(checksToRun, baseline);
 
     if (!results) {
       return {
@@ -123,10 +160,6 @@ export class MejoraRunner {
       }
     }
 
-    // Save the baseline if it changed and:
-    // - No regressions occurred (safe to save all improvements)
-    // - OR force flag is set (explicitly requested)
-    // - OR any check is initial (establish baseline for new checks, even if others regress)
     if (
       updatedBaseline &&
       updatedBaseline !== baseline &&
@@ -146,47 +179,55 @@ export class MejoraRunner {
     };
   }
 
-  private async executeChecks(
+  private async executeChecksSequential(
     checks: Config["checks"],
     baseline: Baseline | null,
   ) {
-    const checkPromises = Object.entries(checks).map(
-      async ([checkId, checkConfig]) => {
-        try {
-          const startTime = performance.now();
-
-          const runner = this.registry.get(checkConfig.type);
-          const rawSnapshot = await runner.run(checkConfig);
-
-          const duration = performance.now() - startTime;
-
-          const snapshot = normalizeSnapshot(rawSnapshot);
-          const baselineEntry = BaselineManager.getEntry(baseline, checkId);
-          const comparison = compareSnapshots(snapshot, baselineEntry);
-
-          return {
-            baseline: baselineEntry,
-            checkId,
-            duration,
-            hasImprovement: comparison.hasImprovement,
-            hasRegression: comparison.hasRegression,
-            hasRelocation: comparison.hasRelocation,
-            isInitial: comparison.isInitial,
-            newIssues: comparison.newIssues,
-            removedIssues: comparison.removedIssues,
-            snapshot,
-          };
-        } catch (error) {
-          logger.error(`Error running check "${checkId}":`, error);
-          throw error;
-        }
-      },
-    );
-
     try {
-      return await Promise.all(checkPromises);
-    } catch {
+      const requiredTypes = CheckRegistry.getRequiredTypes(checks);
+
+      await Promise.all([
+        this.registry.setup(requiredTypes),
+        this.registry.validate(requiredTypes),
+      ]);
+    } catch (error) {
+      logger.error("Setup failed:", error);
+
       return null;
     }
+
+    const results: CheckResult[] = [];
+
+    for (const [checkId, checkConfig] of Object.entries(checks)) {
+      try {
+        const startTime = performance.now();
+        const runner = this.registry.get(checkConfig.type);
+        const rawSnapshot = await runner.run(checkConfig);
+        const duration = performance.now() - startTime;
+
+        const snapshot = normalizeSnapshot(rawSnapshot);
+        const baselineEntry = BaselineManager.getEntry(baseline, checkId);
+        const comparison = compareSnapshots(snapshot, baselineEntry);
+
+        results.push({
+          baseline: baselineEntry,
+          checkId,
+          duration,
+          hasImprovement: comparison.hasImprovement,
+          hasRegression: comparison.hasRegression,
+          hasRelocation: comparison.hasRelocation,
+          isInitial: comparison.isInitial,
+          newIssues: comparison.newIssues,
+          removedIssues: comparison.removedIssues,
+          snapshot,
+        });
+      } catch (error) {
+        logger.error(`Error running check "${checkId}":`, error);
+
+        return null;
+      }
+    }
+
+    return results;
   }
 }
