@@ -249,7 +249,7 @@ describe("generateMarkdownReport", () => {
 
       1 issue in src/valid.ts
 
-      ### Other Issues
+      ### Other Issues · eslint
 
       - unknown: invalid item without path
 
@@ -854,7 +854,28 @@ describe("generateMarkdownReport", () => {
   it("should NOT have duplicate headings when same file has issues in multiple checks", () => {
     const baseline = {
       checks: {
-        eslint: {
+        "custom-check": {
+          items: [
+            {
+              column: 1,
+              file: "src/common.ts",
+              id: "dup3",
+              line: 30,
+              message: "custom check error",
+              rule: "custom-rule",
+            },
+            {
+              column: 0,
+              file: "",
+              id: "unparsable-custom",
+              line: 0,
+              message: "unparsable custom item",
+              rule: "unknown-custom",
+            },
+          ],
+          type: "items" as const,
+        },
+        "eslint": {
           items: [
             {
               column: 1,
@@ -864,10 +885,18 @@ describe("generateMarkdownReport", () => {
               message: "eslint error",
               rule: "no-unused-vars",
             },
+            {
+              column: 0,
+              file: "",
+              id: "unparsable-eslint",
+              line: 0,
+              message: "unparsable eslint item",
+              rule: "unknown-eslint",
+            },
           ],
           type: "items" as const,
         },
-        typescript: {
+        "typescript": {
           items: [
             {
               column: 1,
@@ -876,6 +905,14 @@ describe("generateMarkdownReport", () => {
               line: 20,
               message: "typescript error",
               rule: "2304",
+            },
+            {
+              column: 0,
+              file: "",
+              id: "unparsable-typescript",
+              line: 0,
+              message: "unparsable typescript item",
+              rule: "unknown-typescript",
             },
           ],
           type: "items" as const,

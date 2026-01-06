@@ -47,10 +47,10 @@ function groupItemsByFile(items: Issue[]) {
     });
 }
 
-function formatUnparsableSection(items: Issue[]) {
+function formatUnparsableSection(items: Issue[], checkId: string) {
   const issueCount = items.length;
   const issueText = plural(issueCount, "issue");
-  const lines = [`\n### Other Issues\n`];
+  const lines = [`\n### Other Issues · ${checkId}\n`];
 
   for (const item of items) {
     lines.push(`- ${item.rule}: ${escapeHtml(item.message)}`);
@@ -70,13 +70,13 @@ function formatFileSection(
   checkId: string,
 ) {
   if (fileGroup.filePath === UNPARSABLE) {
-    return formatUnparsableSection(fileGroup.items);
+    return formatUnparsableSection(fileGroup.items, checkId);
   }
+
   const href = createHref(fileGroup.filePath, baselineDir);
   const link = createMarkdownLink(fileGroup.filePath, href);
   const issueCount = fileGroup.items.length;
   const issueText = plural(issueCount, "issue");
-
   const lines = [`\n### ${link} · ${checkId}\n`];
 
   for (const item of fileGroup.items) {
