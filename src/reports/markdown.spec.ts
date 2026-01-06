@@ -62,7 +62,7 @@ describe("generateMarkdownReport", () => {
 
       ## eslint
 
-      ### [src/index.ts](../src/index.ts)
+      ### [src/index.ts](../src/index.ts) · eslint
 
       - [Line 10](../src/index.ts#L10) - no-unused-vars: 'foo' is never used
 
@@ -107,7 +107,7 @@ describe("generateMarkdownReport", () => {
 
       ## typescript
 
-      ### [src/types.ts](../src/types.ts)
+      ### [src/types.ts](../src/types.ts) · typescript
 
       - [src/types.ts](../src/types.ts) - 2304: Type error
 
@@ -165,7 +165,7 @@ describe("generateMarkdownReport", () => {
 
       ## eslint
 
-      ### [src/a.ts](../src/a.ts)
+      ### [src/a.ts](../src/a.ts) · eslint
 
       - [Line 1](../src/a.ts#L1) - error-a: error a
 
@@ -176,7 +176,7 @@ describe("generateMarkdownReport", () => {
 
       ## typescript
 
-      ### [src/b.ts](../src/b.ts)
+      ### [src/b.ts](../src/b.ts) · typescript
 
       - [Line 2](../src/b.ts#L2) - 2304: error b
 
@@ -243,13 +243,13 @@ describe("generateMarkdownReport", () => {
 
       ## eslint
 
-      ### [src/valid.ts](../src/valid.ts)
+      ### [src/valid.ts](../src/valid.ts) · eslint
 
       - [Line 10](../src/valid.ts#L10) - some-error: valid error
 
       1 issue in src/valid.ts
 
-      ### Other Issues
+      ### Other Issues · eslint
 
       - unknown: invalid item without path
 
@@ -310,14 +310,14 @@ describe("generateMarkdownReport", () => {
 
       ## eslint
 
-      ### [src/index.ts](../src/index.ts)
+      ### [src/index.ts](../src/index.ts) · eslint
 
       - [Line 10](../src/index.ts#L10) - error-1: error 1
       - [Line 20](../src/index.ts#L20) - error-2: error 2
 
       2 issues in src/index.ts
 
-      ### [src/utils.ts](../src/utils.ts)
+      ### [src/utils.ts](../src/utils.ts) · eslint
 
       - [Line 5](../src/utils.ts#L5) - error-3: error 3
 
@@ -367,7 +367,7 @@ describe("generateMarkdownReport", () => {
 
       ## eslint
 
-      ### [src/index.ts](../src/index.ts)
+      ### [src/index.ts](../src/index.ts) · eslint
 
       - [Line 10](../src/index.ts#L10) - no-unused-vars: 'foo' is never used
 
@@ -417,7 +417,7 @@ describe("generateMarkdownReport", () => {
 
       ## typescript
 
-      ### [types.ts](../types.ts)
+      ### [types.ts](../types.ts) · typescript
 
       - [types.ts](../types.ts) - 2304: Type error
 
@@ -483,14 +483,14 @@ describe("generateMarkdownReport", () => {
 
       ## eslint
 
-      ### [src/index.ts](../src/index.ts)
+      ### [src/index.ts](../src/index.ts) · eslint
 
       - [Line 10](../src/index.ts#L10) - error-1: error 1
       - [Line 20](../src/index.ts#L20) - error-2: error 2
 
       2 issues in src/index.ts
 
-      ### [src/utils.ts](../src/utils.ts)
+      ### [src/utils.ts](../src/utils.ts) · eslint
 
       - [Line 5](../src/utils.ts#L5) - error-3: error 3
 
@@ -574,7 +574,7 @@ describe("generateMarkdownReport", () => {
 
       ## typescript
 
-      ### [src/form.tsx](../src/form.tsx)
+      ### [src/form.tsx](../src/form.tsx) · typescript
 
       - [Line 71](../src/form.tsx#L71) - 7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'string | FormikErrors&lt;ItemGroupUploadFormikRow&gt;'.
 
@@ -624,7 +624,7 @@ describe("generateMarkdownReport", () => {
 
       ## typescript
 
-      ### [src/test.ts](../src/test.ts)
+      ### [src/test.ts](../src/test.ts) · typescript
 
       - [Line 125](../src/test.ts#L125) - 2345: The types returned by '&#91;Symbol.iterator&#93;().next(...)' are incompatible.
 
@@ -696,13 +696,13 @@ describe("generateMarkdownReport", () => {
 
       ## eslint
 
-      ### [src/a.ts](../src/a.ts)
+      ### [src/a.ts](../src/a.ts) · eslint
 
       - [Line 1](../src/a.ts#L1) - error-a: error a
 
       1 issue in src/a.ts
 
-      ### [src/b.ts](../src/b.ts)
+      ### [src/b.ts](../src/b.ts) · eslint
 
       - [Line 2](../src/b.ts#L2) - error-b: error b
 
@@ -713,7 +713,7 @@ describe("generateMarkdownReport", () => {
 
       ## typescript
 
-      ### [src/c.ts](../src/c.ts)
+      ### [src/c.ts](../src/c.ts) · typescript
 
       - [Line 3](../src/c.ts#L3) - 2304: error c
 
@@ -837,7 +837,7 @@ describe("generateMarkdownReport", () => {
 
       ## eslint
 
-      ### [src/index.ts](../src/index.ts)
+      ### [src/index.ts](../src/index.ts) · eslint
 
       - [Line 4](../src/index.ts#L4) - @typescript-eslint/no-unused-vars: 'foo' is declared but never used
 
@@ -849,5 +849,89 @@ describe("generateMarkdownReport", () => {
       <!-- prettier-ignore-end -->
       "
     `);
+  });
+
+  it("should NOT have duplicate headings when same file has issues in multiple checks", () => {
+    const baseline = {
+      checks: {
+        "custom-check": {
+          items: [
+            {
+              column: 1,
+              file: "src/common.ts",
+              id: "dup3",
+              line: 30,
+              message: "custom check error",
+              rule: "custom-rule",
+            },
+            {
+              column: 0,
+              file: "",
+              id: "unparsable-custom",
+              line: 0,
+              message: "unparsable custom item",
+              rule: "unknown-custom",
+            },
+          ],
+          type: "items" as const,
+        },
+        "eslint": {
+          items: [
+            {
+              column: 1,
+              file: "src/common.ts",
+              id: "dup1",
+              line: 10,
+              message: "eslint error",
+              rule: "no-unused-vars",
+            },
+            {
+              column: 0,
+              file: "",
+              id: "unparsable-eslint",
+              line: 0,
+              message: "unparsable eslint item",
+              rule: "unknown-eslint",
+            },
+          ],
+          type: "items" as const,
+        },
+        "typescript": {
+          items: [
+            {
+              column: 1,
+              file: "src/common.ts",
+              id: "dup2",
+              line: 20,
+              message: "typescript error",
+              rule: "2304",
+            },
+            {
+              column: 0,
+              file: "",
+              id: "unparsable-typescript",
+              line: 0,
+              message: "unparsable typescript item",
+              rule: "unknown-typescript",
+            },
+          ],
+          type: "items" as const,
+        },
+      },
+      version: 2,
+    };
+    const result = generateMarkdownReport(baseline, "/project/.mejora");
+
+    const h1Headings = result.match(/^# .+$/gm) ?? [];
+    const h2Headings = result.match(/^## .+$/gm) ?? [];
+    const h3Headings = result.match(/^### .+$/gm) ?? [];
+
+    const uniqueH1Headings = new Set(h1Headings);
+    const uniqueH2Headings = new Set(h2Headings);
+    const uniqueH3Headings = new Set(h3Headings);
+
+    expect(h1Headings).toHaveLength(uniqueH1Headings.size);
+    expect(h2Headings).toHaveLength(uniqueH2Headings.size);
+    expect(h3Headings).toHaveLength(uniqueH3Headings.size);
   });
 });
