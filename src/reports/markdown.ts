@@ -49,13 +49,16 @@ function groupItemsByFile(items: Issue[]) {
 }
 
 function formatUnparsableSection(items: Issue[]) {
-  const lines = [`\n### Other Issues (${items.length})\n`];
+  const issueCount = items.length;
+  const issueText = plural(issueCount, "issue");
+
+  const lines = [`\n### Other Issues\n`];
 
   for (const item of items) {
     lines.push(`- ${item.rule}: ${escapeHtml(item.message)}`);
   }
 
-  lines.push("");
+  lines.push(`\n${issueCount} ${issueText} in Other Issues`, "");
 
   return lines.join("\n");
 }
@@ -73,14 +76,16 @@ function formatFileSection(
 
   const href = createHref(fileGroup.filePath, baselineDir);
   const link = createMarkdownLink(fileGroup.filePath, href);
+  const issueCount = fileGroup.items.length;
+  const issueText = plural(issueCount, "issue");
 
-  const lines = [`\n### ${link} (${fileGroup.items.length})\n`];
+  const lines = [`\n### ${link}\n`];
 
   for (const item of fileGroup.items) {
     lines.push(formatItemLine(item, baselineDir));
   }
 
-  lines.push("");
+  lines.push(`\n${issueCount} ${issueText} in ${fileGroup.filePath}`, "");
 
   return lines.join("\n");
 }
@@ -93,7 +98,7 @@ function formatCheckSection(
   const issueCount = items.length;
   const issueText = plural(issueCount, "issue");
 
-  const lines = [`\n## ${checkId} (${issueCount} ${issueText})\n`];
+  const lines = [`\n## ${checkId}\n`];
 
   if (items.length === 0) {
     lines.push("No issues");
@@ -106,6 +111,8 @@ function formatCheckSection(
   for (const fileGroup of fileGroups) {
     lines.push(formatFileSection(fileGroup, baselineDir));
   }
+
+  lines.push(`---\n${issueCount} total ${issueText} for ${checkId}`);
 
   return lines.join("\n");
 }
