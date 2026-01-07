@@ -22,6 +22,7 @@ describe("worker", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.resetModules();
     vi.mocked(loadConfig).mockResolvedValue(mockConfig);
 
     vi.spyOn(CheckRegistry.prototype, "setup").mockResolvedValue(undefined);
