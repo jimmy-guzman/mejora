@@ -45,9 +45,7 @@ export default async function run({ checkId }: { checkId: string }) {
   const snapshot = await runner.run(checkConfig);
 
   return {
-    checkId,
     duration: performance.now() - startTime,
     snapshot,
-    success: true,
   };
 }

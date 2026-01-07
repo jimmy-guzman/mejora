@@ -339,8 +339,6 @@ export interface CliOptions {
  * Result returned from worker thread after running a check.
  */
 export interface WorkerResult {
-  checkId: string;
   duration: number;
   snapshot: RawSnapshot;
-  success: true;
 }
