@@ -53,7 +53,7 @@
   },
   "prettier": "@jimmy.codes/prettier-config",
   "dependencies": {
-    "tinypool": "2.1.0"
+    "tinypool": "^2.1.0"
   },
   "devDependencies": {
     "@commitlint/config-conventional": "20.3.0",

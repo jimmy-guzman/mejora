@@ -18,10 +18,6 @@ import { normalizeSnapshot } from "./utils/snapshot";
 
 const workerPath = fileURLToPath(new URL("check-worker.mjs", import.meta.url));
 
-const pool = new Tinypool({
-  filename: workerPath,
-});
-
 /**
  * Main runner class for executing code quality checks.
  */
@@ -39,6 +35,7 @@ export class MejoraRunner {
     baseline: Baseline | null,
   ) {
     const checkIds = Object.keys(checks);
+    const pool = new Tinypool({ filename: workerPath });
 
     try {
       const workerPromises = checkIds.map(async (checkId) => {
