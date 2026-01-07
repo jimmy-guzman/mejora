@@ -1,12 +1,12 @@
 import { CheckRegistry } from "./check-registry";
-import run from "./check-worker";
+import worker from "./check-worker";
 import { loadConfig } from "./config";
 import { registerRunners } from "./registry";
 
 vi.mock("./config");
 vi.mock("./registry");
 
-describe("run", () => {
+describe("worker", () => {
   const mockConfig = {
     checks: {
       "check-1": { type: "http", url: "https://example.com" },
@@ -30,29 +30,29 @@ describe("run", () => {
   });
 
   it("should load config on first call", async () => {
-    await run({ checkId: "check-1" });
+    await worker({ checkId: "check-1" });
 
     expect(loadConfig).toHaveBeenCalledOnce();
   });
 
   it("should throw when check not found", async () => {
-    await expect(run({ checkId: "nonexistent" })).rejects.toThrowError(
+    await expect(worker({ checkId: "nonexistent" })).rejects.toThrowError(
       "Check not found in config: nonexistent",
     );
   });
 
   it("should reuse registry for same check type", async () => {
-    await run({ checkId: "check-1" });
+    await worker({ checkId: "check-1" });
     const firstCallCount = vi.mocked(registerRunners).mock.calls.length;
 
-    await run({ checkId: "check-1" });
+    await worker({ checkId: "check-1" });
     const secondCallCount = vi.mocked(registerRunners).mock.calls.length;
 
     expect(secondCallCount).toBe(firstCallCount);
   });
 
   it("should run check and return duration and snapshot", async () => {
-    const result = await run({ checkId: "check-1" });
+    const result = await worker({ checkId: "check-1" });
 
     expect(result).toMatchObject({
       duration: expect.any(Number),
@@ -62,7 +62,7 @@ describe("run", () => {
   });
 
   it("should call runner with check config", async () => {
-    await run({ checkId: "check-1" });
+    await worker({ checkId: "check-1" });
 
     expect(mockRunner.run).toHaveBeenCalledWith(mockConfig.checks["check-1"]);
   });
