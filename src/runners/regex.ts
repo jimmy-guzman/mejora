@@ -27,7 +27,7 @@ type RegexCache = Record<string, RegexCacheEntry>;
 /**
  * Check runner for regex pattern matching.
  */
-export class RegexCheckRunner implements CheckRunner {
+class RegexCheckRunner implements CheckRunner {
   readonly type = "regex";
 
   async run(config: RegexCheckConfig) {

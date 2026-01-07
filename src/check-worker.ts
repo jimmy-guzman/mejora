@@ -27,11 +27,8 @@ export default async function run({ checkId }: { checkId: string }) {
   if (!registry) {
     registry = new CheckRegistry();
 
-    if (!config) {
-      throw new Error("Config failed to load");
-    }
-
-    registerRunners(registry, config);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- already checked above
+    registerRunners(registry, config!);
 
     const checks = new Set([checkConfig.type]);
 
