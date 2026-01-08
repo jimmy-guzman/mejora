@@ -1,3 +1,10 @@
+## [2.3.3](https://github.com/jimmy-guzman/mejora/compare/v2.3.2...v2.3.3) (2026-01-08)
+
+
+### Performance Improvements
+
+* ⚡️ use workers for running checks ([#66](https://github.com/jimmy-guzman/mejora/issues/66)) ([de19da8](https://github.com/jimmy-guzman/mejora/commit/de19da8bb72d834e19804153cb7da9456953caa3))
+
 ## [2.3.2](https://github.com/jimmy-guzman/mejora/compare/v2.3.1...v2.3.2) (2026-01-06)
 
 
