@@ -84,7 +84,6 @@ try {
 
   process.exit(result.exitCode);
 } catch (error) {
-  logger.error(error);
   if (error instanceof Error) {
     logger.error(error.message);
   } else {
