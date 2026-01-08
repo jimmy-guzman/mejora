@@ -5,9 +5,8 @@ import { CheckRegistry } from "./check-registry";
 import { loadConfig } from "./config";
 import { formatJsonOutput } from "./outputs/json";
 import { formatTextOutput } from "./outputs/text";
+import { registerRunners } from "./registry";
 import { MejoraRunner } from "./runner";
-import { ESLintCheckRunner } from "./runners/eslint";
-import { TypeScriptCheckRunner } from "./runners/typescript";
 import { logger } from "./utils/logger";
 
 const { values } = parseArgs({
@@ -63,16 +62,9 @@ Examples:
 try {
   const registry = new CheckRegistry();
 
-  registry.register(new ESLintCheckRunner());
-  registry.register(new TypeScriptCheckRunner());
-
   const config = await loadConfig();
 
-  if (config.runners) {
-    for (const runner of config.runners) {
-      registry.register(runner);
-    }
-  }
+  registerRunners(registry, config);
 
   const runner = new MejoraRunner(registry);
 

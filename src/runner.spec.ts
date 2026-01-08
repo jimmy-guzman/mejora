@@ -4,7 +4,7 @@ import type { BaselineManager as BaselineManagerType } from "./baseline";
 import type { CheckRegistry as CheckRegistryType } from "./check-registry";
 import type { ESLintCheckRunner } from "./runners/eslint";
 import type { TypeScriptCheckRunner } from "./runners/typescript";
-import type { Baseline, BaselineEntry, RawSnapshot } from "./types";
+import type { Baseline, BaselineEntry, Config, RawSnapshot } from "./types";
 
 import { logger } from "./utils/logger";
 
@@ -62,14 +62,52 @@ vi.mock("./utils/snapshot", () => {
   };
 });
 
+// Mock tinypool to simulate worker execution
+let mockConfig: Config | null = null;
+let mockRegistry: CheckRegistryType | null = null;
+
+interface TinypoolInstance {
+  destroy: () => Promise<void>;
+  run: (data: { checkId: string }) => Promise<{
+    checkId: string;
+    duration: number;
+    snapshot: RawSnapshot;
+    success: true;
+  }>;
+}
+
+vi.mock("tinypool", () => {
+  return {
+    Tinypool: vi.fn(function (this: TinypoolInstance) {
+      this.run = vi.fn(async ({ checkId }: { checkId: string }) => {
+        if (!mockConfig || !mockRegistry) {
+          throw new Error("Test setup error: config/registry not initialized");
+        }
+        const checkConfig = mockConfig.checks[checkId];
+
+        if (!checkConfig) {
+          throw new Error(`Check not found in config: ${checkId}`);
+        }
+        const runner = mockRegistry.get(checkConfig.type);
+        const snapshot = await runner.run(checkConfig);
+
+        return { checkId, duration: 100, snapshot, success: true as const };
+      });
+      this.destroy = vi.fn().mockResolvedValue(undefined);
+
+      return this;
+    }),
+  };
+});
+
 const { MejoraRunner } = await import("./runner");
 const { CheckRegistry } = await import("./check-registry");
 const { compareSnapshots } = await import("./comparison");
 
 describe("MejoraRunner", () => {
-  let mockRegistry: CheckRegistryType;
-  let mockEslintRunner: ESLintCheckRunner;
-  let mockTypescriptRunner: TypeScriptCheckRunner;
+  let registry: CheckRegistryType;
+  let eslintRunner: ESLintCheckRunner;
+  let typescriptRunner: TypeScriptCheckRunner;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -78,25 +116,25 @@ describe("MejoraRunner", () => {
 
     vi.mocked(mkdir).mockResolvedValue(undefined);
 
-    mockEslintRunner = {
+    eslintRunner = {
       run: vi.fn().mockResolvedValue({ items: [], type: "items" }),
       setup: vi.fn().mockResolvedValue(undefined),
       type: "eslint",
       validate: vi.fn().mockResolvedValue(undefined),
     };
 
-    mockTypescriptRunner = {
+    typescriptRunner = {
       run: vi.fn().mockResolvedValue({ items: [], type: "items" }),
       setup: vi.fn().mockResolvedValue(undefined),
       type: "typescript",
       validate: vi.fn().mockResolvedValue(undefined),
     };
 
-    mockRegistry = {
+    registry = {
       get: vi.fn((type: string) => {
-        if (type === "eslint") return mockEslintRunner;
+        if (type === "eslint") return eslintRunner;
 
-        if (type === "typescript") return mockTypescriptRunner;
+        if (type === "typescript") return typescriptRunner;
         throw new Error(`Unknown check type: ${type}`);
       }),
       getTypes: vi.fn(),
@@ -106,16 +144,20 @@ describe("MejoraRunner", () => {
       validate: vi.fn().mockResolvedValue(undefined),
     } as unknown as CheckRegistryType;
 
+    mockRegistry = registry;
+
     CheckRegistry.getRequiredTypes = vi.fn().mockReturnValue(new Set());
   });
 
   it("should run eslint checks", async () => {
-    const config = {
+    const config: Config = {
       checks: {
         "my-check": { files: ["*.js"], type: "eslint" as const },
       },
     };
 
+    mockConfig = config;
+
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: false,
       hasRegression: false,
@@ -125,22 +167,22 @@ describe("MejoraRunner", () => {
       removedIssues: [],
     });
 
-    const runner = new MejoraRunner(mockRegistry);
+    const runner = new MejoraRunner(registry);
 
     await runner.run(config);
 
-    expect(mockEslintRunner.run).toHaveBeenCalledWith(
-      config.checks["my-check"],
-    );
+    expect(eslintRunner.run).toHaveBeenCalledWith(config.checks["my-check"]);
   });
 
   it("should run typescript checks", async () => {
-    const config = {
+    const config: Config = {
       checks: {
         "my-check": { tsconfig: "tsconfig.json", type: "typescript" as const },
       },
     };
 
+    mockConfig = config;
+
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: false,
       hasRegression: false,
@@ -150,27 +192,25 @@ describe("MejoraRunner", () => {
       removedIssues: [],
     });
 
-    const runner = new MejoraRunner(mockRegistry);
+    const runner = new MejoraRunner(registry);
 
     await runner.run(config);
 
-    expect(mockTypescriptRunner.run).toHaveBeenCalledWith(
+    expect(typescriptRunner.run).toHaveBeenCalledWith(
       config.checks["my-check"],
     );
   });
 
-  it("should call registry setup and validation", async () => {
-    const config = {
+  it("should call registry setup and validation for single check", async () => {
+    const config: Config = {
       checks: {
         "eslint-check": { files: ["*.js"], type: "eslint" as const },
-        "typescript-check": {
-          tsconfig: "tsconfig.json",
-          type: "typescript" as const,
-        },
       },
     };
 
-    const requiredTypes = new Set(["eslint", "typescript"]);
+    mockConfig = config;
+
+    const requiredTypes = new Set(["eslint"]);
 
     CheckRegistry.getRequiredTypes = vi.fn().mockReturnValue(requiredTypes);
 
@@ -183,19 +223,27 @@ describe("MejoraRunner", () => {
       removedIssues: [],
     });
 
-    const runner = new MejoraRunner(mockRegistry);
+    const runner = new MejoraRunner(registry);
 
     await runner.run(config);
 
-    expect(mockRegistry.setup).toHaveBeenCalledWith(requiredTypes);
+    expect(registry.setup).toHaveBeenCalledWith(requiredTypes);
 
-    expect(mockRegistry.validate).toHaveBeenCalledWith(requiredTypes);
+    expect(registry.validate).toHaveBeenCalledWith(requiredTypes);
   });
 
-  it("should return exit code 0 when no regressions", async () => {
-    const config = {
-      checks: { check1: { files: ["*.js"], type: "eslint" as const } },
+  it("should use parallel execution for multiple checks", async () => {
+    const config: Config = {
+      checks: {
+        "eslint-check": { files: ["*.js"], type: "eslint" as const },
+        "typescript-check": {
+          tsconfig: "tsconfig.json",
+          type: "typescript" as const,
+        },
+      },
     };
+
+    mockConfig = config;
 
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: false,
@@ -206,7 +254,41 @@ describe("MejoraRunner", () => {
       removedIssues: [],
     });
 
-    const runner = new MejoraRunner(mockRegistry);
+    const runner = new MejoraRunner(registry);
+
+    await runner.run(config);
+
+    // With parallel execution (2 checks), registry setup/validate are NOT called
+    // because workers handle their own setup
+    expect(registry.setup).not.toHaveBeenCalled();
+    expect(registry.validate).not.toHaveBeenCalled();
+
+    // But both runners should execute
+    expect(eslintRunner.run).toHaveBeenCalledWith(
+      config.checks["eslint-check"],
+    );
+    expect(typescriptRunner.run).toHaveBeenCalledWith(
+      config.checks["typescript-check"],
+    );
+  });
+
+  it("should return exit code 0 when no regressions", async () => {
+    const config: Config = {
+      checks: { check1: { files: ["*.js"], type: "eslint" as const } },
+    };
+
+    mockConfig = config;
+
+    vi.mocked(compareSnapshots).mockReturnValue({
+      hasImprovement: false,
+      hasRegression: false,
+      hasRelocation: false,
+      isInitial: true,
+      newIssues: [],
+      removedIssues: [],
+    });
+
+    const runner = new MejoraRunner(registry);
     const result = await runner.run(config);
 
     expect(result.exitCode).toBe(0);
@@ -214,9 +296,11 @@ describe("MejoraRunner", () => {
   });
 
   it("should return exit code 1 when regressions found", async () => {
-    const config = {
+    const config: Config = {
       checks: { check1: { files: ["*.js"], type: "eslint" as const } },
     };
+
+    mockConfig = config;
 
     const newItem = {
       column: 1,
@@ -228,7 +312,7 @@ describe("MejoraRunner", () => {
       signature: "new.js - no-unused-vars: error" as const,
     };
 
-    vi.mocked(mockEslintRunner.run).mockResolvedValue({
+    vi.mocked(eslintRunner.run).mockResolvedValue({
       items: [newItem],
       type: "items",
     });
@@ -242,7 +326,7 @@ describe("MejoraRunner", () => {
       removedIssues: [],
     });
 
-    const runner = new MejoraRunner(mockRegistry);
+    const runner = new MejoraRunner(registry);
     const result = await runner.run(config);
 
     expect(result.exitCode).toBe(1);
@@ -250,9 +334,11 @@ describe("MejoraRunner", () => {
   });
 
   it("should allow regressions with --force", async () => {
-    const config = {
+    const config: Config = {
       checks: { check1: { files: ["*.js"], type: "eslint" as const } },
     };
+
+    mockConfig = config;
 
     const newItem = {
       column: 1,
@@ -264,7 +350,7 @@ describe("MejoraRunner", () => {
       signature: "new.js - no-unused-vars: error" as const,
     };
 
-    vi.mocked(mockEslintRunner.run).mockResolvedValue({
+    vi.mocked(eslintRunner.run).mockResolvedValue({
       items: [newItem],
       type: "items",
     });
@@ -278,14 +364,14 @@ describe("MejoraRunner", () => {
       removedIssues: [],
     });
 
-    const runner = new MejoraRunner(mockRegistry);
+    const runner = new MejoraRunner(registry);
     const result = await runner.run(config, { force: true });
 
     expect(result.exitCode).toBe(0);
   });
 
   it("should filter checks with --only", async () => {
-    const config = {
+    const config: Config = {
       checks: {
         "eslint-main": { files: ["src/**/*.js"], type: "eslint" as const },
         "eslint-test": { files: ["test/**/*.js"], type: "eslint" as const },
@@ -296,6 +382,8 @@ describe("MejoraRunner", () => {
       },
     };
 
+    mockConfig = config;
+
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: false,
       hasRegression: false,
@@ -305,16 +393,16 @@ describe("MejoraRunner", () => {
       removedIssues: [],
     });
 
-    const runner = new MejoraRunner(mockRegistry);
+    const runner = new MejoraRunner(registry);
 
     await runner.run(config, { only: "eslint" });
 
-    expect(mockEslintRunner.run).toHaveBeenCalledTimes(2);
-    expect(mockTypescriptRunner.run).not.toHaveBeenCalled();
+    expect(eslintRunner.run).toHaveBeenCalledTimes(2);
+    expect(typescriptRunner.run).not.toHaveBeenCalled();
   });
 
   it("should filter checks with --skip", async () => {
-    const config = {
+    const config: Config = {
       checks: {
         "eslint-main": { files: ["src/**/*.js"], type: "eslint" as const },
         "typescript-main": {
@@ -324,6 +412,8 @@ describe("MejoraRunner", () => {
       },
     };
 
+    mockConfig = config;
+
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: false,
       hasRegression: false,
@@ -333,39 +423,39 @@ describe("MejoraRunner", () => {
       removedIssues: [],
     });
 
-    const runner = new MejoraRunner(mockRegistry);
+    const runner = new MejoraRunner(registry);
 
     await runner.run(config, { skip: "eslint" });
 
-    expect(mockEslintRunner.run).not.toHaveBeenCalled();
-    expect(mockTypescriptRunner.run).toHaveBeenCalledOnce();
+    expect(eslintRunner.run).not.toHaveBeenCalled();
+    expect(typescriptRunner.run).toHaveBeenCalledOnce();
   });
 
   it("should return exit code 2 on check error", async () => {
-    const config = {
+    const config: Config = {
       checks: { check1: { files: ["*.js"], type: "eslint" as const } },
     };
 
-    vi.mocked(mockEslintRunner.run).mockRejectedValue(
-      new Error("Check failed"),
-    );
+    mockConfig = config;
 
-    const runner = new MejoraRunner(mockRegistry);
+    vi.mocked(eslintRunner.run).mockRejectedValue(new Error("Check failed"));
+
+    const runner = new MejoraRunner(registry);
     const result = await runner.run(config);
 
     expect(result.exitCode).toBe(2);
   });
 
   it("should return exit code 2 on setup error", async () => {
-    const config = {
+    const config: Config = {
       checks: { check1: { files: ["*.js"], type: "eslint" as const } },
     };
 
-    vi.mocked(mockRegistry.setup).mockRejectedValue(
-      new Error("Permission denied"),
-    );
+    mockConfig = config;
 
-    const runner = new MejoraRunner(mockRegistry);
+    vi.mocked(registry.setup).mockRejectedValue(new Error("Permission denied"));
+
+    const runner = new MejoraRunner(registry);
     const logSpy = vi.spyOn(logger, "error");
     const result = await runner.run(config);
 
@@ -377,15 +467,17 @@ describe("MejoraRunner", () => {
   });
 
   it("should return exit code 2 on validation error", async () => {
-    const config = {
+    const config: Config = {
       checks: { check1: { files: ["*.js"], type: "eslint" as const } },
     };
 
-    vi.mocked(mockRegistry.validate).mockRejectedValue(
+    mockConfig = config;
+
+    vi.mocked(registry.validate).mockRejectedValue(
       new Error("ESLint not installed"),
     );
 
-    const runner = new MejoraRunner(mockRegistry);
+    const runner = new MejoraRunner(registry);
     const logSpy = vi.spyOn(logger, "error");
     const result = await runner.run(config);
 
@@ -397,9 +489,11 @@ describe("MejoraRunner", () => {
   });
 
   it("should include results for each check", async () => {
-    const config = {
+    const config: Config = {
       checks: { check1: { files: ["*.js"], type: "eslint" as const } },
     };
+
+    mockConfig = config;
 
     const item = {
       column: 1,
@@ -416,7 +510,7 @@ describe("MejoraRunner", () => {
       type: "items" as const,
     };
 
-    vi.mocked(mockEslintRunner.run).mockResolvedValue(snapshot);
+    vi.mocked(eslintRunner.run).mockResolvedValue(snapshot);
 
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: false,
@@ -427,7 +521,7 @@ describe("MejoraRunner", () => {
       removedIssues: [],
     });
 
-    const runner = new MejoraRunner(mockRegistry);
+    const runner = new MejoraRunner(registry);
     const result = await runner.run(config);
 
     expect(result.results).toHaveLength(1);
@@ -437,9 +531,11 @@ describe("MejoraRunner", () => {
   });
 
   it("should detect and report improvements", async () => {
-    const config = {
+    const config: Config = {
       checks: { check1: { files: ["*.js"], type: "eslint" as const } },
     };
+
+    mockConfig = config;
 
     const item1 = {
       column: 1,
@@ -473,7 +569,7 @@ describe("MejoraRunner", () => {
 
     mockLoad.mockResolvedValue(existingBaseline);
 
-    vi.mocked(mockEslintRunner.run).mockResolvedValue({
+    vi.mocked(eslintRunner.run).mockResolvedValue({
       items: [item2],
       type: "items",
     });
@@ -487,7 +583,7 @@ describe("MejoraRunner", () => {
       removedIssues: [item1],
     });
 
-    const runner = new MejoraRunner(mockRegistry);
+    const runner = new MejoraRunner(registry);
     const result = await runner.run(config);
 
     expect(result.hasImprovement).toBe(true);
@@ -503,9 +599,11 @@ describe("MejoraRunner", () => {
   });
 
   it("should save baseline on initial run", async () => {
-    const config = {
+    const config: Config = {
       checks: { check1: { files: ["*.js"], type: "eslint" as const } },
     };
+
+    mockConfig = config;
 
     mockLoad.mockResolvedValue(null);
 
@@ -518,7 +616,7 @@ describe("MejoraRunner", () => {
       signature: "file.js - no-unused-vars: error" as const,
     };
 
-    vi.mocked(mockEslintRunner.run).mockResolvedValue({
+    vi.mocked(eslintRunner.run).mockResolvedValue({
       items: [item],
       type: "items",
     });
@@ -532,7 +630,7 @@ describe("MejoraRunner", () => {
       removedIssues: [],
     });
 
-    const runner = new MejoraRunner(mockRegistry);
+    const runner = new MejoraRunner(registry);
     const result = await runner.run(config);
 
     expect(result.exitCode).toBe(0);
@@ -546,9 +644,11 @@ describe("MejoraRunner", () => {
   });
 
   it("should save baseline on initial run even with regressions", async () => {
-    const config = {
+    const config: Config = {
       checks: { check1: { files: ["*.js"], type: "eslint" as const } },
     };
+
+    mockConfig = config;
 
     mockLoad.mockResolvedValue(null);
 
@@ -570,7 +670,7 @@ describe("MejoraRunner", () => {
       signature: "file2.js - no-undef: error" as const,
     };
 
-    vi.mocked(mockEslintRunner.run).mockResolvedValue({
+    vi.mocked(eslintRunner.run).mockResolvedValue({
       items: [item1, item2],
       type: "items",
     });
@@ -587,7 +687,7 @@ describe("MejoraRunner", () => {
       removedIssues: [],
     });
 
-    const runner = new MejoraRunner(mockRegistry);
+    const runner = new MejoraRunner(registry);
     const result = await runner.run(config);
 
     expect(mockSave).toHaveBeenCalledWith(
@@ -601,13 +701,15 @@ describe("MejoraRunner", () => {
   });
 
   it("should throw error for invalid regex pattern in --only", async () => {
-    const config = {
+    const config: Config = {
       checks: {
         "eslint-main": { files: ["src/**/*.js"], type: "eslint" as const },
       },
     };
 
-    const runner = new MejoraRunner(mockRegistry);
+    mockConfig = config;
+
+    const runner = new MejoraRunner(registry);
 
     await expect(runner.run(config, { only: "[invalid" })).rejects.toThrowError(
       'Invalid regex pattern for --only: "[invalid"',
@@ -615,13 +717,15 @@ describe("MejoraRunner", () => {
   });
 
   it("should throw error for invalid regex pattern in --skip", async () => {
-    const config = {
+    const config: Config = {
       checks: {
         "eslint-main": { files: ["src/**/*.js"], type: "eslint" as const },
       },
     };
 
-    const runner = new MejoraRunner(mockRegistry);
+    mockConfig = config;
+
+    const runner = new MejoraRunner(registry);
 
     await expect(
       runner.run(config, { skip: "(unclosed" }),
@@ -629,7 +733,7 @@ describe("MejoraRunner", () => {
   });
 
   it("should accept valid regex pattern in --only", async () => {
-    const config = {
+    const config: Config = {
       checks: {
         "eslint-main": { files: ["src/**/*.js"], type: "eslint" as const },
         "eslint-test": { files: ["test/**/*.js"], type: "eslint" as const },
@@ -640,6 +744,8 @@ describe("MejoraRunner", () => {
       },
     };
 
+    mockConfig = config;
+
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: false,
       hasRegression: false,
@@ -649,16 +755,16 @@ describe("MejoraRunner", () => {
       removedIssues: [],
     });
 
-    const runner = new MejoraRunner(mockRegistry);
+    const runner = new MejoraRunner(registry);
 
     await runner.run(config, { only: "^eslint-.*" });
 
-    expect(mockEslintRunner.run).toHaveBeenCalledTimes(2);
-    expect(mockTypescriptRunner.run).not.toHaveBeenCalled();
+    expect(eslintRunner.run).toHaveBeenCalledTimes(2);
+    expect(typescriptRunner.run).not.toHaveBeenCalled();
   });
 
   it("should accept valid regex pattern in --skip", async () => {
-    const config = {
+    const config: Config = {
       checks: {
         "eslint-main": { files: ["src/**/*.js"], type: "eslint" as const },
         "typescript-main": {
@@ -672,6 +778,8 @@ describe("MejoraRunner", () => {
       },
     };
 
+    mockConfig = config;
+
     vi.mocked(compareSnapshots).mockReturnValue({
       hasImprovement: false,
       hasRegression: false,
@@ -681,12 +789,12 @@ describe("MejoraRunner", () => {
       removedIssues: [],
     });
 
-    const runner = new MejoraRunner(mockRegistry);
+    const runner = new MejoraRunner(registry);
 
     await runner.run(config, { skip: "typescript-.*" });
 
-    expect(mockEslintRunner.run).toHaveBeenCalledOnce();
-    expect(mockTypescriptRunner.run).not.toHaveBeenCalled();
+    expect(eslintRunner.run).toHaveBeenCalledOnce();
+    expect(typescriptRunner.run).not.toHaveBeenCalled();
   });
 
   it("should not save baseline when no changes detected", async () => {
@@ -712,7 +820,7 @@ describe("MejoraRunner", () => {
 
     mockLoad.mockResolvedValue(existingBaseline);
 
-    vi.mocked(mockEslintRunner.run).mockResolvedValue({
+    vi.mocked(eslintRunner.run).mockResolvedValue({
       items: [item],
       type: "items",
     });
@@ -726,11 +834,13 @@ describe("MejoraRunner", () => {
       removedIssues: [],
     });
 
-    const config = {
+    const config: Config = {
       checks: { check1: { files: ["*.js"], type: "eslint" as const } },
     };
 
-    const runner = new MejoraRunner(mockRegistry);
+    mockConfig = config;
+
+    const runner = new MejoraRunner(registry);
 
     await runner.run(config);
 

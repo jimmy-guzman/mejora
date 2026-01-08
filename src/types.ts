@@ -334,3 +334,11 @@ export interface CliOptions {
   only?: string | undefined;
   skip?: string | undefined;
 }
+
+/**
+ * Result returned from worker thread after running a check.
+ */
+export interface WorkerResult {
+  duration: number;
+  snapshot: RawSnapshot;
+}
