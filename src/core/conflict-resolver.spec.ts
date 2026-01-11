@@ -1,5 +1,6 @@
+import { BASELINE_VERSION } from "@/constants";
+
 import { resolveBaselineConflict } from "./conflict-resolver";
-import { BASELINE_VERSION } from "./constants";
 
 describe("resolveBaselineConflict", () => {
   it("should merge conflicts with union of items", () => {

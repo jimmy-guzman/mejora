@@ -2,10 +2,9 @@ import { pathToFileURL } from "node:url";
 
 import { lilconfig } from "lilconfig";
 
-import type { CheckRunner } from "./check-runner";
-import type { ESLintCheckRunner } from "./runners/eslint";
-import type { TypeScriptCheckRunner } from "./runners/typescript";
-import type { Config } from "./types";
+import type { ESLintCheckRunner } from "@/runners/eslint";
+import type { TypeScriptCheckRunner } from "@/runners/typescript";
+import type { CheckRunner, Config } from "@/types";
 
 const loader = async (filepath: string) => {
   const url = pathToFileURL(filepath).href;

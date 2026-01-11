@@ -1,12 +1,11 @@
 #!/usr/bin/env node
 import { parseArgs } from "node:util";
 
-import { CheckRegistry } from "./check-registry";
-import { loadConfig } from "./config";
+import { CheckRegistry } from "./core/check-registry";
+import { loadConfig } from "./core/config";
+import { Runner } from "./core/runner";
 import { formatJsonOutput } from "./outputs/json";
 import { formatTextOutput } from "./outputs/text";
-import { registerRunners } from "./registry";
-import { MejoraRunner } from "./runner";
 import { logger } from "./utils/logger";
 
 const { values } = parseArgs({
@@ -64,9 +63,9 @@ try {
 
   const config = await loadConfig();
 
-  registerRunners(registry, config);
+  registry.init(config);
 
-  const runner = new MejoraRunner(registry);
+  const runner = new Runner(registry);
 
   const result = await runner.run(config, {
     force: values.force,

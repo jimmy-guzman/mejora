@@ -1,13 +1,14 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 
+import { logger } from "@/utils/logger";
+
 import { BaselineManager } from "./baseline";
-import { logger } from "./utils/logger";
 
 vi.mock("node:fs/promises");
 vi.mock("is-in-ci", () => ({
   default: false,
 }));
-vi.mock("./utils/logger");
+vi.mock("@/utils/logger");
 
 const mockReadFile = vi.mocked(readFile);
 const mockWriteFile = vi.mocked(writeFile);

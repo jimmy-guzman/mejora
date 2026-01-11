@@ -8,20 +8,21 @@ import type {
   CliOptions,
   Config,
   WorkerResult,
-} from "./types";
+} from "@/types";
+
+import { logger } from "@/utils/logger";
+import { normalizeSnapshot } from "@/utils/snapshot";
 
 import { BaselineManager } from "./baseline";
 import { CheckRegistry } from "./check-registry";
 import { compareSnapshots } from "./comparison";
-import { logger } from "./utils/logger";
-import { normalizeSnapshot } from "./utils/snapshot";
 
-const workerPath = fileURLToPath(new URL("check-worker.mjs", import.meta.url));
+const workerPath = fileURLToPath(new URL("workers/check.mjs", import.meta.url));
 
 /**
  * Main runner class for executing code quality checks.
  */
-export class MejoraRunner {
+export class Runner {
   private baselineManager: BaselineManager;
   private registry: CheckRegistry;
 
@@ -74,10 +75,10 @@ export class MejoraRunner {
     options: CliOptions,
   ) => {
     const only = options.only
-      ? MejoraRunner.resolveRegex(options.only, "--only")
+      ? Runner.resolveRegex(options.only, "--only")
       : null;
     const skip = options.skip
-      ? MejoraRunner.resolveRegex(options.skip, "--skip")
+      ? Runner.resolveRegex(options.skip, "--skip")
       : null;
 
     if (!only && !skip) {
@@ -106,7 +107,7 @@ export class MejoraRunner {
   async run(config: Config, options: CliOptions = {}) {
     const startTime = performance.now();
     const baseline = await this.baselineManager.load();
-    const checksToRun = MejoraRunner.filterChecks(config.checks, options);
+    const checksToRun = Runner.filterChecks(config.checks, options);
     const checkCount = Object.keys(checksToRun).length;
 
     logger.start(
@@ -115,7 +116,7 @@ export class MejoraRunner {
 
     const results =
       checkCount > 1
-        ? await MejoraRunner.executeChecksParallel(checksToRun, baseline)
+        ? await Runner.executeChecksParallel(checksToRun, baseline)
         : await this.executeChecksSequential(checksToRun, baseline);
 
     if (!results) {
