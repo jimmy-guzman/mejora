@@ -4,7 +4,7 @@ import { createInterface } from "node:readline/promises";
 
 import { join } from "pathe";
 
-import type { CheckRunner, IssueInput, RegexCheckConfig  } from "@/types";
+import type { CheckRunner, IssueInput, RegexCheckConfig } from "@/types";
 
 import {
   createCacheKey,

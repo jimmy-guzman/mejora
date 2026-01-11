@@ -1,6 +1,6 @@
 import { relative } from "pathe";
 
-import type { CheckRunner, ESLintCheckConfig, IssueInput  } from "@/types";
+import type { CheckRunner, ESLintCheckConfig, IssueInput } from "@/types";
 
 import { createCacheKey, getCacheDir } from "@/utils/cache";
 
