@@ -1,7 +1,7 @@
-import type { Baseline, Issue } from "./types";
+import type { Baseline, Issue } from "@/types";
 
-import { BASELINE_VERSION } from "./constants";
-import { balanceBraces } from "./utils/brace-balancer";
+import { BASELINE_VERSION } from "@/constants";
+import { balanceBraces } from "@/utils/brace-balancer";
 
 function tryParseJson(text: string) {
   try {

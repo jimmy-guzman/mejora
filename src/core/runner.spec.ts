@@ -1,12 +1,13 @@
 import { mkdir } from "node:fs/promises";
 
+import type { ESLintCheckRunner } from "@/runners/eslint";
+import type { TypeScriptCheckRunner } from "@/runners/typescript";
+import type { Baseline, BaselineEntry, Config, RawSnapshot } from "@/types";
+
+import { logger } from "@/utils/logger";
+
 import type { BaselineManager as BaselineManagerType } from "./baseline";
 import type { CheckRegistry as CheckRegistryType } from "./check-registry";
-import type { ESLintCheckRunner } from "./runners/eslint";
-import type { TypeScriptCheckRunner } from "./runners/typescript";
-import type { Baseline, BaselineEntry, Config, RawSnapshot } from "./types";
-
-import { logger } from "./utils/logger";
 
 vi.mock("node:fs/promises", () => ({
   mkdir: vi.fn(),
@@ -100,11 +101,11 @@ vi.mock("tinypool", () => {
   };
 });
 
-const { MejoraRunner } = await import("./runner");
+const { Runner } = await import("@/core/runner");
 const { CheckRegistry } = await import("./check-registry");
-const { compareSnapshots } = await import("./comparison");
+const { compareSnapshots } = await import("@/core/comparison");
 
-describe("MejoraRunner", () => {
+describe("Runner", () => {
   let registry: CheckRegistryType;
   let eslintRunner: ESLintCheckRunner;
   let typescriptRunner: TypeScriptCheckRunner;
@@ -167,7 +168,7 @@ describe("MejoraRunner", () => {
       removedIssues: [],
     });
 
-    const runner = new MejoraRunner(registry);
+    const runner = new Runner(registry);
 
     await runner.run(config);
 
@@ -192,7 +193,7 @@ describe("MejoraRunner", () => {
       removedIssues: [],
     });
 
-    const runner = new MejoraRunner(registry);
+    const runner = new Runner(registry);
 
     await runner.run(config);
 
@@ -223,7 +224,7 @@ describe("MejoraRunner", () => {
       removedIssues: [],
     });
 
-    const runner = new MejoraRunner(registry);
+    const runner = new Runner(registry);
 
     await runner.run(config);
 
@@ -254,7 +255,7 @@ describe("MejoraRunner", () => {
       removedIssues: [],
     });
 
-    const runner = new MejoraRunner(registry);
+    const runner = new Runner(registry);
 
     await runner.run(config);
 
@@ -288,7 +289,7 @@ describe("MejoraRunner", () => {
       removedIssues: [],
     });
 
-    const runner = new MejoraRunner(registry);
+    const runner = new Runner(registry);
     const result = await runner.run(config);
 
     expect(result.exitCode).toBe(0);
@@ -326,7 +327,7 @@ describe("MejoraRunner", () => {
       removedIssues: [],
     });
 
-    const runner = new MejoraRunner(registry);
+    const runner = new Runner(registry);
     const result = await runner.run(config);
 
     expect(result.exitCode).toBe(1);
@@ -364,7 +365,7 @@ describe("MejoraRunner", () => {
       removedIssues: [],
     });
 
-    const runner = new MejoraRunner(registry);
+    const runner = new Runner(registry);
     const result = await runner.run(config, { force: true });
 
     expect(result.exitCode).toBe(0);
@@ -393,7 +394,7 @@ describe("MejoraRunner", () => {
       removedIssues: [],
     });
 
-    const runner = new MejoraRunner(registry);
+    const runner = new Runner(registry);
 
     await runner.run(config, { only: "eslint" });
 
@@ -423,7 +424,7 @@ describe("MejoraRunner", () => {
       removedIssues: [],
     });
 
-    const runner = new MejoraRunner(registry);
+    const runner = new Runner(registry);
 
     await runner.run(config, { skip: "eslint" });
 
@@ -440,7 +441,7 @@ describe("MejoraRunner", () => {
 
     vi.mocked(eslintRunner.run).mockRejectedValue(new Error("Check failed"));
 
-    const runner = new MejoraRunner(registry);
+    const runner = new Runner(registry);
     const result = await runner.run(config);
 
     expect(result.exitCode).toBe(2);
@@ -455,7 +456,7 @@ describe("MejoraRunner", () => {
 
     vi.mocked(registry.setup).mockRejectedValue(new Error("Permission denied"));
 
-    const runner = new MejoraRunner(registry);
+    const runner = new Runner(registry);
     const logSpy = vi.spyOn(logger, "error");
     const result = await runner.run(config);
 
@@ -477,7 +478,7 @@ describe("MejoraRunner", () => {
       new Error("ESLint not installed"),
     );
 
-    const runner = new MejoraRunner(registry);
+    const runner = new Runner(registry);
     const logSpy = vi.spyOn(logger, "error");
     const result = await runner.run(config);
 
@@ -521,7 +522,7 @@ describe("MejoraRunner", () => {
       removedIssues: [],
     });
 
-    const runner = new MejoraRunner(registry);
+    const runner = new Runner(registry);
     const result = await runner.run(config);
 
     expect(result.results).toHaveLength(1);
@@ -583,7 +584,7 @@ describe("MejoraRunner", () => {
       removedIssues: [item1],
     });
 
-    const runner = new MejoraRunner(registry);
+    const runner = new Runner(registry);
     const result = await runner.run(config);
 
     expect(result.hasImprovement).toBe(true);
@@ -630,7 +631,7 @@ describe("MejoraRunner", () => {
       removedIssues: [],
     });
 
-    const runner = new MejoraRunner(registry);
+    const runner = new Runner(registry);
     const result = await runner.run(config);
 
     expect(result.exitCode).toBe(0);
@@ -687,7 +688,7 @@ describe("MejoraRunner", () => {
       removedIssues: [],
     });
 
-    const runner = new MejoraRunner(registry);
+    const runner = new Runner(registry);
     const result = await runner.run(config);
 
     expect(mockSave).toHaveBeenCalledWith(
@@ -709,7 +710,7 @@ describe("MejoraRunner", () => {
 
     mockConfig = config;
 
-    const runner = new MejoraRunner(registry);
+    const runner = new Runner(registry);
 
     await expect(runner.run(config, { only: "[invalid" })).rejects.toThrowError(
       'Invalid regex pattern for --only: "[invalid"',
@@ -725,7 +726,7 @@ describe("MejoraRunner", () => {
 
     mockConfig = config;
 
-    const runner = new MejoraRunner(registry);
+    const runner = new Runner(registry);
 
     await expect(
       runner.run(config, { skip: "(unclosed" }),
@@ -755,7 +756,7 @@ describe("MejoraRunner", () => {
       removedIssues: [],
     });
 
-    const runner = new MejoraRunner(registry);
+    const runner = new Runner(registry);
 
     await runner.run(config, { only: "^eslint-.*" });
 
@@ -789,7 +790,7 @@ describe("MejoraRunner", () => {
       removedIssues: [],
     });
 
-    const runner = new MejoraRunner(registry);
+    const runner = new Runner(registry);
 
     await runner.run(config, { skip: "typescript-.*" });
 
@@ -840,7 +841,7 @@ describe("MejoraRunner", () => {
 
     mockConfig = config;
 
-    const runner = new MejoraRunner(registry);
+    const runner = new Runner(registry);
 
     await runner.run(config);
 

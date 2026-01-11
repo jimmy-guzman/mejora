@@ -1,5 +1,4 @@
-export type { CheckRunner } from "./check-runner";
-export { defineConfig } from "./config";
+export { defineConfig } from "./core/config";
 export { eslintCheck as eslint, eslintCheck } from "./runners/eslint";
 export { regexCheck as regex, regexCheck, regexRunner } from "./runners/regex";
 export {
@@ -7,3 +6,4 @@ export {
   typescriptCheck,
 } from "./runners/typescript";
 export type { Config, Issue, IssueInput, RawSnapshot, Snapshot } from "./types";
+export type { CheckRunner } from "@/types";

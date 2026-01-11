@@ -3,13 +3,14 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import isInCi from "is-in-ci";
 import { dirname } from "pathe";
 
-import type { Baseline, BaselineEntry } from "./types";
+import type { Baseline, BaselineEntry } from "@/types";
 
+import { BASELINE_VERSION, DEFAULT_BASELINE_PATH } from "@/constants";
+import { generateMarkdownReport } from "@/reports/markdown";
+import { logger } from "@/utils/logger";
+
+import { compareBaselines } from "./comparison";
 import { resolveBaselineConflict } from "./conflict-resolver";
-import { BASELINE_VERSION, DEFAULT_BASELINE_PATH } from "./constants";
-import { generateMarkdownReport } from "./reports/markdown";
-import { areBaselineEntriesEquivalent } from "./utils/baseline";
-import { logger } from "./utils/logger";
 
 export class BaselineManager {
   private baselinePath: string;
@@ -37,7 +38,7 @@ export class BaselineManager {
     const current = baseline ?? BaselineManager.create({});
     const existingEntry = current.checks[checkId];
 
-    if (areBaselineEntriesEquivalent(entry, existingEntry)) {
+    if (compareBaselines(entry, existingEntry)) {
       return current;
     }
 

@@ -1,7 +1,6 @@
 import { relative, resolve, sep } from "pathe";
 
-import type { CheckRunner } from "@/check-runner";
-import type { IssueInput, TypeScriptCheckConfig } from "@/types";
+import type { CheckRunner, IssueInput, TypeScriptCheckConfig } from "@/types";
 
 import { createCacheKey, getCacheDir } from "@/utils/cache";
 import { normalizeDiagnosticMessage } from "@/utils/typescript";

@@ -1,4 +1,7 @@
-import type { CheckRunner } from "./check-runner";
+import type { CheckRunner, Config } from "@/types";
+
+import { ESLintCheckRunner } from "@/runners/eslint";
+import { TypeScriptCheckRunner } from "@/runners/typescript";
 
 /**
  * Registry for managing check runners.
@@ -56,6 +59,17 @@ export class CheckRegistry {
    */
   has(type: string) {
     return this.runners.has(type);
+  }
+
+  init(config: Pick<Config, "runners"> = {}) {
+    this.register(new ESLintCheckRunner());
+    this.register(new TypeScriptCheckRunner());
+
+    if (config.runners) {
+      for (const runner of config.runners) {
+        this.register(runner);
+      }
+    }
   }
 
   /**

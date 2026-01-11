@@ -1,8 +1,8 @@
 import { relative } from "pathe";
 
-import type { Baseline, Issue } from "../types";
+import type { Baseline, Issue } from "@/types";
 
-import { plural } from "../utils/text";
+import { plural } from "@/utils/text";
 
 const UNPARSABLE = "__unparsable__";
 

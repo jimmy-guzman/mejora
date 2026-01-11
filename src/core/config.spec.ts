@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 
 import { join } from "pathe";
 
-import type { Config } from "./types";
+import type { Config } from "@/types";
 
 import { defineConfig, loadConfig } from "./config";
 

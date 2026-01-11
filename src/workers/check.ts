@@ -1,13 +1,12 @@
-import { CheckRegistry } from "./check-registry";
-import { loadConfig } from "./config";
-import { registerRunners } from "./registry";
+import { CheckRegistry } from "@/core/check-registry";
+import { loadConfig } from "@/core/config";
 
 let config: Awaited<ReturnType<typeof loadConfig>> | null = null;
 let configPromise: null | Promise<void> = null;
 
 const registries = new Map<string, CheckRegistry>();
 
-export default async function run({ checkId }: { checkId: string }) {
+export default async function checkWorker({ checkId }: { checkId: string }) {
   if (!config) {
     configPromise ??= (async () => {
       config = await loadConfig();
@@ -27,8 +26,8 @@ export default async function run({ checkId }: { checkId: string }) {
   if (!registry) {
     registry = new CheckRegistry();
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- already checked above
-    registerRunners(registry, config!);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- we know config is defined here
+    registry.init(config!);
 
     const checks = new Set([checkConfig.type]);
 
