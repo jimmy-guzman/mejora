@@ -4,20 +4,38 @@ import { resolve } from "pathe";
 
 import { hash } from "./hash";
 
-const stableReplacer = (_key: string, value: unknown) => {
-  if (value && typeof value === "object" && !Array.isArray(value)) {
-    const obj = value as Record<string, unknown>;
-    const sorted: Record<string, unknown> = {};
+function createStableReplacer() {
+  const seen = new WeakSet();
 
-    for (const key of Object.keys(obj).toSorted()) {
-      sorted[key] = obj[key];
+  return (_key: string, value: unknown) => {
+    if (value && typeof value === "object") {
+      if (seen.has(value)) {
+        return "[Circular]";
+      }
+
+      seen.add(value);
+
+      if (!Array.isArray(value)) {
+        const obj = value as Record<string, unknown>;
+        const sorted: Record<string, unknown> = {};
+
+        for (const key of Object.keys(obj).toSorted()) {
+          const val = obj[key];
+
+          if (typeof val === "function" || typeof val === "symbol") {
+            continue;
+          }
+
+          sorted[key] = val;
+        }
+
+        return sorted;
+      }
     }
 
-    return sorted;
-  }
-
-  return value;
-};
+    return value;
+  };
+}
 
 /**
  * Generates a stable hash key for caching purposes
@@ -27,7 +45,7 @@ const stableReplacer = (_key: string, value: unknown) => {
  * @returns A stable hash key for the given input
  */
 export function createCacheKey(input: unknown): string {
-  const json = JSON.stringify(input ?? null, stableReplacer);
+  const json = JSON.stringify(input ?? null, createStableReplacer());
 
   return hash(json);
 }
