@@ -84,11 +84,13 @@ vi.mock("tinypool", () => {
         if (!mockConfig || !mockRegistry) {
           throw new Error("Test setup error: config/registry not initialized");
         }
+
         const checkConfig = mockConfig.checks[checkId];
 
         if (!checkConfig) {
           throw new Error(`Check not found in config: ${checkId}`);
         }
+
         const runner = mockRegistry.get(checkConfig.type);
         const snapshot = await runner.run(checkConfig);
 
@@ -136,6 +138,7 @@ describe("Runner", () => {
         if (type === "eslint") return eslintRunner;
 
         if (type === "typescript") return typescriptRunner;
+
         throw new Error(`Unknown check type: ${type}`);
       }),
       getTypes: vi.fn(),
