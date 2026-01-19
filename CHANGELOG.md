@@ -1,3 +1,10 @@
+## [2.3.4](https://github.com/jimmy-guzman/mejora/compare/v2.3.3...v2.3.4) (2026-01-19)
+
+
+### Bug Fixes
+
+* 🐛 handle circular references in cache key generation ([#68](https://github.com/jimmy-guzman/mejora/issues/68)) ([59a3115](https://github.com/jimmy-guzman/mejora/commit/59a311557577fc091deead807f5dd7f46c12c6ee))
+
 ## [2.3.3](https://github.com/jimmy-guzman/mejora/compare/v2.3.2...v2.3.3) (2026-01-08)
 
 
