@@ -69,6 +69,26 @@ describe("createCacheKey", () => {
 
     expect(key1).not.toBe(key2);
   });
+
+  it("should handle circular references without throwing", () => {
+    const plugin: Record<string, unknown> = {
+      meta: { name: "test-plugin" },
+      rules: { "test-rule": { meta: {} } },
+    };
+
+    const configs = {
+      recommended: { plugins: { test: plugin } },
+    };
+
+    plugin.configs = configs;
+
+    expect(() => createCacheKey(plugin)).not.toThrowError();
+
+    const key1 = createCacheKey(plugin);
+    const key2 = createCacheKey(plugin);
+
+    expect(key1).toBe(key2);
+  });
 });
 
 describe("getCacheDir", () => {
