@@ -12,6 +12,8 @@
     "esbenp",
     "esbuild",
     "gitzy",
+    "grammex",
+    "graphmatch",
     "gruntfuggly",
     "jiti",
     "knip",
@@ -32,7 +34,8 @@
     "unrs",
     "unstub",
     "vitest",
-    "wagoid"
+    "wagoid",
+    "zeptomatch"
   ],
   "ignorePaths": [
     "node_modules",

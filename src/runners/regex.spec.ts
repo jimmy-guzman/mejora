@@ -653,25 +653,4 @@ console.warn("warning");
 
     expect(result.items).toHaveLength(1);
   });
-
-  describe("validation", () => {
-    it("should pass when tinyglobby import succeeds", async () => {
-      await expect(runner.validate()).resolves.toBeUndefined();
-    });
-
-    it("should throw helpful error when tinyglobby import fails", async () => {
-      vi.doMock("tinyglobby", () => {
-        throw new Error("nope");
-      });
-
-      const { regexRunner: freshRunner } = await import("./regex");
-      const testRunner = freshRunner();
-
-      await expect(testRunner.validate()).rejects.toThrowError(
-        'regex check requires "tinyglobby" package to be installed. Run: npm install tinyglobby',
-      );
-
-      vi.doUnmock("tinyglobby");
-    });
-  });
 });
