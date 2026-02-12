@@ -39,9 +39,6 @@ importers:
       gitzy:
         specifier: 6.5.7
         version: 6.5.7
-      is-in-ci:
-        specifier: 2.0.0
-        version: 2.0.0
       knip:
         specifier: 5.83.1
         version: 5.83.1(@types/node@24.10.4)(typescript@5.9.3)
@@ -2247,11 +2244,6 @@ packages:
     peerDependencies:
       eslint: '*'
       typescript: '>=4.7.4'
-
-  is-in-ci@2.0.0:
-    resolution: {integrity: sha512-cFeerHriAnhrQSbpAxL37W1wcJKUUX07HyLWZCW1URJT/ra3GyUTzBgUnh24TMVfNTV2Hij2HLxkPHFZfOZy5w==}
-    engines: {node: '>=20'}
-    hasBin: true
 
   is-map@2.0.3:
     resolution: {integrity: sha512-1Qed0/Hr2m+YqxnM09CjA2d/i6YZNfF6R2oRAOj36eUdS6qIV/huPJNSEpKbupewFs+ZsJlxsjjPbc0/afW6Lw==}
@@ -5717,8 +5709,6 @@ snapshots:
       typescript: 5.9.3
     transitivePeerDependencies:
       - supports-color
-
-  is-in-ci@2.0.0: {}
 
   is-map@2.0.3: {}
 

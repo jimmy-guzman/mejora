@@ -5,7 +5,7 @@ import { logger } from "@/utils/logger";
 import { BaselineManager } from "./baseline";
 
 vi.mock("node:fs/promises");
-vi.mock("is-in-ci", () => ({
+vi.mock("@/utils/is-in-ci", () => ({
   default: false,
 }));
 vi.mock("@/utils/logger");
@@ -1191,7 +1191,7 @@ describe("BaselineManager", () => {
     });
 
     it("should not save when in CI without force flag", async () => {
-      vi.doMock("is-in-ci", () => ({
+      vi.doMock("@/utils/is-in-ci", () => ({
         default: true,
       }));
       vi.resetModules();
