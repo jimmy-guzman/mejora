@@ -1,3 +1,10 @@
+## [2.3.5](https://github.com/jimmy-guzman/mejora/compare/v2.3.4...v2.3.5) (2026-02-12)
+
+
+### Performance Improvements
+
+* ⚡️ use native `glob` ([#70](https://github.com/jimmy-guzman/mejora/issues/70)) ([0a6a7b9](https://github.com/jimmy-guzman/mejora/commit/0a6a7b9e81d55ccc7800a4074827c4a2c1071879))
+
 ## [2.3.4](https://github.com/jimmy-guzman/mejora/compare/v2.3.3...v2.3.4) (2026-01-19)
 
 
