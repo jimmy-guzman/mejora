@@ -1,3 +1,10 @@
+## [2.3.6](https://github.com/jimmy-guzman/mejora/compare/v2.3.5...v2.3.6) (2026-02-12)
+
+
+### Performance Improvements
+
+* ⚡️ drop `is-in-ci` ([#71](https://github.com/jimmy-guzman/mejora/issues/71)) ([6f76b0c](https://github.com/jimmy-guzman/mejora/commit/6f76b0c869cf9d9f6ffbb79c3036be5642998153))
+
 ## [2.3.5](https://github.com/jimmy-guzman/mejora/compare/v2.3.4...v2.3.5) (2026-02-12)
 
 
