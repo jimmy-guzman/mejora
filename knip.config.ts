@@ -6,6 +6,5 @@ export default {
     "@commitlint/config-conventional",
     "commitlint",
     "eslint",
-    "tinyglobby",
   ],
 } satisfies KnipConfig;

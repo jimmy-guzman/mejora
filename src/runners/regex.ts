@@ -1,5 +1,5 @@
 import { createReadStream } from "node:fs";
-import { mkdir } from "node:fs/promises";
+import { glob as fsGlob, mkdir } from "node:fs/promises";
 import { createInterface } from "node:readline/promises";
 
 import { join } from "pathe";
@@ -32,15 +32,26 @@ class RegexCheckRunner implements CheckRunner {
   async run(config: RegexCheckConfig) {
     const cwd = process.cwd();
 
-    const { glob } = await import("tinyglobby");
+    const patterns = Array.isArray(config.files)
+      ? config.files
+      : [config.files];
 
-    const ignore = resolveIgnorePatterns(config.files, config.ignore);
+    const exclude = resolveIgnorePatterns(patterns, config.ignore);
 
-    const filePaths = await glob(config.files, {
-      absolute: false,
-      cwd,
-      ignore,
-    });
+    const allFiles = new Set<string>();
+
+    for (const pattern of patterns) {
+      const files = fsGlob(pattern, {
+        cwd,
+        exclude,
+      });
+
+      for await (const file of files) {
+        allFiles.add(file);
+      }
+    }
+
+    const filePaths = [...allFiles];
 
     const compiledPatterns = config.patterns.map(
       ({ message, pattern, rule }) => {
@@ -153,16 +164,6 @@ class RegexCheckRunner implements CheckRunner {
     const cacheDir = getCacheDir(this.type, cwd);
 
     await mkdir(cacheDir, { recursive: true });
-  }
-
-  async validate() {
-    try {
-      await import("tinyglobby");
-    } catch {
-      throw new Error(
-        `${this.type} check requires "tinyglobby" package to be installed. Run: npm install tinyglobby`,
-      );
-    }
   }
 }
 
