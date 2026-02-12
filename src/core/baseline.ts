@@ -1,12 +1,12 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 
-import isInCi from "is-in-ci";
 import { dirname } from "pathe";
 
 import type { Baseline, BaselineEntry } from "@/types";
 
 import { BASELINE_VERSION, DEFAULT_BASELINE_PATH } from "@/constants";
 import { generateMarkdownReport } from "@/reports/markdown";
+import isInCi from "@/utils/is-in-ci";
 import { logger } from "@/utils/logger";
 
 import { compareBaselines } from "./comparison";
