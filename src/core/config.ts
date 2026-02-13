@@ -3,6 +3,7 @@ import { pathToFileURL } from "node:url";
 import { lilconfig } from "lilconfig";
 
 import type { ESLintCheckRunner } from "@/runners/eslint";
+import type { RegexCheckRunner } from "@/runners/regex";
 import type { TypeScriptCheckRunner } from "@/runners/typescript";
 import type { CheckRunner, Config } from "@/types";
 
@@ -31,7 +32,11 @@ type CheckConfig<
   type: TType;
 };
 
-type InternalRunners = readonly [ESLintCheckRunner, TypeScriptCheckRunner];
+type InternalRunners = readonly [
+  ESLintCheckRunner,
+  TypeScriptCheckRunner,
+  RegexCheckRunner,
+];
 
 /**
  * Define mejora configuration.

@@ -1,6 +1,7 @@
 import type { CheckRunner, Config } from "@/types";
 
 import { ESLintCheckRunner } from "@/runners/eslint";
+import { RegexCheckRunner } from "@/runners/regex";
 import { TypeScriptCheckRunner } from "@/runners/typescript";
 
 /**
@@ -64,6 +65,7 @@ export class CheckRegistry {
   init(config: Pick<Config, "runners"> = {}) {
     this.register(new ESLintCheckRunner());
     this.register(new TypeScriptCheckRunner());
+    this.register(new RegexCheckRunner());
 
     if (config.runners) {
       for (const runner of config.runners) {
@@ -76,12 +78,10 @@ export class CheckRegistry {
    * Register a check runner.
    *
    * @param runner - The check runner to register
-   *
-   * @throws {Error} If a runner with the same type is already registered
    */
   register(runner: CheckRunner) {
     if (this.runners.has(runner.type)) {
-      throw new Error(`Check runner already registered: ${runner.type}`);
+      return;
     }
 
     this.runners.set(runner.type, runner);
