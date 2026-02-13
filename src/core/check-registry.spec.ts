@@ -15,7 +15,7 @@ describe("CheckRegistry", () => {
       expect(registry.get("eslint")).toBe(mockRunner);
     });
 
-    it("should throw error when registering duplicate type", () => {
+    it("should silently skip when registering duplicate type", () => {
       const mockRunner1 = {
         run: vi.fn(),
         type: "eslint",
@@ -27,10 +27,9 @@ describe("CheckRegistry", () => {
       const registry = new CheckRegistry();
 
       registry.register(mockRunner1);
+      registry.register(mockRunner2);
 
-      expect(() => {
-        registry.register(mockRunner2);
-      }).toThrowError("Check runner already registered: eslint");
+      expect(registry.get("eslint")).toBe(mockRunner1);
     });
 
     it("should allow registering multiple different types", () => {

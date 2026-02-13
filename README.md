@@ -125,10 +125,9 @@ Create one of:
 Example:
 
 ```ts
-import { defineConfig, eslint, regex, regexRunner, typescript } from "mejora";
+import { defineConfig, eslint, regex, typescript } from "mejora";
 
 export default defineConfig({
-  runners: [regexRunner()],
   checks: {
     "eslint > no-nested-ternary": eslint({
       files: ["src/**/*.{ts,tsx,js,jsx}"],
