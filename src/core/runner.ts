@@ -1,6 +1,5 @@
 import { fileURLToPath } from "node:url";
-
-import { Tinypool } from "tinypool";
+import { Worker } from "node:worker_threads";
 
 import type {
   Baseline,
@@ -36,11 +35,10 @@ export class Runner {
     baseline: Baseline | null,
   ) {
     const checkIds = Object.keys(checks);
-    const pool = new Tinypool({ filename: workerPath });
 
     try {
       const workerPromises = checkIds.map(async (checkId) => {
-        const workerResult = (await pool.run({ checkId })) as WorkerResult;
+        const workerResult = await Runner.executeWorker(checkId);
 
         const snapshot = normalizeSnapshot(workerResult.snapshot);
         const baselineEntry = BaselineManager.getEntry(baseline, checkId);
@@ -65,9 +63,23 @@ export class Runner {
       logger.error("Parallel execution failed:", error);
 
       return null;
-    } finally {
-      await pool.destroy();
     }
+  }
+
+  private static async executeWorker(checkId: string): Promise<WorkerResult> {
+    return new Promise((resolve, reject) => {
+      const worker = new Worker(workerPath, {
+        workerData: { checkId },
+      });
+
+      worker.on("message", resolve);
+      worker.on("error", reject);
+      worker.on("exit", (code) => {
+        if (code !== 0) {
+          reject(new Error(`Worker stopped with exit code ${code}`));
+        }
+      });
+    });
   }
 
   private static filterChecks = (

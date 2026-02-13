@@ -1,3 +1,5 @@
+import { parentPort, workerData } from "node:worker_threads";
+
 import { CheckRegistry } from "@/core/check-registry";
 import { loadConfig } from "@/core/config";
 
@@ -6,7 +8,7 @@ let configPromise: null | Promise<void> = null;
 
 const registries = new Map<string, CheckRegistry>();
 
-export default async function checkWorker({ checkId }: { checkId: string }) {
+export async function checkWorker({ checkId }: { checkId: string }) {
   if (!config) {
     configPromise ??= (async () => {
       config = await loadConfig();
@@ -44,4 +46,10 @@ export default async function checkWorker({ checkId }: { checkId: string }) {
     duration: performance.now() - startTime,
     snapshot,
   };
+}
+
+if (parentPort) {
+  const result = await checkWorker(workerData as { checkId: string });
+
+  parentPort.postMessage(result);
 }

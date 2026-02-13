@@ -30,6 +30,7 @@ const { BaselineManager } = await import("./baseline");
 BaselineManager.getEntry = vi.fn(
   (baseline: Baseline | null, checkId: string) => baseline?.checks[checkId],
 );
+
 BaselineManager.update = vi.fn(
   (baseline: Baseline | null, checkId: string, entry: BaselineEntry) => {
     const current = baseline ?? { checks: {}, version: 2 };
@@ -63,28 +64,36 @@ vi.mock("./utils/snapshot", () => {
   };
 });
 
-// Mock tinypool to simulate worker execution
 let mockConfig: Config | null = null;
 let mockRegistry: CheckRegistryType | null = null;
 
-interface TinypoolInstance {
-  destroy: () => Promise<void>;
-  run: (data: { checkId: string }) => Promise<{
-    checkId: string;
-    duration: number;
-    snapshot: RawSnapshot;
-    success: true;
-  }>;
-}
+vi.mock("node:worker_threads", async () => {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-imports -- we need the actual types for Worker
+  const actual = await vi.importActual<typeof import("node:worker_threads")>(
+    "node:worker_threads",
+  );
 
-vi.mock("tinypool", () => {
   return {
-    Tinypool: vi.fn(function (this: TinypoolInstance) {
-      this.run = vi.fn(async ({ checkId }: { checkId: string }) => {
+    ...actual,
+    // eslint-disable-next-line prefer-arrow-callback -- we need to use `this` to mock the Worker instance methods
+    Worker: vi.fn(function (
+      this: unknown,
+      _filename: string,
+      options?: { workerData?: { checkId: string } },
+    ) {
+      const workerData = options?.workerData;
+
+      // Simulate worker execution
+      const executeWorker = async () => {
         if (!mockConfig || !mockRegistry) {
           throw new Error("Test setup error: config/registry not initialized");
         }
 
+        if (!workerData) {
+          throw new Error("workerData is required");
+        }
+
+        const { checkId } = workerData;
         const checkConfig = mockConfig.checks[checkId];
 
         if (!checkConfig) {
@@ -94,11 +103,49 @@ vi.mock("tinypool", () => {
         const runner = mockRegistry.get(checkConfig.type);
         const snapshot = await runner.run(checkConfig);
 
-        return { checkId, duration: 100, snapshot, success: true as const };
-      });
-      this.destroy = vi.fn().mockResolvedValue(undefined);
+        return { duration: 100, snapshot };
+      };
 
-      return this;
+      // Store the promise for the worker execution
+      const executionPromise = executeWorker();
+
+      // Mock worker instance
+      const mockWorker = {
+        on: vi.fn((event: string, handler: (...args: unknown[]) => void) => {
+          switch (event) {
+            case "error": {
+              executionPromise.catch(handler);
+
+              break;
+            }
+            case "exit": {
+              executionPromise
+                .then(() => {
+                  handler(0);
+                })
+                .catch(() => {
+                  handler(1);
+                });
+
+              break;
+            }
+            case "message": {
+              executionPromise.then(handler).catch(() => {
+                // Error will be handled by 'error' event
+              });
+
+              break;
+            }
+            // No default
+          }
+
+          return mockWorker;
+        }),
+        postMessage: vi.fn(),
+        terminate: vi.fn(),
+      };
+
+      return mockWorker;
     }),
   };
 });
@@ -276,6 +323,7 @@ describe("Runner", () => {
     );
   });
 
+  // ... rest of the tests remain the same ...
   it("should return exit code 0 when no regressions", async () => {
     const config: Config = {
       checks: { check1: { files: ["*.js"], type: "eslint" as const } },
