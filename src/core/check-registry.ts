@@ -78,8 +78,6 @@ export class CheckRegistry {
    * Register a check runner.
    *
    * @param runner - The check runner to register
-   *
-   * @throws {Error} If a runner with the same type is already registered
    */
   register(runner: CheckRunner) {
     if (this.runners.has(runner.type)) {
