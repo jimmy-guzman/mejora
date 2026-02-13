@@ -1,3 +1,10 @@
+## [2.3.7](https://github.com/jimmy-guzman/mejora/compare/v2.3.6...v2.3.7) (2026-02-13)
+
+
+### Performance Improvements
+
+* ⚡️ drop `tinypool`, us native worker threads ([703b4df](https://github.com/jimmy-guzman/mejora/commit/703b4df69f38ab2a5ab2d3a96b13342d68bc2095))
+
 ## [2.3.6](https://github.com/jimmy-guzman/mejora/compare/v2.3.5...v2.3.6) (2026-02-12)
 
 
