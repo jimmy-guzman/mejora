@@ -1,3 +1,10 @@
+# [2.4.0](https://github.com/jimmy-guzman/mejora/compare/v2.3.7...v2.4.0) (2026-02-13)
+
+
+### Features
+
+* ✨ auto register regex runner ([#72](https://github.com/jimmy-guzman/mejora/issues/72)) ([54a425f](https://github.com/jimmy-guzman/mejora/commit/54a425fdf36eadd4dc8c404ca2716b361a4e6847))
+
 ## [2.3.7](https://github.com/jimmy-guzman/mejora/compare/v2.3.6...v2.3.7) (2026-02-13)
 
 
