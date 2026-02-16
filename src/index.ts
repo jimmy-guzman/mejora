@@ -1,9 +1,14 @@
 export { defineConfig } from "./core/config";
-export { eslintCheck as eslint, eslintCheck } from "./runners/eslint";
-export { regexCheck as regex, regexCheck, regexRunner } from "./runners/regex";
-export {
-  typescriptCheck as typescript,
-  typescriptCheck,
-} from "./runners/typescript";
-export type { Config, Issue, IssueInput, RawSnapshot, Snapshot } from "./types";
+export { defineCheck } from "./core/define-check";
+export { eslint } from "./runners/eslint";
+export { regex } from "./runners/regex";
+export { typescript } from "./runners/typescript";
+export type {
+  Check,
+  Config,
+  Issue,
+  IssueInput,
+  RawSnapshot,
+  Snapshot,
+} from "./types";
 export type { CheckRunner } from "@/types";

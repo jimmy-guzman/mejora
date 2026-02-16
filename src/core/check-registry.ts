@@ -1,9 +1,5 @@
 import type { CheckRunner, Config } from "@/types";
 
-import { ESLintCheckRunner } from "@/runners/eslint";
-import { RegexCheckRunner } from "@/runners/regex";
-import { TypeScriptCheckRunner } from "@/runners/typescript";
-
 /**
  * Registry for managing check runners.
  *
@@ -15,12 +11,12 @@ export class CheckRegistry {
   /**
    * Get unique check types from a set of check configs.
    *
-   * @param checks - Record of check configs
+   * @param checks - Array of checks
    *
-   * @returns Set of unique check types used in the configs
+   * @returns Set of unique check types used in the checks
    */
-  static getRequiredTypes(checks: Record<string, { type: string }>) {
-    return new Set(Object.values(checks).map((c) => c.type));
+  static getRequiredTypes(checks: { config: { type: string }; id: string }[]) {
+    return new Set(checks.map((c) => c.config.type));
   }
 
   /**
@@ -62,11 +58,15 @@ export class CheckRegistry {
     return this.runners.has(type);
   }
 
+  /**
+   * Initialize the registry with runners from config.
+   *
+   * All runners (built-in and custom) are now registered via config.runners,
+   * which is auto-populated by defineConfig() from checks with __runnerFactory.
+   *
+   * @param config - Configuration with optional runners
+   */
   init(config: Pick<Config, "runners"> = {}) {
-    this.register(new ESLintCheckRunner());
-    this.register(new TypeScriptCheckRunner());
-    this.register(new RegexCheckRunner());
-
     if (config.runners) {
       for (const runner of config.runners) {
         this.register(runner);

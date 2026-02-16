@@ -122,29 +122,26 @@ Create one of:
 - `mejora.config.mjs`
 - `mejora.config.mts`
 
-Example:
-
 ```ts
 import { defineConfig, eslint, regex, typescript } from "mejora";
 
 export default defineConfig({
-  checks: {
-    "eslint > no-nested-ternary": eslint({
+  checks: [
+    eslint({
+      name: "no-nested-ternary",
       files: ["src/**/*.{ts,tsx,js,jsx}"],
-      overrides: {
-        rules: {
-          "no-nested-ternary": "error",
-        },
+      rules: {
+        "no-nested-ternary": "error",
       },
     }),
-    "typescript > noImplicitAny": typescript({
-      overrides: {
-        compilerOptions: {
-          noImplicitAny: true,
-        },
+    typescript({
+      name: "no-implicit-any",
+      compilerOptions: {
+        noImplicitAny: true,
       },
     }),
-    "no-todos": regex({
+    regex({
+      name: "no-todos",
       files: ["src/**/*"],
       patterns: [
         {
@@ -161,13 +158,11 @@ export default defineConfig({
         },
       ],
     }),
-  },
+  ],
 });
 ```
 
-Each entry in `checks` is an explicit check.
-
-The object key is the check identifier and is used in the baseline.
+Each check has an explicit ID used in the baseline and output.
 
 ## Supported Checks
 
@@ -199,46 +194,52 @@ The object key is the check identifier and is used in the baseline.
 
 ### Custom Checks
 
-You can add your own checks by implementing `CheckRunner` and returning an `"items"` snapshot.
-
-A custom check is made of two pieces:
-
-- A **runner** (registered in `runners`) that knows how to execute your check type
-- A **check config** (declared in `checks`) that includes a matching `type` and any options your runner needs
+Define custom checks using `defineCheck()`:
 
 ```ts
-import type { CheckRunner, IssueInput } from "mejora";
+import { defineConfig, defineCheck } from "mejora";
+import { glob, readFile } from "node:fs/promises";
 
-interface CustomCheckConfig {
-  files: string[];
-  // your custom options
-}
+const noHardcodedUrls = defineCheck({
+  type: "no-hardcoded-urls",
+  async run(config) {
+    const violations = [];
 
-class CustomCheckRunner implements CheckRunner {
-  readonly type = "custom";
+    for await (const file of glob(config.files, { cwd: process.cwd() })) {
+      const content = await readFile(file, "utf-8");
+      const lines = content.split("\n");
 
-  async run(config: CustomCheckConfig) {
-    const items: IssueInput[] = [];
-    // ...produce IssueInput entries (file/line/column/rule/message)
-    return { type: "items", items };
-  }
-}
-```
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const matches = line.matchAll(/https?:\/\/[^\s'"]+/g);
 
-Register the runner and declare a check that uses it:
+        for (const match of matches) {
+          violations.push({
+            file,
+            line: i + 1,
+            column: match.index + 1,
+            rule: "no-hardcoded-urls",
+            message: `Hardcoded URL found: ${match[0]}`,
+          });
+        }
+      }
+    }
 
-```ts
-import { defineConfig } from "mejora";
+    return violations;
+  },
+});
 
 export default defineConfig({
-  runners: [new CustomCheckRunner()],
-  checks: {
-    "my-custom-check": {
-      type: "custom",
+  checks: [
+    noHardcodedUrls({
+      name: "urls-in-src",
       files: ["src/**/*.ts"],
-      // your custom options
-    },
-  },
+    }),
+    noHardcodedUrls({
+      name: "urls-in-lib",
+      files: ["lib/**/*.ts"],
+    }),
+  ],
 });
 ```
 

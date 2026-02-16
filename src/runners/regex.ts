@@ -4,8 +4,9 @@ import { createInterface } from "node:readline/promises";
 
 import { join } from "pathe";
 
-import type { CheckRunner, IssueInput, RegexCheckConfig } from "@/types";
+import type { IssueInput, RegexCheckConfig } from "@/types";
 
+import { defineCheck } from "@/core/define-check";
 import {
   createCacheKey,
   getCacheDir,
@@ -24,12 +25,31 @@ interface RegexCacheEntry {
 type RegexCache = Record<string, RegexCacheEntry>;
 
 /**
- * Check runner for regex pattern matching.
+ * Create a regex check for use with mejora().
+ *
+ * @param config - Regex check configuration options including name.
+ *
+ * @returns A Check object for use with mejora().
+ *
+ * @example
+ * ```ts
+ * import { defineConfig, regex } from "mejora";
+ *
+ * export default defineConfig({
+ *   checks: [
+ *     regex({
+ *       name: "no-todos",
+ *       files: ["src/**\/*.ts"],
+ *       patterns: [
+ *         { pattern: /TODO/g, message: "TODO comment found" }
+ *       ]
+ *     })
+ *   ]
+ * });
+ * ```
  */
-export class RegexCheckRunner implements CheckRunner {
-  readonly type = "regex";
-
-  async run(config: RegexCheckConfig) {
+export const regex = defineCheck<RegexCheckConfig>({
+  async run(config) {
     const cwd = process.cwd();
 
     const patterns = Array.isArray(config.files)
@@ -67,7 +87,7 @@ export class RegexCheckRunner implements CheckRunner {
       },
     );
 
-    const cacheDir = getCacheDir(this.type, cwd);
+    const cacheDir = getCacheDir("regex", cwd);
     const cacheKey = createCacheKey(config);
     const cachePath = join(cacheDir, `${cacheKey}.json`);
 
@@ -153,34 +173,15 @@ export class RegexCheckRunner implements CheckRunner {
 
     await saveCache(cachePath, newCache);
 
-    return {
-      items: rawItems,
-      type: "items" as const,
-    };
-  }
+    return rawItems;
+  },
 
   async setup() {
     const cwd = process.cwd();
-    const cacheDir = getCacheDir(this.type, cwd);
+    const cacheDir = getCacheDir("regex", cwd);
 
     await mkdir(cacheDir, { recursive: true });
-  }
-}
+  },
 
-export const regexRunner = () => {
-  return new RegexCheckRunner();
-};
-
-/**
- * Create a regex check configuration.
- *
- * @param config - Regex check configuration options.
- *
- * @returns A regex check configuration object.
- */
-export function regexCheck(config: RegexCheckConfig) {
-  return {
-    type: "regex" as const,
-    ...config,
-  };
-}
+  type: "regex",
+});

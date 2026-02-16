@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 
 import { join } from "pathe";
 
-import type { Config } from "@/types";
+import { eslint } from "@/runners/eslint";
 
 import { defineConfig, loadConfig } from "./config";
 
@@ -29,18 +29,19 @@ describe("config", () => {
   });
 
   describe("defineConfig", () => {
-    it("should return config as-is", () => {
-      const config: Config = {
-        checks: {
-          "test-check": {
+    it("should create config with array of checks", () => {
+      const config = defineConfig({
+        checks: [
+          eslint({
             files: ["**/*.ts"],
-            overrides: { rules: {} },
-            type: "eslint",
-          },
-        },
-      };
+            name: "test-check",
+            rules: {},
+          }),
+        ],
+      });
 
-      expect(defineConfig(config)).toBe(config);
+      expect(config.checks).toHaveLength(1);
+      expect(config.checks[0]?.id).toBe("test-check");
     });
   });
 
@@ -48,61 +49,74 @@ describe("config", () => {
     it("should load .ts config files", async () => {
       writeFileSync(
         join(testDir, "mejora.config.ts"),
-        `export default { checks: { "test": { type: "eslint", files: ["**/*.ts"], overrides: { rules: {} } } } };`,
+        `import { defineConfig, eslint } from "${originalCwd}/src/index.ts";
+         export default defineConfig({
+           checks: [
+             eslint({ name: "test", files: ["**/*.ts"], rules: {} })
+           ]
+         });`,
       );
 
       const config = await loadConfig();
 
-      expect(config.checks.test).toBeDefined();
+      expect(config.checks[0]?.id).toBe("test");
     });
 
     it("should load .mts config files", async () => {
       writeFileSync(
         join(testDir, "mejora.config.mts"),
-        `export default { checks: { "test": { type: "typescript", tsconfig: "./tsconfig.json" } } };`,
+        `import { defineConfig, typescript } from "${originalCwd}/src/index.ts";
+         export default defineConfig({
+           checks: [
+             typescript({ name: "test", tsconfig: "./tsconfig.json" })
+           ]
+         });`,
       );
 
       const config = await loadConfig();
 
-      expect(config.checks.test?.type).toBe("typescript");
+      expect(config.checks[0]?.config.type).toBe("typescript");
     });
 
     it("should load .js config files", async () => {
       writeFileSync(
         join(testDir, "mejora.config.js"),
-        `export default { checks: { "test": { type: "eslint", files: [], overrides: { rules: {} } } } };`,
+        `import { defineConfig, eslint } from "${originalCwd}/src/index.ts";
+         export default defineConfig({
+           checks: [
+             eslint({ name: "test", files: [], rules: {} })
+           ]
+         });`,
       );
 
       const config = await loadConfig();
 
-      expect(config.checks.test).toBeDefined();
-    });
-
-    it("should load config without default export (named exports only)", async () => {
-      writeFileSync(
-        join(testDir, "mejora.config.ts"),
-        `export const checks = { "test": { type: "eslint", files: [], overrides: { rules: {} } } };`,
-      );
-
-      const config = await loadConfig();
-
-      expect(config.checks.test).toBeDefined();
+      expect(config.checks[0]?.id).toBe("test");
     });
 
     it("should prioritize .ts over .js", async () => {
       writeFileSync(
         join(testDir, "mejora.config.ts"),
-        `export default { checks: { "from-ts": { type: "eslint", files: [], overrides: { rules: {} } } } };`,
+        `import { defineConfig, eslint } from "${originalCwd}/src/index.ts";
+         export default defineConfig({
+           checks: [
+             eslint({ name: "from-ts", files: [], rules: {} })
+           ]
+         });`,
       );
       writeFileSync(
         join(testDir, "mejora.config.js"),
-        `export default { checks: { "from-js": { type: "eslint", files: [], overrides: { rules: {} } } } };`,
+        `import { defineConfig, eslint } from "${originalCwd}/src/index.ts";
+         export default defineConfig({
+           checks: [
+             eslint({ name: "from-js", files: [], rules: {} })
+           ]
+         });`,
       );
 
       const config = await loadConfig();
 
-      expect(config.checks["from-ts"]).toBeDefined();
-      expect(config.checks["from-js"]).toBeUndefined();
+      expect(config.checks[0]?.id).toBe("from-ts");
     });
 
     it("should throw when no config file exists", async () => {

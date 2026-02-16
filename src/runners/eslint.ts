@@ -1,35 +1,47 @@
 import { relative } from "pathe";
 
-import type { CheckRunner, ESLintCheckConfig, IssueInput } from "@/types";
+import type { ESLintCheckConfig, IssueInput } from "@/types";
 
+import { defineCheck } from "@/core/define-check";
 import { createCacheKey, getCacheDir } from "@/utils/cache";
 
 /**
- * Check runner for ESLint.
+ * Create an ESLint check for use with mejora().
+ *
+ * @param config - ESLint check configuration options including name.
+ *
+ * @returns A Check object for use with mejora().
+ *
+ * @example
+ * ```ts
+ * import { defineConfig, eslint } from "mejora";
+ *
+ * export default defineConfig({
+ *   checks: [
+ *     eslint({
+ *       name: "no-console",
+ *       files: ["src/**\/*.ts"],
+ *       rules: { "no-console": "error" }
+ *     })
+ *   ]
+ * });
+ * ```
  */
-export class ESLintCheckRunner implements CheckRunner {
-  readonly type = "eslint";
-
-  async run(eslintConfig: ESLintCheckConfig) {
+export const eslint = defineCheck<ESLintCheckConfig>({
+  async run(config) {
     const { ESLint } = await import("eslint");
 
     const cwd = process.cwd();
-    const cacheDir = getCacheDir(this.type, cwd);
-    const cacheKey = createCacheKey(eslintConfig);
+    const cacheDir = getCacheDir("eslint", cwd);
+    const cacheKey = createCacheKey(config);
+
+    const { concurrency, files, ...eslintConfig } = config;
 
     const rulesToTrack = new Set<string>();
 
-    if (eslintConfig.overrides) {
-      const configs = Array.isArray(eslintConfig.overrides)
-        ? eslintConfig.overrides
-        : [eslintConfig.overrides];
-
-      for (const config of configs) {
-        if (config.rules) {
-          for (const ruleId of Object.keys(config.rules)) {
-            rulesToTrack.add(ruleId);
-          }
-        }
+    if (eslintConfig.rules) {
+      for (const ruleId of Object.keys(eslintConfig.rules)) {
+        rulesToTrack.add(ruleId);
       }
     }
 
@@ -38,17 +50,17 @@ export class ESLintCheckRunner implements CheckRunner {
     const eslint = new ESLint({
       cache: true,
       cacheLocation: `${cacheDir}/${cacheKey}.eslintcache`,
-      overrideConfig: eslintConfig.overrides,
+      overrideConfig: eslintConfig,
       //  When concurrency is enabled, all options must be cloneable values (JSON values)
       ...(!hasRuleFilter && {
-        concurrency: eslintConfig.concurrency ?? "auto",
+        concurrency: concurrency ?? "auto",
       }),
       ...(hasRuleFilter && {
         ruleFilter: ({ ruleId }) => rulesToTrack.has(ruleId),
       }),
     });
 
-    const results = await eslint.lintFiles(eslintConfig.files);
+    const results = await eslint.lintFiles(files);
 
     const rawItems: IssueInput[] = [];
 
@@ -68,41 +80,26 @@ export class ESLintCheckRunner implements CheckRunner {
       }
     }
 
-    return {
-      items: rawItems,
-      type: "items" as const,
-    };
-  }
+    return rawItems;
+  },
 
   async setup() {
     const cwd = process.cwd();
-    const cacheDir = getCacheDir(this.type, cwd);
+    const cacheDir = getCacheDir("eslint", cwd);
     const { mkdir } = await import("node:fs/promises");
 
     await mkdir(cacheDir, { recursive: true });
-  }
+  },
+
+  type: "eslint",
 
   async validate() {
     try {
       await import("eslint");
     } catch {
       throw new Error(
-        `${this.type} check requires "eslint" package to be installed. Run: npm install eslint`,
+        'eslint check requires "eslint" package to be installed. Run: npm install eslint',
       );
     }
-  }
-}
-
-/**
- * Create an ESLint check configuration.
- *
- * @param config - ESLint check configuration options.
- *
- * @returns An ESLint check configuration object.
- */
-export function eslintCheck(config: ESLintCheckConfig) {
-  return {
-    type: "eslint" as const,
-    ...config,
-  };
-}
+  },
+});

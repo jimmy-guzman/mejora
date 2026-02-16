@@ -67,19 +67,35 @@ export interface Baseline {
 /**
  * Configuration for an ESLint check.
  *
+ * All ESLint configuration fields (rules, languageOptions, plugins, etc.)
+ * are passed directly to ESLint's `overrideConfig` option.
+ *
  * @example
  * ```ts
  * eslint({
+ *   name: "no-console",
  *   files: ["src/**\/*.{ts,tsx}"],
- *   overrides: {
- *     rules: {
- *       "no-nested-ternary": "error",
- *     },
+ *   rules: {
+ *     "no-console": "error",
  *   },
  * })
  * ```
+ *
+ * @example Advanced with custom parser
+ * ```ts
+ * eslint({
+ *   name: "typescript-strict",
+ *   files: ["src/**\/*.ts"],
+ *   rules: {
+ *     "@typescript-eslint/no-explicit-any": "error"
+ *   },
+ *   languageOptions: {
+ *     parser: typescriptParser
+ *   }
+ * })
+ * ```
  */
-export interface ESLintCheckConfig {
+export interface ESLintCheckConfig extends Linter.Config {
   /**
    * Concurrency setting for ESLint.
    *
@@ -97,25 +113,6 @@ export interface ESLintCheckConfig {
    * @example ["src/**\/*.ts", "src/**\/*.tsx"]
    */
   files: string[];
-
-  /**
-   * ESLint configuration to merge with the base config.
-   *
-   * This is passed to ESLint's `overrideConfig` option and merged with
-   * your existing ESLint configuration.
-   *
-   * Can be a single config object or an array of config objects.
-   *
-   * @example
-   * ```ts
-   * {
-   *   rules: {
-   *     "no-console": "error",
-   *   },
-   * }
-   * ```
-   */
-  overrides?: Linter.Config | Linter.Config[];
 }
 
 /**
@@ -124,10 +121,9 @@ export interface ESLintCheckConfig {
  * @example
  * ```ts
  * typescript({
- *   overrides: {
- *     compilerOptions: {
- *       noImplicitAny: true,
- *     },
+ *   name: "strict",
+ *   compilerOptions: {
+ *     noImplicitAny: true,
  *   },
  * })
  * ```
@@ -139,9 +135,7 @@ export interface TypeScriptCheckConfig {
    * These options are merged with (not replacing) the compiler options
    * from your tsconfig file.
    */
-  overrides?: {
-    compilerOptions?: CompilerOptions;
-  };
+  compilerOptions?: CompilerOptions;
 
   /**
    * Path to a TypeScript config file.
@@ -229,6 +223,31 @@ export type CheckConfig =
   | CustomCheckConfig;
 
 /**
+ * A check object that can be passed to mejora().
+ * Created by factory functions like eslint(), typescript(), regex(), or defineCheck().
+ */
+export interface Check {
+  /**
+   * Internal factory for creating the check runner.
+   * Used by defineConfig() for auto-registration.
+   *
+   * @internal
+   */
+  __runnerFactory?: () => CheckRunner;
+
+  /**
+   * The underlying check configuration.
+   */
+  config: CheckConfig;
+
+  /**
+   * Unique identifier for this check.
+   * Used in baseline tracking and output.
+   */
+  id: string;
+}
+
+/**
  * mejora configuration.
  *
  * Define checks to run and track for regressions.
@@ -238,8 +257,9 @@ export type CheckConfig =
  * import { defineConfig, eslint, typescript } from "mejora";
  *
  * export default defineConfig({
- *   checks: {
- *     "eslint > no-nested-ternary": eslint({
+ *   checks: [
+ *     eslint({
+ *       name: "no-nested-ternary",
  *       files: ["src/**\/*.{ts,tsx}"],
  *       overrides: {
  *         rules: {
@@ -247,50 +267,26 @@ export type CheckConfig =
  *         },
  *       },
  *     }),
- *     "typescript": typescript({
+ *     typescript({
+ *       name: "strict",
  *       overrides: {
  *         compilerOptions: {
  *           noImplicitAny: true,
  *         },
  *       },
  *     }),
- *   },
+ *   ]
  * });
  * ```
  */
 export interface Config {
   /**
-   * Check definitions.
-   *
-   * Each key is a check identifier used in the baseline and output.
-   * The identifier can contain any characters.
-   *
-   * Use `eslint()` and `typescript()` helpers to create check configs.
-   *
-   * @example
-   * ```ts
-   * {
-   *   "eslint > no-console": eslint({ ... }),
-   *   "typescript": typescriptCheck({ ... }),
-   * }
-   * ```
+   * Array of checks to run.
    */
-  checks: Record<string, CheckConfig>;
+  checks: Check[];
 
   /**
-   * Runners to register custom check types.
-   *
-   * Built-in checks (eslint, typescript) are always available.
-   *
-   * @example
-   * ```ts
-   * {
-   *   runners: [myCustomRunner()],
-   *   checks: {
-   *     "custom": myCheck({ ... })
-   *   }
-   * }
-   * ```
+   * Optional custom check runners.
    */
   runners?: CheckRunner[];
 }
@@ -380,6 +376,60 @@ export interface CheckRunner<TConfig = unknown> {
   /**
    * Validate that all dependencies for this check are available.
    * Called once during runner setup before any checks execute.
+   *
+   * Should throw a descriptive error if dependencies are missing.
+   *
+   * @throws {Error} If required dependencies are not installed
+   */
+  validate?(): Promise<void>;
+}
+
+/**
+ * Custom check definition for defineCheck().
+ */
+export interface CustomCheckDefinition<
+  TConfig extends Record<string, unknown> = Record<string, unknown>,
+> {
+  /**
+   * Optional default configuration values.
+   * These will be merged with user-provided config.
+   */
+  defaults?: Partial<TConfig>;
+
+  /**
+   * Execute the check and return violations.
+   *
+   * @param config - The full check configuration object (including files and custom fields)
+   *
+   * @returns Array of violations found
+   */
+  run(config: TConfig & { files: string[] }): Promise<IssueInput[]>;
+
+  /**
+   * Setup any infrastructure needed for this check type.
+   * Called once per type during runner setup, in parallel with other checks.
+   *
+   * Examples: creating cache directories, initializing compilation state.
+   *
+   * Optional - not all checks need infrastructure setup.
+   */
+  setup?(): Promise<void>;
+
+  /**
+   * Unique identifier for this check type.
+   * Multiple check instances can share the same type and runner.
+   *
+   * @example "eslint"
+   *
+   * @example "typescript"
+   *
+   * @example "no-hardcoded-urls"
+   */
+  type: string;
+
+  /**
+   * Validate that all dependencies for this check type are available.
+   * Called once per type during runner setup before any checks execute.
    *
    * Should throw a descriptive error if dependencies are missing.
    *

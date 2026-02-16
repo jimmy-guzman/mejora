@@ -40,27 +40,43 @@ const mockMkdir = vi.fn();
 
 vi.mock("node:fs/promises", () => ({ mkdir: mockMkdir }));
 
-const { typescriptCheck, TypeScriptCheckRunner } = await import("./typescript");
+const { typescript } = await import("./typescript");
 
-describe("typescriptCheck", () => {
-  it("should return config with type 'typescript'", () => {
-    const config: TypeScriptCheckConfig = {
-      overrides: { compilerOptions: { strict: true } },
+describe("typescript", () => {
+  it("should return Check object with typescript config", () => {
+    const config: TypeScriptCheckConfig & { name: string } = {
+      compilerOptions: { strict: true },
+      name: "test-check",
       tsconfig: "tsconfig.json",
     };
 
-    const result = typescriptCheck(config);
+    const result = typescript(config);
+    const resultConfig = result.config as unknown as TypeScriptCheckConfig;
 
-    expect(result.type).toBe("typescript");
-    expect(result.tsconfig).toBe(config.tsconfig);
-    expect(result.overrides).toStrictEqual(config.overrides);
+    expect(result.id).toBe("test-check");
+    expect(result.config.type).toBe("typescript");
+    expect(resultConfig.tsconfig).toBe(config.tsconfig);
+    expect(resultConfig.compilerOptions).toStrictEqual(config.compilerOptions);
   });
 });
 
-describe("TypeScriptCheckRunner", () => {
+describe("typescript runner", () => {
+  let runner: ReturnType<
+    NonNullable<ReturnType<typeof typescript>["__runnerFactory"]>
+  >;
+
   beforeEach(() => {
     vi.clearAllMocks();
     vi.spyOn(process, "cwd").mockReturnValue("/test/project");
+
+    // Create a runner instance using the factory from the check
+    const check = typescript({ name: "test", tsconfig: "tsconfig.json" });
+
+    if (!check.__runnerFactory) {
+      throw new Error("__runnerFactory is required");
+    }
+
+    runner = check.__runnerFactory();
 
     mockCreateIncrementalCompilerHost.mockReturnValue({
       writeFile: vi.fn(),
@@ -89,7 +105,6 @@ describe("TypeScriptCheckRunner", () => {
     });
     mockGetPreEmitDiagnostics.mockReturnValue([]);
 
-    const runner = new TypeScriptCheckRunner();
     const result = await runner.run({ tsconfig: "tsconfig.json" });
 
     expect(result).toStrictEqual({
@@ -106,8 +121,6 @@ describe("TypeScriptCheckRunner", () => {
       options: { strict: true },
     });
     mockGetPreEmitDiagnostics.mockReturnValue([]);
-
-    const runner = new TypeScriptCheckRunner();
 
     await runner.run({ tsconfig: "tsconfig.json" });
 
@@ -138,8 +151,6 @@ describe("TypeScriptCheckRunner", () => {
     });
     mockGetPreEmitDiagnostics.mockReturnValue([]);
 
-    const runner = new TypeScriptCheckRunner();
-
     await runner.run({ tsconfig: "tsconfig.json" });
 
     expect(mockCreateIncrementalProgram).toHaveBeenCalledWith(
@@ -157,8 +168,6 @@ describe("TypeScriptCheckRunner", () => {
       options: { skipLibCheck: false },
     });
     mockGetPreEmitDiagnostics.mockReturnValue([]);
-
-    const runner = new TypeScriptCheckRunner();
 
     await runner.run({ tsconfig: "tsconfig.json" });
 
@@ -196,7 +205,6 @@ describe("TypeScriptCheckRunner", () => {
     ]);
     mockFlattenDiagnosticMessageText.mockReturnValue("Cannot find name 'foo'.");
 
-    const runner = new TypeScriptCheckRunner();
     const result = await runner.run({ tsconfig: "tsconfig.json" });
 
     expect(result.items).toHaveLength(1);
@@ -226,7 +234,6 @@ describe("TypeScriptCheckRunner", () => {
       "Cannot find the common subdirectory path",
     );
 
-    const runner = new TypeScriptCheckRunner();
     const result = await runner.run({ tsconfig: "tsconfig.json" });
 
     expect(result.items).toHaveLength(1);
@@ -267,7 +274,6 @@ describe("TypeScriptCheckRunner", () => {
     ]);
     mockFlattenDiagnosticMessageText.mockReturnValue("error");
 
-    const runner = new TypeScriptCheckRunner();
     const result = await runner.run({ tsconfig: "tsconfig.json" });
 
     expect(result.items[0]?.file).toBe("zebra.ts");
@@ -283,8 +289,6 @@ describe("TypeScriptCheckRunner", () => {
     });
     mockGetPreEmitDiagnostics.mockReturnValue([]);
 
-    const runner = new TypeScriptCheckRunner();
-
     await runner.run({ tsconfig: "tsconfig.build.json" });
 
     expect(mockReadConfigFile).toHaveBeenCalledWith(
@@ -295,8 +299,6 @@ describe("TypeScriptCheckRunner", () => {
 
   it("should throw when tsconfig not found", async () => {
     mockFindConfigFile.mockReturnValue(undefined);
-
-    const runner = new TypeScriptCheckRunner();
 
     await expect(runner.run({})).rejects.toThrowError(
       "TypeScript config file not found",
@@ -309,8 +311,6 @@ describe("TypeScriptCheckRunner", () => {
       error: { messageText: "Syntax error in config" },
     });
 
-    const runner = new TypeScriptCheckRunner();
-
     await expect(
       runner.run({ tsconfig: "tsconfig.json" }),
     ).rejects.toThrowError(
@@ -318,7 +318,7 @@ describe("TypeScriptCheckRunner", () => {
     );
   });
 
-  it("should apply compiler option overrides", async () => {
+  it("should apply compiler options", async () => {
     mockFindConfigFile.mockReturnValue("/test/project/tsconfig.json");
     mockReadConfigFile.mockReturnValue({ config: {} });
     mockParseJsonConfigFileContent.mockReturnValue({
@@ -327,17 +327,15 @@ describe("TypeScriptCheckRunner", () => {
     });
     mockGetPreEmitDiagnostics.mockReturnValue([]);
 
-    const overrides = { compilerOptions: { strict: true } };
+    const compilerOptions = { strict: true };
 
-    const runner = new TypeScriptCheckRunner();
-
-    await runner.run({ overrides, tsconfig: "tsconfig.json" });
+    await runner.run({ compilerOptions, tsconfig: "tsconfig.json" });
 
     expect(mockParseJsonConfigFileContent).toHaveBeenCalledWith(
       {},
       expect.anything(),
       expect.anything(),
-      overrides.compilerOptions,
+      compilerOptions,
     );
   });
 
@@ -361,7 +359,6 @@ describe("TypeScriptCheckRunner", () => {
     ]);
     mockFlattenDiagnosticMessageText.mockReturnValue("error");
 
-    const runner = new TypeScriptCheckRunner();
     const result = await runner.run({ tsconfig: "tsconfig.json" });
 
     expect(result.items[0]?.line).toBe(10);
@@ -393,7 +390,6 @@ describe("TypeScriptCheckRunner", () => {
     ]);
     mockFlattenDiagnosticMessageText.mockReturnValue("Flattened error message");
 
-    const runner = new TypeScriptCheckRunner();
     const result = await runner.run({ tsconfig: "tsconfig.json" });
 
     expect(result.items[0]?.message).toBe("Flattened error message");
@@ -409,8 +405,6 @@ describe("TypeScriptCheckRunner", () => {
       error: { messageText: { messageText: "Complex error", next: [] } },
     });
     mockFlattenDiagnosticMessageText.mockReturnValue("Flattened complex error");
-
-    const runner = new TypeScriptCheckRunner();
 
     await expect(
       runner.run({ tsconfig: "tsconfig.json" }),
@@ -459,7 +453,6 @@ describe("TypeScriptCheckRunner", () => {
       .mockReturnValueOnce("error inside")
       .mockReturnValueOnce("error outside");
 
-    const runner = new TypeScriptCheckRunner();
     const result = await runner.run({ tsconfig: "tsconfig.json" });
 
     expect(result.items).toHaveLength(1);
@@ -508,7 +501,6 @@ describe("TypeScriptCheckRunner", () => {
       return typeof msg === "string" ? msg : String(msg);
     });
 
-    const runner = new TypeScriptCheckRunner();
     const result = await runner.run({ tsconfig: "tsconfig.json" });
 
     expect(result.items).toHaveLength(1);
@@ -534,8 +526,6 @@ describe("TypeScriptCheckRunner", () => {
       options: {},
     });
     mockGetPreEmitDiagnostics.mockReturnValue([]);
-
-    const runner = new TypeScriptCheckRunner();
 
     await runner.run({ tsconfig: "tsconfig.json" });
 
@@ -580,8 +570,6 @@ describe("TypeScriptCheckRunner", () => {
     });
     mockGetPreEmitDiagnostics.mockReturnValue([]);
 
-    const runner = new TypeScriptCheckRunner();
-
     await runner.run({ tsconfig: "tsconfig.json" });
 
     expect(realWriteFile).toHaveBeenCalledExactlyOnceWith(
@@ -591,9 +579,10 @@ describe("TypeScriptCheckRunner", () => {
   });
 
   it("should create cacheDir recursively", async () => {
-    const runner = new TypeScriptCheckRunner();
+    expect(runner.setup).toBeDefined();
 
-    await runner.setup();
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- checked above
+    await runner.setup!();
 
     expect(mockGetCacheDir).toHaveBeenCalledWith("typescript", "/test/project");
     expect(mockMkdir).toHaveBeenCalledWith(
@@ -603,9 +592,9 @@ describe("TypeScriptCheckRunner", () => {
   });
 
   it("should pass when typescript import succeeds", async () => {
-    const runner = new TypeScriptCheckRunner();
-
-    await expect(runner.validate()).resolves.toBeUndefined();
+    expect(runner.validate).toBeDefined();
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- checked above
+    await expect(runner.validate!()).resolves.toBeUndefined();
   });
 
   it("should normalize absolute import paths in diagnostic messages", async () => {
@@ -636,7 +625,6 @@ describe("TypeScriptCheckRunner", () => {
       "Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'typeof import(\"/test/project/src/actions\")'.",
     );
 
-    const runner = new TypeScriptCheckRunner();
     const result = await runner.run({ tsconfig: "tsconfig.json" });
 
     expect(result.items).toHaveLength(1);
@@ -645,17 +633,23 @@ describe("TypeScriptCheckRunner", () => {
     );
   });
 
-  describe("TypeScriptCheckRunner - validation", () => {
+  describe("typescript runner - validation", () => {
     it("should throw helpful error when typescript import fails", async () => {
       vi.resetModules();
       vi.doMock("typescript", () => {
         throw new Error("nope");
       });
-      const { TypeScriptCheckRunner: FreshRunner } =
-        await import("./typescript");
-      const runner = new FreshRunner();
+      const { typescript: freshTypescript } = await import("./typescript");
+      const freshCheck = freshTypescript({ name: "test" });
 
-      await expect(runner.validate()).rejects.toThrowError(
+      expect(freshCheck.__runnerFactory).toBeDefined();
+
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- checked above
+      const freshRunner = freshCheck.__runnerFactory!();
+
+      expect(freshRunner.validate).toBeDefined();
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- checked above
+      await expect(freshRunner.validate!()).rejects.toThrowError(
         'typescript check requires "typescript" package to be installed. Run: npm install typescript',
       );
     });

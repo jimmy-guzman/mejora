@@ -2,10 +2,7 @@ import { pathToFileURL } from "node:url";
 
 import { lilconfig } from "lilconfig";
 
-import type { ESLintCheckRunner } from "@/runners/eslint";
-import type { RegexCheckRunner } from "@/runners/regex";
-import type { TypeScriptCheckRunner } from "@/runners/typescript";
-import type { CheckRunner, Config } from "@/types";
+import type { Check, CheckRunner, Config } from "@/types";
 
 const loader = async (filepath: string) => {
   const url = pathToFileURL(filepath).href;
@@ -18,50 +15,69 @@ const loader = async (filepath: string) => {
   return imported;
 };
 
-type ExtractRunnerByType<
-  TRunners extends readonly CheckRunner[],
-  TType extends string,
-> = Extract<TRunners[number], { type: TType }>;
-
-type ExtractConfig<TRunner> = TRunner extends CheckRunner<infer C> ? C : never;
-
-type CheckConfig<
-  TRunners extends readonly CheckRunner[],
-  TType extends TRunners[number]["type"],
-> = ExtractConfig<ExtractRunnerByType<TRunners, TType>> & {
-  type: TType;
-};
-
-type InternalRunners = readonly [
-  ESLintCheckRunner,
-  TypeScriptCheckRunner,
-  RegexCheckRunner,
-];
-
 /**
- * Define mejora configuration.
+ * Define a mejora configuration.
  *
- * @param config - mejora configuration object.
+ * @param config - Configuration object
  *
- * @param config.runners - Optional array of custom check runners to register.
+ * @param config.checks - Array of checks to run
  *
- * @param config.checks - Map of check names to their configurations.
+ * @returns A mejora configuration object
  *
- * @returns The provided configuration object.
+ * @example
+ * ```ts
+ * import { defineConfig, eslint, typescript, regex } from "mejora";
+ *
+ * export default defineConfig({
+ *   checks: [
+ *     eslint({
+ *       name: "no-console",
+ *       files: ["src/**\/*.ts"],
+ *       overrides: {
+ *         rules: { "no-console": "error" }
+ *       }
+ *     }),
+ *     typescript({
+ *       name: "strict",
+ *       overrides: {
+ *         compilerOptions: { noImplicitAny: true }
+ *       }
+ *     }),
+ *     regex({
+ *       name: "no-todos",
+ *       files: ["**\/*"],
+ *       patterns: [{ pattern: /TODO/g }]
+ *     })
+ *   ]
+ * });
+ * ```
  */
-export function defineConfig<
-  const TRunners extends readonly CheckRunner[],
->(config: {
-  checks: Record<
-    string,
-    CheckConfig<
-      [...InternalRunners, ...TRunners],
-      [...InternalRunners, ...TRunners][number]["type"]
-    >
-  >;
-  runners?: TRunners;
-}) {
-  return config;
+export function defineConfig(config: { checks: Check[] }): Config {
+  const runners: CheckRunner[] = [];
+  const seen = new Set<string>();
+
+  for (const check of config.checks) {
+    const checkWithFactory = check as Check & {
+      __runnerFactory?: () => CheckRunner;
+    };
+
+    if (checkWithFactory.__runnerFactory && !seen.has(check.config.type)) {
+      seen.add(check.config.type);
+      const runner = checkWithFactory.__runnerFactory();
+
+      runners.push(runner);
+    }
+  }
+
+  const result: Config = {
+    checks: config.checks,
+  };
+
+  if (runners.length > 0) {
+    result.runners = runners;
+  }
+
+  return result;
 }
 
 export const loadConfig = async () => {
