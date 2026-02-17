@@ -162,7 +162,7 @@ export default defineConfig({
 });
 ```
 
-Each check has an explicit ID used in the baseline and output.
+Each check’s `name` is used as its ID in the baseline and output.
 
 ## Supported Checks
 
