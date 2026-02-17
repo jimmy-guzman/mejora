@@ -1,3 +1,10 @@
+## [3.0.1](https://github.com/jimmy-guzman/mejora/compare/v3.0.0...v3.0.1) (2026-02-17)
+
+
+### Bug Fixes
+
+* 🐛 should include files in eslint config ([#74](https://github.com/jimmy-guzman/mejora/issues/74)) ([c8c822d](https://github.com/jimmy-guzman/mejora/commit/c8c822d0131257269236bd16f52fb12d98cc8945))
+
 # [3.0.0](https://github.com/jimmy-guzman/mejora/compare/v2.4.0...v3.0.0) (2026-02-17)
 
 
