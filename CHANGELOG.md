@@ -1,3 +1,25 @@
+# [3.0.0](https://github.com/jimmy-guzman/mejora/compare/v2.4.0...v3.0.0) (2026-02-17)
+
+
+### Features
+
+* ✨ replace object-based checks config w/ array & defineCheck() API ([#73](https://github.com/jimmy-guzman/mejora/issues/73)) ([bcdcb71](https://github.com/jimmy-guzman/mejora/commit/bcdcb718149151d0b0817a733b3a9e92e59ec8a1))
+
+
+### BREAKING CHANGES
+
+* checks is now an array of Check objects instead of a
+`Record<string, CheckConfig>`. The check name/ID is now passed as `name`
+directly to each check factory rather than being the object key.
+
+- Introduce `defineCheck(`) for creating reusable custom check definitions
+- Flatten `ESLintCheckConfig`: replace `overrides` wrapper with direct ESLint
+  config fields (rules, languageOptions, etc.)
+- Flatten `TypeScriptCheckConfig`: replace `overrides.compilerOptions` with
+  top-level `compilerOptions`
+- Remove `ESLintCheckRunner`, `TypeScriptCheckRunner`, and `RegexCheckRunner` class exports
+- Remove `eslintCheck`/`regexCheck`/`typescriptCheck` aliases
+
 # [2.4.0](https://github.com/jimmy-guzman/mejora/compare/v2.3.7...v2.4.0) (2026-02-13)
 
 
