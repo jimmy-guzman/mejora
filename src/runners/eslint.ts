@@ -35,7 +35,7 @@ export const eslint = defineCheck<ESLintCheckConfig>({
     const cacheDir = getCacheDir("eslint", cwd);
     const cacheKey = createCacheKey(config);
 
-    const { concurrency, files, ...eslintConfig } = config;
+    const { concurrency, ...eslintConfig } = config;
 
     const rulesToTrack = new Set<string>();
 
@@ -60,7 +60,7 @@ export const eslint = defineCheck<ESLintCheckConfig>({
       }),
     });
 
-    const results = await eslint.lintFiles(files);
+    const results = await eslint.lintFiles(eslintConfig.files);
 
     const rawItems: IssueInput[] = [];
 
