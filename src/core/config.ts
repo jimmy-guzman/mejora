@@ -33,15 +33,11 @@ const loader = async (filepath: string) => {
  *     eslint({
  *       name: "no-console",
  *       files: ["src/**\/*.ts"],
- *       overrides: {
- *         rules: { "no-console": "error" }
- *       }
+ *       rules: { "no-console": "error" }
  *     }),
  *     typescript({
  *       name: "strict",
- *       overrides: {
- *         compilerOptions: { noImplicitAny: true }
- *       }
+ *       compilerOptions: { noImplicitAny: true }
  *     }),
  *     regex({
  *       name: "no-todos",
@@ -57,13 +53,10 @@ export function defineConfig(config: { checks: Check[] }): Config {
   const seen = new Set<string>();
 
   for (const check of config.checks) {
-    const checkWithFactory = check as Check & {
-      __runnerFactory?: () => CheckRunner;
-    };
-
-    if (checkWithFactory.__runnerFactory && !seen.has(check.config.type)) {
+    if (check.__runnerFactory && !seen.has(check.config.type)) {
       seen.add(check.config.type);
-      const runner = checkWithFactory.__runnerFactory();
+
+      const runner = check.__runnerFactory();
 
       runners.push(runner);
     }

@@ -261,18 +261,14 @@ export interface Check {
  *     eslint({
  *       name: "no-nested-ternary",
  *       files: ["src/**\/*.{ts,tsx}"],
- *       overrides: {
- *         rules: {
- *           "no-nested-ternary": "error",
- *         },
+ *       rules: {
+ *         "no-nested-ternary": "error",
  *       },
  *     }),
  *     typescript({
  *       name: "strict",
- *       overrides: {
- *         compilerOptions: {
- *           noImplicitAny: true,
- *         },
+ *       compilerOptions: {
+ *         noImplicitAny: true,
  *       },
  *     }),
  *   ]
@@ -399,11 +395,11 @@ export interface CustomCheckDefinition<
   /**
    * Execute the check and return violations.
    *
-   * @param config - The full check configuration object (including files and custom fields)
+   * @param config - The full check configuration object (including optional files and custom fields)
    *
    * @returns Array of violations found
    */
-  run(config: TConfig & { files: string[] }): Promise<IssueInput[]>;
+  run(config: TConfig & { files?: string[] }): Promise<IssueInput[]>;
 
   /**
    * Setup any infrastructure needed for this check type.

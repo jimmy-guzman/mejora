@@ -65,7 +65,7 @@ export function defineCheck<
         const { type: _type, ...configWithoutType } = config;
 
         const result = await definition.run(
-          configWithoutType as TConfig & { files: string[] },
+          configWithoutType as TConfig & { files?: string[] },
         );
 
         return {

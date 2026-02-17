@@ -27,10 +27,15 @@ describe("regex", () => {
     };
 
     const result = regex(config);
-    const resultConfig = result.config as unknown as RegexCheckConfig;
 
     expect(result.id).toBe("test-check");
     expect(result.config.type).toBe("regex");
+
+    // Safe cast: we know the config is RegexCheckConfig because we just created it with regex()
+    // The double cast is needed because result.config is typed as CheckConfig (a union type)
+    // and RegexCheckConfig is part of CustomCheckConfig which is Record<string, unknown>
+    const resultConfig = result.config as unknown as RegexCheckConfig;
+
     expect(resultConfig.files).toStrictEqual([".test-regex/**/*.ts"]);
     expect(resultConfig.patterns).toHaveLength(2);
 
@@ -54,12 +59,13 @@ describe("regex", () => {
   });
 });
 
+type Runner = ReturnType<RunnerFactory>;
+type RunnerFactory = NonNullable<ReturnType<typeof regex>["__runnerFactory"]>;
+
 describe("regex runner", () => {
   const testDir = join(process.cwd(), ".test-regex");
 
-  let runner: ReturnType<
-    NonNullable<ReturnType<typeof regex>["__runnerFactory"]>
-  >;
+  let runner: Runner;
 
   beforeEach(async () => {
     // Create a runner instance using the factory from the check

@@ -78,8 +78,8 @@ export const typescript = defineCheck<TypeScriptCheckConfig>({
     const cacheDir = getCacheDir("typescript", cwd);
 
     const cacheKey = createCacheKey({
+      compilerOptions: config.compilerOptions ?? {},
       configPath,
-      overrides: config.compilerOptions ?? {},
       parsedOptions: parseResult.options,
       typescriptVersion: version,
     });
