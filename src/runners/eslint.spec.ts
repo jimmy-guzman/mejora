@@ -213,7 +213,7 @@ describe("eslint runner", () => {
         cacheLocation: expect.stringContaining(
           "node_modules/.cache/mejora/eslint/",
         ),
-        overrideConfig: { rules: config.rules },
+        overrideConfig: { files: config.files, rules: config.rules },
       }),
     );
   });
@@ -313,6 +313,30 @@ describe("eslint runner", () => {
     expect(ESLint).toHaveBeenCalledWith(
       expect.objectContaining({
         concurrency: "auto",
+      }),
+    );
+  });
+
+  it("should include files in overrideConfig for plugin scoping", async () => {
+    mockLintFiles.mockResolvedValue([]);
+
+    const config = {
+      files: ["**/*.test.ts"],
+      plugins: { jest: {} },
+      rules: {
+        "jest/valid-title": "error" as const,
+      },
+    };
+
+    await runner.run(config);
+
+    expect(ESLint).toHaveBeenCalledWith(
+      expect.objectContaining({
+        overrideConfig: expect.objectContaining({
+          files: ["**/*.test.ts"],
+          plugins: { jest: {} },
+          rules: { "jest/valid-title": "error" },
+        }),
       }),
     );
   });
