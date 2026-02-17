@@ -6,13 +6,6 @@ import type { Check, CheckRunner, CustomCheckDefinition } from "@/types";
  */
 type UserCheckConfig<TConfig> = TConfig & {
   /**
-   * Array of glob patterns for files to check.
-   *
-   * @example ["src/**\/*.ts", "lib/**\/*.js"]
-   */
-  files?: string[];
-
-  /**
    * Unique identifier for this check instance.
    * Used in baseline tracking and output.
    */
@@ -34,11 +27,11 @@ type UserCheckConfig<TConfig> = TConfig & {
  * ```ts
  * import { defineConfig, defineCheck } from "mejora";
  *
- * const noHardcodedUrls = defineCheck({
+ * const noHardcodedUrls = defineCheck<{ files: string[] }>({
  *   type: "no-hardcoded-urls",
  *   async run(config) {
  *     const violations: IssueInput[] = [];
- *     // Custom checking logic
+ *     // Custom checking logic using config.files
  *     return violations;
  *   }
  * });
@@ -64,9 +57,7 @@ export function defineCheck<
       async run(config: Record<string, unknown>) {
         const { type: _type, ...configWithoutType } = config;
 
-        const result = await definition.run(
-          configWithoutType as TConfig & { files?: string[] },
-        );
+        const result = await definition.run(configWithoutType as TConfig);
 
         return {
           items: result,
@@ -90,13 +81,12 @@ export function defineCheck<
   };
 
   return (userConfig) => {
-    const { files = [], name, ...rest } = userConfig;
+    const { name, ...rest } = userConfig;
 
     const config = {
       ...defaults,
       ...(rest as unknown as TConfig),
-      files,
-    } as TConfig & { files: string[] };
+    } as TConfig;
 
     return {
       __runnerFactory: createRunner,

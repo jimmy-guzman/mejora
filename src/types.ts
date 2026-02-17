@@ -395,11 +395,11 @@ export interface CustomCheckDefinition<
   /**
    * Execute the check and return violations.
    *
-   * @param config - The full check configuration object (including optional files and custom fields)
+   * @param config - The full check configuration object
    *
    * @returns Array of violations found
    */
-  run(config: TConfig & { files?: string[] }): Promise<IssueInput[]>;
+  run(config: TConfig): Promise<IssueInput[]>;
 
   /**
    * Setup any infrastructure needed for this check type.

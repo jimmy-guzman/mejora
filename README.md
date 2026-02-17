@@ -200,7 +200,7 @@ Define custom checks using `defineCheck()`:
 import { defineConfig, defineCheck } from "mejora";
 import { glob, readFile } from "node:fs/promises";
 
-const noHardcodedUrls = defineCheck({
+const noHardcodedUrls = defineCheck<{ files: string[] }>({
   type: "no-hardcoded-urls",
   async run(config) {
     const violations = [];

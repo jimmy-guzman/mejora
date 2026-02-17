@@ -48,7 +48,7 @@ const loader = async (filepath: string) => {
  * });
  * ```
  */
-export function defineConfig(config: { checks: Check[] }): Config {
+export function defineConfig(config: { checks: Check[] }) {
   const runners: CheckRunner[] = [];
   const seen = new Set<string>();
 
@@ -62,15 +62,10 @@ export function defineConfig(config: { checks: Check[] }): Config {
     }
   }
 
-  const result: Config = {
+  return {
     checks: config.checks,
+    runners,
   };
-
-  if (runners.length > 0) {
-    result.runners = runners;
-  }
-
-  return result;
 }
 
 export const loadConfig = async () => {

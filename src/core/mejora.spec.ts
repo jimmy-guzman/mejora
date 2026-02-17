@@ -20,7 +20,6 @@ describe("defineConfig", () => {
           compilerOptions: {
             noImplicitAny: true,
           },
-          files: ["src/**/*.ts"],
           name: "ts-check",
         }),
       ],
@@ -71,7 +70,7 @@ describe("defineConfig", () => {
     expect(config.checks[0]?.config.type).toBe("custom-check");
     expect(config.runners).toBeDefined();
     expect(config.runners).toHaveLength(1);
-    expect(config.runners?.[0]?.type).toBe("custom-check");
+    expect(config.runners[0]?.type).toBe("custom-check");
   });
 
   it("should deduplicate runners with same type", () => {
@@ -92,7 +91,7 @@ describe("defineConfig", () => {
     expect(config.checks).toHaveLength(2);
     // Same type, so only one runner
     expect(config.runners).toHaveLength(1);
-    expect(config.runners?.[0]?.type).toBe("my-custom-check");
+    expect(config.runners[0]?.type).toBe("my-custom-check");
   });
 
   it("should include runners for built-in checks", () => {
@@ -102,14 +101,14 @@ describe("defineConfig", () => {
           files: ["**/*.ts"],
           name: "eslint-check",
         }),
-        typescript({ files: ["src/**/*.ts"], name: "ts-check" }),
+        typescript({ name: "ts-check" }),
       ],
     });
 
     expect(config.checks).toHaveLength(2);
     expect(config.runners).toHaveLength(2);
-    expect(config.runners?.[0]?.type).toBe("eslint");
-    expect(config.runners?.[1]?.type).toBe("typescript");
+    expect(config.runners[0]?.type).toBe("eslint");
+    expect(config.runners[1]?.type).toBe("typescript");
   });
 
   it("should mix built-in and custom checks", () => {
@@ -127,14 +126,14 @@ describe("defineConfig", () => {
           name: "eslint-check",
         }),
         customCheck({ files: ["**/*.ts"], name: "custom-check" }),
-        typescript({ files: ["src/**/*.ts"], name: "ts-check" }),
+        typescript({ name: "ts-check" }),
       ],
     });
 
     expect(config.checks).toHaveLength(3);
     expect(config.runners).toHaveLength(3);
-    expect(config.runners?.[0]?.type).toBe("eslint");
-    expect(config.runners?.[1]?.type).toBe("custom");
-    expect(config.runners?.[2]?.type).toBe("typescript");
+    expect(config.runners[0]?.type).toBe("eslint");
+    expect(config.runners[1]?.type).toBe("custom");
+    expect(config.runners[2]?.type).toBe("typescript");
   });
 });
