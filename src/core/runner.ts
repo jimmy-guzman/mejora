@@ -34,19 +34,17 @@ export class Runner {
     checks: Config["checks"],
     baseline: Baseline | null,
   ) {
-    const checkIds = Object.keys(checks);
-
     try {
-      const workerPromises = checkIds.map(async (checkId) => {
-        const workerResult = await Runner.executeWorker(checkId);
+      const workerPromises = checks.map(async (check) => {
+        const workerResult = await Runner.executeWorker(check.id);
 
         const snapshot = normalizeSnapshot(workerResult.snapshot);
-        const baselineEntry = BaselineManager.getEntry(baseline, checkId);
+        const baselineEntry = BaselineManager.getEntry(baseline, check.id);
         const comparison = compareSnapshots(snapshot, baselineEntry);
 
         return {
           baseline: baselineEntry,
-          checkId,
+          checkId: check.id,
           duration: workerResult.duration,
           hasImprovement: comparison.hasImprovement,
           hasRegression: comparison.hasRegression,
@@ -97,15 +95,13 @@ export class Runner {
       return checks;
     }
 
-    return Object.fromEntries(
-      Object.entries(checks).filter(([key]) => {
-        if (only && !only.test(key)) return false;
+    return checks.filter((check) => {
+      if (only && !only.test(check.id)) return false;
 
-        if (skip?.test(key)) return false;
+      if (skip?.test(check.id)) return false;
 
-        return true;
-      }),
-    );
+      return true;
+    });
   };
 
   private static resolveRegex(pattern: string, option: "--only" | "--skip") {
@@ -120,7 +116,7 @@ export class Runner {
     const startTime = performance.now();
     const baseline = await this.baselineManager.load();
     const checksToRun = Runner.filterChecks(config.checks, options);
-    const checkCount = Object.keys(checksToRun).length;
+    const checkCount = checksToRun.length;
 
     logger.start(
       `Running ${checkCount} check${checkCount === 1 ? "" : "s"}...`,
@@ -208,20 +204,20 @@ export class Runner {
 
     const results: CheckResult[] = [];
 
-    for (const [checkId, checkConfig] of Object.entries(checks)) {
+    for (const check of checks) {
       try {
         const startTime = performance.now();
-        const runner = this.registry.get(checkConfig.type);
-        const rawSnapshot = await runner.run(checkConfig);
+        const runner = this.registry.get(check.config.type);
+        const rawSnapshot = await runner.run(check.config);
         const duration = performance.now() - startTime;
 
         const snapshot = normalizeSnapshot(rawSnapshot);
-        const baselineEntry = BaselineManager.getEntry(baseline, checkId);
+        const baselineEntry = BaselineManager.getEntry(baseline, check.id);
         const comparison = compareSnapshots(snapshot, baselineEntry);
 
         results.push({
           baseline: baselineEntry,
-          checkId,
+          checkId: check.id,
           duration,
           hasImprovement: comparison.hasImprovement,
           hasRegression: comparison.hasRegression,
@@ -232,7 +228,7 @@ export class Runner {
           snapshot,
         });
       } catch (error) {
-        logger.error(`Error running check "${checkId}":`, error);
+        logger.error(`Error running check "${check.id}":`, error);
 
         return null;
       }

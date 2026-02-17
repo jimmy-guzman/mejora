@@ -1,19 +1,36 @@
 import { relative, resolve, sep } from "pathe";
 
-import type { CheckRunner, IssueInput, TypeScriptCheckConfig } from "@/types";
+import type { IssueInput, TypeScriptCheckConfig } from "@/types";
 
+import { defineCheck } from "@/core/define-check";
 import { createCacheKey, getCacheDir } from "@/utils/cache";
 import { normalizeDiagnosticMessage } from "@/utils/typescript";
 
 const GLOBAL_FILE = "(global)";
 
 /**
- * Check runner for TypeScript.
+ * Create a TypeScript check for use with mejora().
+ *
+ * @param config - TypeScript check configuration options including name.
+ *
+ * @returns A Check object for use with mejora().
+ *
+ * @example
+ * ```ts
+ * import { defineConfig, typescript } from "mejora";
+ *
+ * export default defineConfig({
+ *   checks: [
+ *     typescript({
+ *       name: "strict-types",
+ *       compilerOptions: { noImplicitAny: true }
+ *     })
+ *   ]
+ * });
+ * ```
  */
-export class TypeScriptCheckRunner implements CheckRunner {
-  readonly type = "typescript";
-
-  async run(typescriptConfig: TypeScriptCheckConfig) {
+export const typescript = defineCheck<TypeScriptCheckConfig>({
+  async run(config) {
     const {
       createIncrementalCompilerHost,
       createIncrementalProgram,
@@ -31,8 +48,8 @@ export class TypeScriptCheckRunner implements CheckRunner {
     const fileExists = sys.fileExists.bind(sys);
     const readFile = sys.readFile.bind(sys);
 
-    const configPath = typescriptConfig.tsconfig
-      ? resolve(typescriptConfig.tsconfig)
+    const configPath = config.tsconfig
+      ? resolve(config.tsconfig)
       : findConfigFile(cwd, fileExists, "tsconfig.json");
 
     if (!configPath) {
@@ -55,14 +72,14 @@ export class TypeScriptCheckRunner implements CheckRunner {
       TSConfig,
       sys,
       cwd,
-      typescriptConfig.overrides?.compilerOptions,
+      config.compilerOptions,
     );
 
-    const cacheDir = getCacheDir(this.type, cwd);
+    const cacheDir = getCacheDir("typescript", cwd);
 
     const cacheKey = createCacheKey({
+      compilerOptions: config.compilerOptions ?? {},
       configPath,
-      overrides: typescriptConfig.overrides?.compilerOptions ?? {},
       parsedOptions: parseResult.options,
       typescriptVersion: version,
     });
@@ -144,41 +161,26 @@ export class TypeScriptCheckRunner implements CheckRunner {
       }
     }
 
-    return {
-      items: rawItems,
-      type: "items" as const,
-    };
-  }
+    return rawItems;
+  },
 
   async setup() {
     const cwd = process.cwd();
-    const cacheDir = getCacheDir(this.type, cwd);
+    const cacheDir = getCacheDir("typescript", cwd);
     const { mkdir } = await import("node:fs/promises");
 
     await mkdir(cacheDir, { recursive: true });
-  }
+  },
+
+  type: "typescript",
 
   async validate() {
     try {
       await import("typescript");
     } catch {
       throw new Error(
-        `${this.type} check requires "typescript" package to be installed. Run: npm install typescript`,
+        'typescript check requires "typescript" package to be installed. Run: npm install typescript',
       );
     }
-  }
-}
-
-/**
- * Create a TypeScript check configuration.
- *
- * @param config - TypeScript check configuration options.
- *
- * @returns A TypeScript check configuration object.
- */
-export function typescriptCheck(config: TypeScriptCheckConfig) {
-  return {
-    type: "typescript" as const,
-    ...config,
-  };
-}
+  },
+});

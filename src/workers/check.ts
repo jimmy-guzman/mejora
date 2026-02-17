@@ -17,11 +17,13 @@ export async function checkWorker({ checkId }: { checkId: string }) {
     await configPromise;
   }
 
-  const checkConfig = config?.checks[checkId];
+  const check = config?.checks.find((c) => c.id === checkId);
 
-  if (!checkConfig) {
+  if (!check) {
     throw new Error(`Check not found in config: ${checkId}`);
   }
+
+  const checkConfig = check.config;
 
   let registry = registries.get(checkConfig.type);
 

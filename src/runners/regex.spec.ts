@@ -1,14 +1,17 @@
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { join, relative } from "node:path";
 
-import { regexCheck, regexRunner } from "./regex";
+import type { RegexCheckConfig } from "@/types";
 
-describe("regexCheck", () => {
-  it("should return config with type 'regex'", () => {
+import { regex } from "./regex";
+
+describe("regex", () => {
+  it("should return Check object with regex config", () => {
     const testDir = join(process.cwd(), ".test-regex");
 
     const config = {
       files: [relative(process.cwd(), join(testDir, "**/*.ts"))],
+      name: "test-check",
       patterns: [
         {
           message: "TODO comment found",
@@ -23,35 +26,65 @@ describe("regexCheck", () => {
       ],
     };
 
-    const result = regexCheck(config);
+    const result = regex(config);
 
-    expect(result.type).toBe("regex");
-    expect(result.files).toStrictEqual([".test-regex/**/*.ts"]);
-    expect(result.patterns).toHaveLength(2);
+    expect(result.id).toBe("test-check");
+    expect(result.config.type).toBe("regex");
 
-    expect(result.patterns[0]).toMatchObject({
+    // Safe cast: we know the config is RegexCheckConfig because we just created it with regex()
+    // The double cast is needed because result.config is typed as CheckConfig (a union type)
+    // and RegexCheckConfig is part of CustomCheckConfig which is Record<string, unknown>
+    const resultConfig = result.config as unknown as RegexCheckConfig;
+
+    expect(resultConfig.files).toStrictEqual([".test-regex/**/*.ts"]);
+    expect(resultConfig.patterns).toHaveLength(2);
+
+    expect(resultConfig.patterns[0]).toMatchObject({
       message: "TODO comment found",
       rule: "no-todos",
     });
-    expect(result.patterns[0]?.pattern.source).toBe(String.raw`\/\/\s*TODO:`);
-    expect(result.patterns[0]?.pattern.flags).toBe("gi");
+    expect(resultConfig.patterns[0]?.pattern.source).toBe(
+      String.raw`\/\/\s*TODO:`,
+    );
+    expect(resultConfig.patterns[0]?.pattern.flags).toBe("gi");
 
-    expect(result.patterns[1]).toMatchObject({
+    expect(resultConfig.patterns[1]).toMatchObject({
       message: "console.log statement",
       rule: "no-console",
     });
-    expect(result.patterns[1]?.pattern.source).toBe(String.raw`console\.log`);
-    expect(result.patterns[1]?.pattern.flags).toBe("g");
+    expect(resultConfig.patterns[1]?.pattern.source).toBe(
+      String.raw`console\.log`,
+    );
+    expect(resultConfig.patterns[1]?.pattern.flags).toBe("g");
   });
 });
 
-describe("RegexCheckRunner", () => {
+type Runner = ReturnType<RunnerFactory>;
+type RunnerFactory = NonNullable<ReturnType<typeof regex>["__runnerFactory"]>;
+
+describe("regex runner", () => {
   const testDir = join(process.cwd(), ".test-regex");
-  const runner = regexRunner();
+
+  let runner: Runner;
 
   beforeEach(async () => {
+    // Create a runner instance using the factory from the check
+    const check = regex({
+      files: [relative(process.cwd(), join(testDir, "**/*.ts"))],
+      name: "test",
+      patterns: [],
+    });
+
+    if (!check.__runnerFactory) {
+      throw new Error("__runnerFactory is required");
+    }
+
+    runner = check.__runnerFactory();
+
     await mkdir(testDir, { recursive: true });
-    await runner.setup();
+    if (runner.setup) {
+      await runner.setup();
+    }
   });
 
   afterEach(async () => {
@@ -453,12 +486,20 @@ console.warn("warning");
       files: [relative(process.cwd(), join(testDir, "**/*.ts"))],
       patterns: [
         {
-          message: (match) => `TODO assigned to ${match.groups?.owner}`,
+          message: (match: RegExpExecArray) => {
+            const owner = match.groups?.owner;
+
+            return `TODO assigned to ${owner ?? "unknown"}`;
+          },
           pattern: /TODO\((?<owner>\w+)\):/g,
           rule: "todo-with-owner",
         },
         {
-          message: (match) => `console.${match.groups?.method}() found`,
+          message: (match: RegExpExecArray) => {
+            const method = match.groups?.method;
+
+            return `console.${method ?? "unknown"}() found`;
+          },
           pattern: /console\.(?<method>\w+)/g,
           rule: "no-console",
         },
@@ -513,11 +554,11 @@ console.warn("warning");
       files: [relative(process.cwd(), join(testDir, "**/*.ts"))],
       patterns: [
         {
-          message: (match) => {
+          message: (match: RegExpExecArray) => {
             const domain = match.groups?.domain;
             const path = match.groups?.path;
 
-            return `URL: ${domain}${path}`;
+            return `URL: ${domain ?? ""}${path ?? ""}`;
           },
           pattern: /https?:\/\/(?<domain>[^/]+)(?<path>[^\s"']*)/g,
           rule: "hardcoded-url",

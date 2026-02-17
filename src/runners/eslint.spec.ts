@@ -36,33 +36,49 @@ const mockMkdir = vi.fn();
 
 vi.mock("node:fs/promises", () => ({ mkdir: mockMkdir }));
 
-const { eslintCheck, ESLintCheckRunner } = await import("./eslint");
+const { eslint } = await import("./eslint");
 const { ESLint } = await import("eslint");
 
-describe("eslintCheck", () => {
-  it("should return config with type 'eslint'", () => {
+describe("eslint", () => {
+  it("should return Check object with eslint config", () => {
     const config = {
       files: ["src/**/*.ts"],
-      overrides: { rules: { "no-console": "error" as const } },
+      name: "test-check",
+      rules: { "no-console": "error" as const },
     };
 
-    const result = eslintCheck(config);
+    const result = eslint(config);
 
-    expect(result.type).toBe("eslint");
-    expect(result.files).toStrictEqual(config.files);
-    expect(result.overrides).toStrictEqual(config.overrides);
+    expect(result.id).toBe("test-check");
+    expect(result.config.type).toBe("eslint");
+    expect((result.config as { files: string[] }).files).toStrictEqual(
+      config.files,
+    );
+    expect((result.config as { rules: unknown }).rules).toStrictEqual(
+      config.rules,
+    );
   });
 });
 
-describe("ESLintCheckRunner", () => {
+describe("eslint runner", () => {
+  let runner: ReturnType<
+    NonNullable<ReturnType<typeof eslint>["__runnerFactory"]>
+  >;
+
   beforeEach(() => {
     vi.clearAllMocks();
+    // Create a runner instance using the factory from the check
+    const check = eslint({ files: ["*.js"], name: "test" });
+
+    if (!check.__runnerFactory) {
+      throw new Error("__runnerFactory is required");
+    }
+
+    runner = check.__runnerFactory();
   });
 
   it("should return empty items when no violations", async () => {
     mockLintFiles.mockResolvedValue([]);
-
-    const runner = new ESLintCheckRunner();
 
     const result = await runner.run({ files: ["*.js"] });
 
@@ -76,8 +92,6 @@ describe("ESLintCheckRunner", () => {
     mockLintFiles.mockResolvedValue([]);
 
     vi.spyOn(process, "cwd").mockReturnValue("/test/project");
-
-    const runner = new ESLintCheckRunner();
 
     const config = { files: ["*.js"] };
 
@@ -118,8 +132,6 @@ describe("ESLintCheckRunner", () => {
 
     vi.spyOn(process, "cwd").mockReturnValue("/test/project");
 
-    const runner = new ESLintCheckRunner();
-
     const result = await runner.run({ files: ["src/**/*.js"] });
 
     expect(result.items).toHaveLength(2);
@@ -154,8 +166,6 @@ describe("ESLintCheckRunner", () => {
 
     vi.spyOn(process, "cwd").mockReturnValue("/test/project");
 
-    const runner = new ESLintCheckRunner();
-
     const result = await runner.run({ files: ["*.js"] });
 
     expect(result.items).toHaveLength(2);
@@ -181,23 +191,19 @@ describe("ESLintCheckRunner", () => {
 
     vi.spyOn(process, "cwd").mockReturnValue("/test/project");
 
-    const runner = new ESLintCheckRunner();
-
     const result = await runner.run({ files: ["*.js"] });
 
     expect(result.items[0]?.file).toBe("zebra.js");
     expect(result.items[1]?.file).toBe("apple.js");
   });
 
-  it("should configure ESLint with cache and overrides", async () => {
+  it("should configure ESLint with cache and config", async () => {
     mockLintFiles.mockResolvedValue([]);
 
     const config = {
       files: ["*.js"],
-      overrides: { rules: { "no-console": "error" as const } },
+      rules: { "no-console": "error" as const },
     };
-
-    const runner = new ESLintCheckRunner();
 
     await runner.run(config);
 
@@ -207,25 +213,21 @@ describe("ESLintCheckRunner", () => {
         cacheLocation: expect.stringContaining(
           "node_modules/.cache/mejora/eslint/",
         ),
-        overrideConfig: config.overrides,
+        overrideConfig: { rules: config.rules },
       }),
     );
   });
 
-  it("should use ruleFilter when rules are specified in overrides", async () => {
+  it("should use ruleFilter when rules are specified", async () => {
     mockLintFiles.mockResolvedValue([]);
 
     const config = {
       files: ["*.js"],
-      overrides: {
-        rules: {
-          "no-console": "error" as const,
-          "no-debugger": "error" as const,
-        },
+      rules: {
+        "no-console": "error" as const,
+        "no-debugger": "error" as const,
       },
     };
-
-    const runner = new ESLintCheckRunner();
 
     await runner.run(config);
 
@@ -250,10 +252,7 @@ describe("ESLintCheckRunner", () => {
 
     const config = {
       files: ["*.js"],
-      overrides: {},
     };
-
-    const runner = new ESLintCheckRunner();
 
     await runner.run(config);
 
@@ -265,49 +264,14 @@ describe("ESLintCheckRunner", () => {
     expect(callArgs).not.toHaveProperty("ruleFilter");
   });
 
-  it("should extract rules from array of overrides", async () => {
-    mockLintFiles.mockResolvedValue([]);
-
-    const config = {
-      files: ["*.js"],
-      overrides: [
-        { rules: { "no-console": "error" as const } },
-        { rules: { "no-debugger": "error" as const } },
-      ],
-    };
-
-    const runner = new ESLintCheckRunner();
-
-    await runner.run(config);
-
-    const mockESLintConstructor = vi.mocked(ESLint);
-    const callArgs = mockESLintConstructor.mock.calls[0]?.[0] as
-      | MockESLintOptions
-      | undefined;
-
-    expect(callArgs).toHaveProperty("ruleFilter");
-
-    expect(callArgs?.ruleFilter?.({ ruleId: "no-console", severity: 2 })).toBe(
-      true,
-    );
-    expect(callArgs?.ruleFilter?.({ ruleId: "no-debugger", severity: 2 })).toBe(
-      true,
-    );
-    expect(callArgs?.ruleFilter?.({ ruleId: "semi", severity: 2 })).toBe(false);
-  });
-
   it("should NOT set concurrency when using ruleFilter", async () => {
     mockLintFiles.mockResolvedValue([]);
 
     const config = {
       concurrency: 4,
       files: ["*.js"],
-      overrides: {
-        rules: { "no-console": "error" as const },
-      },
+      rules: { "no-console": "error" as const },
     };
-
-    const runner = new ESLintCheckRunner();
 
     await runner.run(config);
 
@@ -316,8 +280,8 @@ describe("ESLintCheckRunner", () => {
       | MockESLintOptions
       | undefined;
 
-    expect(callArgs).toHaveProperty("ruleFilter");
     expect(callArgs).not.toHaveProperty("concurrency");
+    expect(callArgs).toHaveProperty("ruleFilter");
   });
 
   it("should use concurrency when NOT using ruleFilter", async () => {
@@ -327,8 +291,6 @@ describe("ESLintCheckRunner", () => {
       concurrency: 4,
       files: ["*.js"],
     };
-
-    const runner = new ESLintCheckRunner();
 
     await runner.run(config);
 
@@ -346,8 +308,6 @@ describe("ESLintCheckRunner", () => {
       files: ["*.js"],
     };
 
-    const runner = new ESLintCheckRunner();
-
     await runner.run(config);
 
     expect(ESLint).toHaveBeenCalledWith(
@@ -360,9 +320,10 @@ describe("ESLintCheckRunner", () => {
   it("should create cacheDir recursively", async () => {
     vi.spyOn(process, "cwd").mockReturnValue("/test/project");
 
-    const runner = new ESLintCheckRunner();
+    expect(runner.setup).toBeDefined();
 
-    await runner.setup();
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- checked above
+    await runner.setup!();
 
     expect(mockGetCacheDir).toHaveBeenCalledWith("eslint", "/test/project");
     expect(mockMkdir).toHaveBeenCalledWith(
@@ -372,9 +333,9 @@ describe("ESLintCheckRunner", () => {
   });
 
   it("should pass when eslint import succeeds", async () => {
-    const runner = new ESLintCheckRunner();
-
-    await expect(runner.validate()).resolves.toBeUndefined();
+    expect(runner.validate).toBeDefined();
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- checked above
+    await expect(runner.validate!()).resolves.toBeUndefined();
   });
 
   it("should throw helpful error when eslint import fails", async () => {
@@ -384,11 +345,17 @@ describe("ESLintCheckRunner", () => {
       throw new Error("nope");
     });
 
-    const { ESLintCheckRunner: FreshRunner } = await import("./eslint");
+    const { eslint: freshEslint } = await import("./eslint");
+    const freshCheck = freshEslint({ files: ["*.js"], name: "test" });
 
-    const runner = new FreshRunner();
+    expect(freshCheck.__runnerFactory).toBeDefined();
 
-    await expect(runner.validate()).rejects.toThrowError(
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- checked above
+    const freshRunner = freshCheck.__runnerFactory!();
+
+    expect(freshRunner.validate).toBeDefined();
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- checked above
+    await expect(freshRunner.validate!()).rejects.toThrowError(
       'eslint check requires "eslint" package to be installed. Run: npm install eslint',
     );
   });

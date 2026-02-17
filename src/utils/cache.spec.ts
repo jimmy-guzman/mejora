@@ -34,12 +34,12 @@ describe("createCacheKey", () => {
     const config1 = {
       files: ["src/**/*.ts"],
       // eslint-disable-next-line perfectionist/sort-objects -- testing property order stability
-      overrides: { rules: { "no-debugger": "warn", "no-console": "error" } },
+      rules: { "no-debugger": "warn", "no-console": "error" },
     };
 
     const config2 = {
       files: ["src/**/*.ts"],
-      overrides: { rules: { "no-console": "error", "no-debugger": "warn" } },
+      rules: { "no-console": "error", "no-debugger": "warn" },
     };
 
     expect(createCacheKey(config1)).toBe(createCacheKey(config2));

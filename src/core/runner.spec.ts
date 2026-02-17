@@ -1,8 +1,12 @@
 import { mkdir } from "node:fs/promises";
 
-import type { ESLintCheckRunner } from "@/runners/eslint";
-import type { TypeScriptCheckRunner } from "@/runners/typescript";
-import type { Baseline, BaselineEntry, Config, RawSnapshot } from "@/types";
+import type {
+  Baseline,
+  BaselineEntry,
+  CheckRunner,
+  Config,
+  RawSnapshot,
+} from "@/types";
 
 import { logger } from "@/utils/logger";
 
@@ -94,12 +98,13 @@ vi.mock("node:worker_threads", async () => {
         }
 
         const { checkId } = workerData;
-        const checkConfig = mockConfig.checks[checkId];
+        const check = mockConfig.checks.find((c) => c.id === checkId);
 
-        if (!checkConfig) {
+        if (!check) {
           throw new Error(`Check not found in config: ${checkId}`);
         }
 
+        const checkConfig = check.config;
         const runner = mockRegistry.get(checkConfig.type);
         const snapshot = await runner.run(checkConfig);
 
@@ -156,8 +161,8 @@ const { compareSnapshots } = await import("@/core/comparison");
 
 describe("Runner", () => {
   let registry: CheckRegistryType;
-  let eslintRunner: ESLintCheckRunner;
-  let typescriptRunner: TypeScriptCheckRunner;
+  let eslintRunner: CheckRunner;
+  let typescriptRunner: CheckRunner;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -202,9 +207,12 @@ describe("Runner", () => {
 
   it("should run eslint checks", async () => {
     const config: Config = {
-      checks: {
-        "my-check": { files: ["*.js"], type: "eslint" as const },
-      },
+      checks: [
+        {
+          config: { files: ["*.js"], type: "eslint" as const },
+          id: "my-check",
+        },
+      ],
     };
 
     mockConfig = config;
@@ -222,14 +230,17 @@ describe("Runner", () => {
 
     await runner.run(config);
 
-    expect(eslintRunner.run).toHaveBeenCalledWith(config.checks["my-check"]);
+    expect(eslintRunner.run).toHaveBeenCalledWith(config.checks[0]?.config);
   });
 
   it("should run typescript checks", async () => {
     const config: Config = {
-      checks: {
-        "my-check": { tsconfig: "tsconfig.json", type: "typescript" as const },
-      },
+      checks: [
+        {
+          config: { tsconfig: "tsconfig.json", type: "typescript" as const },
+          id: "my-check",
+        },
+      ],
     };
 
     mockConfig = config;
@@ -247,16 +258,17 @@ describe("Runner", () => {
 
     await runner.run(config);
 
-    expect(typescriptRunner.run).toHaveBeenCalledWith(
-      config.checks["my-check"],
-    );
+    expect(typescriptRunner.run).toHaveBeenCalledWith(config.checks[0]?.config);
   });
 
   it("should call registry setup and validation for single check", async () => {
     const config: Config = {
-      checks: {
-        "eslint-check": { files: ["*.js"], type: "eslint" as const },
-      },
+      checks: [
+        {
+          config: { files: ["*.js"], type: "eslint" as const },
+          id: "eslint-check",
+        },
+      ],
     };
 
     mockConfig = config;
@@ -285,13 +297,19 @@ describe("Runner", () => {
 
   it("should use parallel execution for multiple checks", async () => {
     const config: Config = {
-      checks: {
-        "eslint-check": { files: ["*.js"], type: "eslint" as const },
-        "typescript-check": {
-          tsconfig: "tsconfig.json",
-          type: "typescript" as const,
+      checks: [
+        {
+          config: { files: ["*.js"], type: "eslint" as const },
+          id: "eslint-check",
         },
-      },
+        {
+          config: {
+            tsconfig: "tsconfig.json",
+            type: "typescript" as const,
+          },
+          id: "typescript-check",
+        },
+      ],
     };
 
     mockConfig = config;
@@ -315,18 +333,16 @@ describe("Runner", () => {
     expect(registry.validate).not.toHaveBeenCalled();
 
     // But both runners should execute
-    expect(eslintRunner.run).toHaveBeenCalledWith(
-      config.checks["eslint-check"],
-    );
-    expect(typescriptRunner.run).toHaveBeenCalledWith(
-      config.checks["typescript-check"],
-    );
+    expect(eslintRunner.run).toHaveBeenCalledWith(config.checks[0]?.config);
+    expect(typescriptRunner.run).toHaveBeenCalledWith(config.checks[1]?.config);
   });
 
   // ... rest of the tests remain the same ...
   it("should return exit code 0 when no regressions", async () => {
     const config: Config = {
-      checks: { check1: { files: ["*.js"], type: "eslint" as const } },
+      checks: [
+        { config: { files: ["*.js"], type: "eslint" as const }, id: "check1" },
+      ],
     };
 
     mockConfig = config;
@@ -349,7 +365,9 @@ describe("Runner", () => {
 
   it("should return exit code 1 when regressions found", async () => {
     const config: Config = {
-      checks: { check1: { files: ["*.js"], type: "eslint" as const } },
+      checks: [
+        { config: { files: ["*.js"], type: "eslint" as const }, id: "check1" },
+      ],
     };
 
     mockConfig = config;
@@ -387,7 +405,9 @@ describe("Runner", () => {
 
   it("should allow regressions with --force", async () => {
     const config: Config = {
-      checks: { check1: { files: ["*.js"], type: "eslint" as const } },
+      checks: [
+        { config: { files: ["*.js"], type: "eslint" as const }, id: "check1" },
+      ],
     };
 
     mockConfig = config;
@@ -424,14 +444,23 @@ describe("Runner", () => {
 
   it("should filter checks with --only", async () => {
     const config: Config = {
-      checks: {
-        "eslint-main": { files: ["src/**/*.js"], type: "eslint" as const },
-        "eslint-test": { files: ["test/**/*.js"], type: "eslint" as const },
-        "typescript-main": {
-          tsconfig: "tsconfig.json",
-          type: "typescript" as const,
+      checks: [
+        {
+          config: { files: ["src/**/*.js"], type: "eslint" as const },
+          id: "eslint-main",
         },
-      },
+        {
+          config: { files: ["test/**/*.js"], type: "eslint" as const },
+          id: "eslint-test",
+        },
+        {
+          config: {
+            tsconfig: "tsconfig.json",
+            type: "typescript" as const,
+          },
+          id: "typescript-main",
+        },
+      ],
     };
 
     mockConfig = config;
@@ -455,13 +484,19 @@ describe("Runner", () => {
 
   it("should filter checks with --skip", async () => {
     const config: Config = {
-      checks: {
-        "eslint-main": { files: ["src/**/*.js"], type: "eslint" as const },
-        "typescript-main": {
-          tsconfig: "tsconfig.json",
-          type: "typescript" as const,
+      checks: [
+        {
+          config: { files: ["src/**/*.js"], type: "eslint" as const },
+          id: "eslint-main",
         },
-      },
+        {
+          config: {
+            tsconfig: "tsconfig.json",
+            type: "typescript" as const,
+          },
+          id: "typescript-main",
+        },
+      ],
     };
 
     mockConfig = config;
@@ -485,7 +520,9 @@ describe("Runner", () => {
 
   it("should return exit code 2 on check error", async () => {
     const config: Config = {
-      checks: { check1: { files: ["*.js"], type: "eslint" as const } },
+      checks: [
+        { config: { files: ["*.js"], type: "eslint" as const }, id: "check1" },
+      ],
     };
 
     mockConfig = config;
@@ -500,7 +537,9 @@ describe("Runner", () => {
 
   it("should return exit code 2 on setup error", async () => {
     const config: Config = {
-      checks: { check1: { files: ["*.js"], type: "eslint" as const } },
+      checks: [
+        { config: { files: ["*.js"], type: "eslint" as const }, id: "check1" },
+      ],
     };
 
     mockConfig = config;
@@ -520,7 +559,9 @@ describe("Runner", () => {
 
   it("should return exit code 2 on validation error", async () => {
     const config: Config = {
-      checks: { check1: { files: ["*.js"], type: "eslint" as const } },
+      checks: [
+        { config: { files: ["*.js"], type: "eslint" as const }, id: "check1" },
+      ],
     };
 
     mockConfig = config;
@@ -542,7 +583,9 @@ describe("Runner", () => {
 
   it("should include results for each check", async () => {
     const config: Config = {
-      checks: { check1: { files: ["*.js"], type: "eslint" as const } },
+      checks: [
+        { config: { files: ["*.js"], type: "eslint" as const }, id: "check1" },
+      ],
     };
 
     mockConfig = config;
@@ -584,7 +627,9 @@ describe("Runner", () => {
 
   it("should detect and report improvements", async () => {
     const config: Config = {
-      checks: { check1: { files: ["*.js"], type: "eslint" as const } },
+      checks: [
+        { config: { files: ["*.js"], type: "eslint" as const }, id: "check1" },
+      ],
     };
 
     mockConfig = config;
@@ -652,7 +697,9 @@ describe("Runner", () => {
 
   it("should save baseline on initial run", async () => {
     const config: Config = {
-      checks: { check1: { files: ["*.js"], type: "eslint" as const } },
+      checks: [
+        { config: { files: ["*.js"], type: "eslint" as const }, id: "check1" },
+      ],
     };
 
     mockConfig = config;
@@ -697,7 +744,9 @@ describe("Runner", () => {
 
   it("should save baseline on initial run even with regressions", async () => {
     const config: Config = {
-      checks: { check1: { files: ["*.js"], type: "eslint" as const } },
+      checks: [
+        { config: { files: ["*.js"], type: "eslint" as const }, id: "check1" },
+      ],
     };
 
     mockConfig = config;
@@ -754,9 +803,12 @@ describe("Runner", () => {
 
   it("should throw error for invalid regex pattern in --only", async () => {
     const config: Config = {
-      checks: {
-        "eslint-main": { files: ["src/**/*.js"], type: "eslint" as const },
-      },
+      checks: [
+        {
+          config: { files: ["src/**/*.js"], type: "eslint" as const },
+          id: "eslint-main",
+        },
+      ],
     };
 
     mockConfig = config;
@@ -770,9 +822,12 @@ describe("Runner", () => {
 
   it("should throw error for invalid regex pattern in --skip", async () => {
     const config: Config = {
-      checks: {
-        "eslint-main": { files: ["src/**/*.js"], type: "eslint" as const },
-      },
+      checks: [
+        {
+          config: { files: ["src/**/*.js"], type: "eslint" as const },
+          id: "eslint-main",
+        },
+      ],
     };
 
     mockConfig = config;
@@ -786,14 +841,23 @@ describe("Runner", () => {
 
   it("should accept valid regex pattern in --only", async () => {
     const config: Config = {
-      checks: {
-        "eslint-main": { files: ["src/**/*.js"], type: "eslint" as const },
-        "eslint-test": { files: ["test/**/*.js"], type: "eslint" as const },
-        "typescript-main": {
-          tsconfig: "tsconfig.json",
-          type: "typescript" as const,
+      checks: [
+        {
+          config: { files: ["src/**/*.js"], type: "eslint" as const },
+          id: "eslint-main",
         },
-      },
+        {
+          config: { files: ["test/**/*.js"], type: "eslint" as const },
+          id: "eslint-test",
+        },
+        {
+          config: {
+            tsconfig: "tsconfig.json",
+            type: "typescript" as const,
+          },
+          id: "typescript-main",
+        },
+      ],
     };
 
     mockConfig = config;
@@ -817,17 +881,26 @@ describe("Runner", () => {
 
   it("should accept valid regex pattern in --skip", async () => {
     const config: Config = {
-      checks: {
-        "eslint-main": { files: ["src/**/*.js"], type: "eslint" as const },
-        "typescript-main": {
-          tsconfig: "tsconfig.json",
-          type: "typescript" as const,
+      checks: [
+        {
+          config: { files: ["src/**/*.js"], type: "eslint" as const },
+          id: "eslint-main",
         },
-        "typescript-test": {
-          tsconfig: "tsconfig.test.json",
-          type: "typescript" as const,
+        {
+          config: {
+            tsconfig: "tsconfig.json",
+            type: "typescript" as const,
+          },
+          id: "typescript-main",
         },
-      },
+        {
+          config: {
+            tsconfig: "tsconfig.test.json",
+            type: "typescript" as const,
+          },
+          id: "typescript-test",
+        },
+      ],
     };
 
     mockConfig = config;
@@ -887,7 +960,9 @@ describe("Runner", () => {
     });
 
     const config: Config = {
-      checks: { check1: { files: ["*.js"], type: "eslint" as const } },
+      checks: [
+        { config: { files: ["*.js"], type: "eslint" as const }, id: "check1" },
+      ],
     };
 
     mockConfig = config;

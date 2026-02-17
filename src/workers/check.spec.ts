@@ -32,10 +32,10 @@ vi.mock("@/core/check-registry", () => {
 
 describe("worker", () => {
   const mockConfig = {
-    checks: {
-      "check-1": { type: "http", url: "https://example.com" },
-      "check-2": { host: "localhost", port: 3000, type: "tcp" },
-    },
+    checks: [
+      { config: { type: "http", url: "https://example.com" }, id: "check-1" },
+      { config: { host: "localhost", port: 3000, type: "tcp" }, id: "check-2" },
+    ],
   };
 
   beforeEach(() => {
@@ -101,7 +101,7 @@ describe("worker", () => {
     await checkWorker({ checkId: "check-1" });
 
     expect(mockHttpRunner.run).toHaveBeenCalledWith(
-      mockConfig.checks["check-1"],
+      mockConfig.checks[0]?.config,
     );
   });
 });

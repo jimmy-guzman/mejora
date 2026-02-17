@@ -454,11 +454,11 @@ describe("CheckRegistry", () => {
 
   describe("getRequiredTypes", () => {
     it("should extract unique types from check configs", () => {
-      const checks = {
-        check1: { type: "eslint" },
-        check2: { type: "typescript" },
-        check3: { type: "eslint" },
-      };
+      const checks = [
+        { config: { type: "eslint" }, id: "check1" },
+        { config: { type: "typescript" }, id: "check2" },
+        { config: { type: "eslint" }, id: "check3" },
+      ];
       const types = CheckRegistry.getRequiredTypes(checks);
 
       expect(types.size).toBe(2);
@@ -467,15 +467,13 @@ describe("CheckRegistry", () => {
     });
 
     it("should return empty set for empty config", () => {
-      const types = CheckRegistry.getRequiredTypes({});
+      const types = CheckRegistry.getRequiredTypes([]);
 
       expect(types.size).toBe(0);
     });
 
     it("should handle single check", () => {
-      const checks = {
-        check1: { type: "eslint" },
-      };
+      const checks = [{ config: { type: "eslint" }, id: "check1" }];
       const types = CheckRegistry.getRequiredTypes(checks);
 
       expect(types.size).toBe(1);
