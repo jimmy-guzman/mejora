@@ -115,9 +115,9 @@ function mergeBaselines(baselines: Baseline[]) {
 
   for (const [checkId, itemsById] of itemsByCheck) {
     checks[checkId] = {
-      items: [...itemsById.values()].toSorted((a, b) =>
-        a.id.localeCompare(b.id),
-      ),
+      items: [...itemsById.values()].toSorted((a, b) => {
+        return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+      }),
       type: "items",
     };
   }
