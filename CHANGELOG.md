@@ -1,3 +1,10 @@
+## [3.0.2](https://github.com/jimmy-guzman/mejora/compare/v3.0.1...v3.0.2) (2026-02-18)
+
+
+### Performance Improvements
+
+* ⚡️ some quick tiny performance wins ([#75](https://github.com/jimmy-guzman/mejora/issues/75)) ([54fc831](https://github.com/jimmy-guzman/mejora/commit/54fc8319685d9521bed6b06b27015bef285328dc))
+
 ## [3.0.1](https://github.com/jimmy-guzman/mejora/compare/v3.0.0...v3.0.1) (2026-02-17)
 
 
