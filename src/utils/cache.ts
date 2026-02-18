@@ -70,7 +70,7 @@ export async function loadCache<T>(cachePath: string) {
 
 export async function saveCache(cachePath: string, cache: unknown) {
   try {
-    await writeFile(cachePath, JSON.stringify(cache, null, 2), "utf8");
+    await writeFile(cachePath, JSON.stringify(cache), "utf8");
   } catch {
     // Silently fail if we can't write cache
   }

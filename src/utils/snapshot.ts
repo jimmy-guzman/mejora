@@ -12,27 +12,29 @@ interface HasLocation {
  * Compare two objects by their source location (file, line, column).
  */
 function sortByLocation<T extends HasLocation>(a: T, b: T) {
-  if (a.file !== b.file) return a.file.localeCompare(b.file);
+  if (a.file !== b.file) return a.file < b.file ? -1 : 1;
 
   if (a.line !== b.line) return a.line - b.line;
 
   return a.column - b.column;
 }
 
+function getSignature(item: IssueInput) {
+  return `${item.file} - ${item.rule}: ${item.message}`;
+}
+
 /**
  * Assign stable, deterministic IDs to items based on their signature and relative position.
- * issues with identical signatures are distinguished by their sorted location order.
+ * Items with identical signatures are distinguished by their sorted location order.
  */
-function assignStableIds(
-  items: (IssueInput & { signature: `${string} - ${string}: ${string}` })[],
-) {
-  const groups = Map.groupBy(items, (item) => item.signature);
+function assignStableIds(items: IssueInput[]) {
+  const groups = Map.groupBy(items, getSignature);
   const result: Issue[] = [];
 
   for (const [signature, group] of groups) {
     group.sort(sortByLocation);
 
-    for (const [i, { signature: _sig, ...item }] of group.entries()) {
+    for (const [i, item] of group.entries()) {
       result.push({
         ...item,
         id: hash(`${signature}:${i}`),
@@ -47,14 +49,7 @@ function assignStableIds(
  * Convert a raw snapshot into normalized form with stable IDs assigned to all issues.
  */
 export function normalizeSnapshot(snapshot: RawSnapshot) {
-  const rawItems = snapshot.items.map((item) => {
-    return {
-      ...item,
-      signature: `${item.file} - ${item.rule}: ${item.message}` as const,
-    };
-  });
-
-  const itemsWithIds = assignStableIds(rawItems);
+  const itemsWithIds = assignStableIds(snapshot.items);
 
   return {
     items: itemsWithIds.toSorted(sortByLocation),

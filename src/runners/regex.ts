@@ -58,19 +58,13 @@ export const regex = defineCheck<RegexCheckConfig>({
 
     const exclude = resolveIgnorePatterns(patterns, config.ignore);
 
-    const allFiles = new Set<string>();
+    const globResults = await Promise.all(
+      patterns.map((pattern) => {
+        return Array.fromAsync(fsGlob(pattern, { cwd, exclude }));
+      }),
+    );
 
-    for (const pattern of patterns) {
-      const files = fsGlob(pattern, {
-        cwd,
-        exclude,
-      });
-
-      for await (const file of files) {
-        allFiles.add(file);
-      }
-    }
-
+    const allFiles = new Set(globResults.flat());
     const filePaths = [...allFiles];
 
     const compiledPatterns = config.patterns.map(
@@ -165,11 +159,7 @@ export const regex = defineCheck<RegexCheckConfig>({
       },
     );
 
-    const rawItems: IssueInput[] = [];
-
-    for (const items of results) {
-      rawItems.push(...items);
-    }
+    const rawItems = results.flat();
 
     await saveCache(cachePath, newCache);
 

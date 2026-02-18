@@ -5,13 +5,17 @@ import type { Baseline, Issue } from "@/types";
 import { plural } from "@/utils/text";
 
 const UNPARSABLE = "__unparsable__";
+const ESCAPE_MAP: Record<string, string> = {
+  "<": "&lt;",
+  ">": "&gt;",
+  "[": "&#91;",
+  "]": "&#93;",
+};
+const ESCAPE_RE = /[<>[\]]/g;
 
 function escapeHtml(text: string) {
-  return text
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll("[", "&#91;")
-    .replaceAll("]", "&#93;");
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- the regex ensures only characters in the map are replaced
+  return text.replaceAll(ESCAPE_RE, (ch) => ESCAPE_MAP[ch]!);
 }
 
 function createHref(filePath: string, baselineDir: string, line?: number) {
@@ -43,7 +47,7 @@ function groupItemsByFile(items: Issue[]) {
 
       if (b.filePath === UNPARSABLE) return -1;
 
-      return a.filePath.localeCompare(b.filePath);
+      return a.filePath < b.filePath ? -1 : a.filePath > b.filePath ? 1 : 0;
     });
 }
 
