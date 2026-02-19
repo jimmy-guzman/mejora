@@ -2,6 +2,7 @@ import type { Baseline, Issue } from "@/types";
 
 import { BASELINE_VERSION } from "@/constants";
 import { balanceBraces } from "@/utils/brace-balancer";
+import { sortById } from "@/utils/sort";
 
 function tryParseJson(text: string) {
   try {
@@ -115,9 +116,7 @@ function mergeBaselines(baselines: Baseline[]) {
 
   for (const [checkId, itemsById] of itemsByCheck) {
     checks[checkId] = {
-      items: [...itemsById.values()].toSorted((a, b) => {
-        return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
-      }),
+      items: [...itemsById.values()].toSorted(sortById),
       type: "items",
     };
   }

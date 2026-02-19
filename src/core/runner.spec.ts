@@ -49,6 +49,25 @@ BaselineManager.update = vi.fn(
   },
 );
 
+BaselineManager.batchUpdate = vi.fn(
+  (
+    baseline: Baseline | null,
+    updates: { checkId: string; entry: BaselineEntry }[],
+  ) => {
+    const current = baseline ?? { checks: {}, version: 2 };
+
+    if (updates.length === 0) return current;
+
+    const newChecks = { ...current.checks };
+
+    for (const { checkId, entry } of updates) {
+      newChecks[checkId] = entry;
+    }
+
+    return { ...current, checks: newChecks };
+  },
+);
+
 vi.mock("./comparison", () => ({
   compareSnapshots: vi.fn(),
 }));
@@ -972,5 +991,23 @@ describe("Runner", () => {
     await runner.run(config);
 
     expect(mockSave).not.toHaveBeenCalled();
+  });
+
+  it("should not create empty baseline when all checks are filtered out", async () => {
+    const config: Config = {
+      checks: [
+        { config: { files: ["*.js"], type: "eslint" as const }, id: "check1" },
+      ],
+    };
+
+    mockConfig = config;
+    mockLoad.mockResolvedValue(null);
+
+    const runner = new Runner(registry);
+    const result = await runner.run(config, { only: "no-match" });
+
+    expect(mockSave).not.toHaveBeenCalled();
+    expect(BaselineManager.batchUpdate).not.toHaveBeenCalled();
+    expect(result.exitCode).toBe(0);
   });
 });

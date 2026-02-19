@@ -3,6 +3,7 @@ import { Worker } from "node:worker_threads";
 
 import type {
   Baseline,
+  BaselineEntry,
   CheckResult,
   CliOptions,
   Config,
@@ -137,10 +138,11 @@ export class Runner {
       };
     }
 
-    let updatedBaseline = baseline;
     let hasAnyRegression = false;
     let hasAnyImprovement = false;
     let hasAnyInitial = false;
+
+    const updates: { checkId: string; entry: BaselineEntry }[] = [];
 
     for (const result of results) {
       if (result.hasRegression) hasAnyRegression = true;
@@ -155,23 +157,25 @@ export class Runner {
         options.force ||
         result.isInitial
       ) {
-        updatedBaseline = BaselineManager.update(
-          updatedBaseline,
-          result.checkId,
-          {
+        updates.push({
+          checkId: result.checkId,
+          entry: {
             items: result.snapshot.items,
             type: result.snapshot.type,
           },
-        );
+        });
       }
     }
 
-    if (
-      updatedBaseline &&
-      updatedBaseline !== baseline &&
-      (!hasAnyRegression || options.force || hasAnyInitial)
-    ) {
-      await this.baselineManager.save(updatedBaseline, options.force);
+    if (updates.length > 0) {
+      const updatedBaseline = BaselineManager.batchUpdate(baseline, updates);
+
+      if (
+        updatedBaseline !== baseline &&
+        (!hasAnyRegression || options.force || hasAnyInitial)
+      ) {
+        await this.baselineManager.save(updatedBaseline, options.force);
+      }
     }
 
     const exitCode = hasAnyRegression && !options.force ? 1 : 0;
