@@ -1,3 +1,10 @@
+## [3.0.3](https://github.com/jimmy-guzman/mejora/compare/v3.0.2...v3.0.3) (2026-02-19)
+
+
+### Bug Fixes
+
+* 🐛 harden baseline path and save logic ([#76](https://github.com/jimmy-guzman/mejora/issues/76)) ([7639b36](https://github.com/jimmy-guzman/mejora/commit/7639b364c7bf9cf646b14ad07edb2ef77e72094c))
+
 ## [3.0.2](https://github.com/jimmy-guzman/mejora/compare/v3.0.1...v3.0.2) (2026-02-18)
 
 
