@@ -1182,6 +1182,33 @@ describe("BaselineManager", () => {
 
       expect(mockReadFile).toHaveBeenCalledWith(customPath, "utf8");
     });
+
+    it("should derive mdPath by replacing only trailing .json", async () => {
+      mockMkdir.mockResolvedValue(undefined);
+      mockWriteFile.mockResolvedValue();
+
+      const manager = new BaselineManager("some.json.dir/baseline.json");
+      const baseline = {
+        checks: {},
+        version: 2,
+      };
+
+      await manager.save(baseline);
+
+      expect(mockMkdir).toHaveBeenCalledWith("some.json.dir", {
+        recursive: true,
+      });
+      expect(mockWriteFile).toHaveBeenCalledWith(
+        "some.json.dir/baseline.json",
+        expect.any(String),
+        "utf8",
+      );
+      expect(mockWriteFile).toHaveBeenCalledWith(
+        "some.json.dir/baseline.md",
+        expect.any(String),
+        "utf8",
+      );
+    });
   });
 
   describe("save in CI environment", () => {

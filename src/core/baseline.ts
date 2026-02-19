@@ -20,7 +20,7 @@ export class BaselineManager {
   constructor(baselinePath = DEFAULT_BASELINE_PATH) {
     this.baselinePath = baselinePath;
     this.baselineDir = dirname(baselinePath);
-    this.mdPath = baselinePath.replace(".json", ".md");
+    this.mdPath = baselinePath.replace(/\.json$/, ".md");
   }
 
   /**

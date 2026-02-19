@@ -992,4 +992,22 @@ describe("Runner", () => {
 
     expect(mockSave).not.toHaveBeenCalled();
   });
+
+  it("should not create empty baseline when all checks are filtered out", async () => {
+    const config: Config = {
+      checks: [
+        { config: { files: ["*.js"], type: "eslint" as const }, id: "check1" },
+      ],
+    };
+
+    mockConfig = config;
+    mockLoad.mockResolvedValue(null);
+
+    const runner = new Runner(registry);
+    const result = await runner.run(config, { only: "no-match" });
+
+    expect(mockSave).not.toHaveBeenCalled();
+    expect(BaselineManager.batchUpdate).not.toHaveBeenCalled();
+    expect(result.exitCode).toBe(0);
+  });
 });
