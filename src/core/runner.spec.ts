@@ -49,6 +49,25 @@ BaselineManager.update = vi.fn(
   },
 );
 
+BaselineManager.batchUpdate = vi.fn(
+  (
+    baseline: Baseline | null,
+    updates: { checkId: string; entry: BaselineEntry }[],
+  ) => {
+    const current = baseline ?? { checks: {}, version: 2 };
+
+    if (updates.length === 0) return current;
+
+    const newChecks = { ...current.checks };
+
+    for (const { checkId, entry } of updates) {
+      newChecks[checkId] = entry;
+    }
+
+    return { ...current, checks: newChecks };
+  },
+);
+
 vi.mock("./comparison", () => ({
   compareSnapshots: vi.fn(),
 }));

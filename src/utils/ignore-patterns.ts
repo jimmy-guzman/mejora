@@ -4,6 +4,9 @@ const DEFAULT_IGNORE_PATTERNS = [
   "**/.git/**",
 ];
 
+const PREFIX_RE = /^([^*]+\/)/;
+const GLOBSTAR_RE = /^\*\*\//;
+
 /**
  * Resolve ignore patterns for glob operations.
  *
@@ -20,14 +23,14 @@ export function resolveIgnorePatterns(
   }
 
   const prefixes = filePatterns
-    .map((pattern) => /^([^*]+\/)/.exec(pattern)?.[1])
+    .map((pattern) => PREFIX_RE.exec(pattern)?.[1])
     .filter((pattern): pattern is string => pattern !== undefined);
 
   return [
     ...DEFAULT_IGNORE_PATTERNS,
     ...prefixes.flatMap((prefix) => {
       return DEFAULT_IGNORE_PATTERNS.map((pattern) => {
-        return pattern.replace(/^\*\*\//, prefix);
+        return pattern.replace(GLOBSTAR_RE, prefix);
       });
     }),
   ];

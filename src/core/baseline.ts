@@ -13,10 +13,36 @@ import { compareBaselines } from "./comparison";
 import { resolveBaselineConflict } from "./conflict-resolver";
 
 export class BaselineManager {
+  private baselineDir: string;
   private baselinePath: string;
+  private mdPath: string;
 
   constructor(baselinePath = DEFAULT_BASELINE_PATH) {
     this.baselinePath = baselinePath;
+    this.baselineDir = dirname(baselinePath);
+    this.mdPath = baselinePath.replace(".json", ".md");
+  }
+
+  /**
+   * Apply multiple check updates in a single pass, copying the checks object at most once.
+   */
+  static batchUpdate(
+    baseline: Baseline | null,
+    updates: { checkId: string; entry: BaselineEntry }[],
+  ) {
+    const current = baseline ?? BaselineManager.create({});
+    const newChecks = { ...current.checks };
+
+    let changed = false;
+
+    for (const { checkId, entry } of updates) {
+      if (!compareBaselines(entry, current.checks[checkId])) {
+        newChecks[checkId] = entry;
+        changed = true;
+      }
+    }
+
+    return changed ? { ...current, checks: newChecks } : current;
   }
 
   static create(checks: Record<string, BaselineEntry>) {
@@ -65,10 +91,12 @@ export class BaselineManager {
         return resolved;
       }
 
-      await this.resolveMarkdownConflictIfNeeded(content);
-
       // TODO: consider using zod for validation and parsing
-      return JSON.parse(content) as Baseline;
+      const baseline = JSON.parse(content) as Baseline;
+
+      await this.resolveMarkdownConflictIfNeeded(baseline);
+
+      return baseline;
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === "ENOENT") {
         return null;
@@ -84,34 +112,31 @@ export class BaselineManager {
     }
 
     const jsonContent = `${JSON.stringify(baseline, null, 2)}\n`;
-    const mdPath = this.baselinePath.replace(".json", ".md");
-    const baselineDir = dirname(this.baselinePath);
-    const mdContent = generateMarkdownReport(baseline, baselineDir);
+    const mdContent = generateMarkdownReport(baseline, this.baselineDir);
 
-    await mkdir(dirname(this.baselinePath), { recursive: true });
+    await mkdir(this.baselineDir, { recursive: true });
 
     await Promise.all([
       writeFile(this.baselinePath, jsonContent, "utf8"),
-      writeFile(mdPath, mdContent, "utf8"),
+      writeFile(this.mdPath, mdContent, "utf8"),
     ]);
   }
 
-  private async resolveMarkdownConflictIfNeeded(baselineContent: string) {
-    const markdownPath = this.baselinePath.replace(".json", ".md");
-
+  private async resolveMarkdownConflictIfNeeded(baseline: Baseline) {
     try {
-      const markdownContent = await readFile(markdownPath, "utf8");
+      const markdownContent = await readFile(this.mdPath, "utf8");
 
       if (markdownContent.includes("<<<<<<<")) {
         logger.start(
           "Merge conflict detected in markdown report, regenerating...",
         );
 
-        const baseline = JSON.parse(baselineContent) as Baseline;
-        const baselineDir = dirname(this.baselinePath);
-        const cleanMarkdown = generateMarkdownReport(baseline, baselineDir);
+        const cleanMarkdown = generateMarkdownReport(
+          baseline,
+          this.baselineDir,
+        );
 
-        await writeFile(markdownPath, cleanMarkdown, "utf8");
+        await writeFile(this.mdPath, cleanMarkdown, "utf8");
 
         logger.success("Markdown report regenerated");
       }

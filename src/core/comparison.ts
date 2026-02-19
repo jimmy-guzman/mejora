@@ -1,5 +1,7 @@
 import type { BaselineEntry, Issue, Snapshot } from "@/types";
 
+import { sortById } from "@/utils/sort";
+
 function createInitialResult() {
   return {
     hasImprovement: false,
@@ -21,12 +23,8 @@ function createComparisonResult(
     hasRegression: newIssues.length > 0,
     hasRelocation,
     isInitial: false,
-    newIssues: newIssues.toSorted((a, b) => {
-      return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
-    }),
-    removedIssues: removedIssues.toSorted((a, b) => {
-      return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
-    }),
+    newIssues: newIssues.toSorted(sortById),
+    removedIssues: removedIssues.toSorted(sortById),
   };
 }
 
@@ -129,12 +127,8 @@ export const compareBaselines = (
     return false;
   }
 
-  const sortedEntry = entryItems.toSorted((a, b) => {
-    return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
-  });
-  const sortedExisting = existingItems.toSorted((a, b) => {
-    return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
-  });
+  const sortedEntry = entryItems.toSorted(sortById);
+  const sortedExisting = existingItems.toSorted(sortById);
 
   return sortedEntry.every((item, i) => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- we know existingItems has the same length as entryItems
