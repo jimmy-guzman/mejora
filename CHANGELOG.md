@@ -1,3 +1,10 @@
+## [3.0.4](https://github.com/jimmy-guzman/mejora/compare/v3.0.3...v3.0.4) (2026-03-02)
+
+
+### Bug Fixes
+
+* 🐛 harden conflict marker regex for edge cases and CRLF ([#77](https://github.com/jimmy-guzman/mejora/issues/77)) ([80af0fa](https://github.com/jimmy-guzman/mejora/commit/80af0fa7f435c40b928351d0141032888a299e6a))
+
 ## [3.0.3](https://github.com/jimmy-guzman/mejora/compare/v3.0.2...v3.0.3) (2026-02-19)
 
 
