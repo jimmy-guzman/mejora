@@ -60,13 +60,21 @@ function normalizeBaselineStructure(parsed: unknown) {
 function parseConflictSide(side: string) {
   try {
     const trimmed = side.trim();
+
+    if (trimmed === "") {
+      return {
+        checks: {},
+        version: BASELINE_VERSION,
+      } satisfies Baseline;
+    }
+
     const direct = tryParseJson(trimmed);
 
     if (direct) {
       return normalizeBaselineStructure(direct);
     }
 
-    const cleaned = balanceBraces(removeTrailingComma(side));
+    const cleaned = balanceBraces(removeTrailingComma(trimmed));
     const wrapped = wrapInBaselineStructure(cleaned);
 
     return normalizeBaselineStructure(JSON.parse(wrapped) as unknown);
@@ -81,8 +89,13 @@ function parseConflictSide(side: string) {
 }
 
 function extractConflictSections(content: string) {
-  // Assumes standard Git conflict markers; nonstandard or corrupted cases are ignored.
-  const regex = /<<<<<<< .*\n([\s\S]*?)\n=======\n([\s\S]*?)\n>>>>>>> .*$/gm;
+  // `^` anchors on `<<<<<<<`, `=======`, and `>>>>>>>` prevent matching those
+  // sequences inside content. Two alternates after `=======` handle:
+  //   1. Normal/empty theirs: `=======\n<content>\n^>>>>>>> branch`  (closing marker anchored to line-start)
+  //   2. Adjacent (no `\n`):  `=======>>>>>>> branch`                (no newline, so `^` would fail — unanchored fallback)
+  // `\r?` before each `\n` makes the pattern work on both LF and CRLF line endings.
+  const regex =
+    /^<<<<<<< .+\r?\n([\s\S]*?)^=======(?:\r?\n([\s\S]*?)\r?\n?^>>>>>>> .+$|>>>>>>> .+$)/gm;
   const matches = [...content.matchAll(regex)];
 
   if (matches.length === 0) {

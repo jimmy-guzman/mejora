@@ -24,9 +24,12 @@ function addCloseBraces(json: string, count: number) {
  * @returns The JSON string with balanced braces.
  */
 export function balanceBraces(json: string) {
-  const openBraces = json.match(/\{/g)?.length ?? 0;
-  const closeBraces = json.match(/\}/g)?.length ?? 0;
-  const delta = openBraces - closeBraces;
+  let delta = 0;
+
+  for (const ch of json) {
+    if (ch === "{") delta++;
+    else if (ch === "}") delta--;
+  }
 
   if (delta === 0) return json;
 

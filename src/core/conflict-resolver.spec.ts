@@ -1226,6 +1226,390 @@ describe("resolveBaselineConflict", () => {
     );
   });
 
+  it("should handle conflict where theirs side is completely empty (no newline before >>>>>>>)", () => {
+    // Reproduces the real-world case where a commit removes an item entirely,
+    // leaving nothing between `=======` and `>>>>>>> <hash> (commit message)`.
+    const item1 = {
+      column: 57,
+      file: "src/client/app/movement/scheduled-inventory-transfer/iep/search/use-emergency-relief-edit-rows-form.ts",
+      id: "f3724935091d61e20f15c44819805fd91855a3b09f854aaf3244bf20da58ae57",
+      line: 25,
+      message: "Parameter 'result' implicitly has an 'any' type.",
+      rule: "TS7006",
+    };
+
+    // This simulates the case where the conflict covers the entire checks section,
+    // with HEAD having the item and the incoming commit removing it (empty theirs).
+    // The `=======` is directly followed by `>>>>>>> ...` with no newline in between.
+    const conflictContent = [
+      "{",
+      `  "version": ${BASELINE_VERSION},`,
+      "<<<<<<< HEAD",
+      '  "checks": {',
+      '    "typescript > noImplicitAny": {',
+      '      "type": "items",',
+      `      "items": [${JSON.stringify(item1)}]`,
+      "    }",
+      "  }",
+      "=======>>>>>>> 60c0dca3ac (feat(deps): bump react-hook-form to v7.71.0)",
+      "}",
+    ].join("\n");
+
+    // The key assertion: it should NOT throw "Could not parse conflict markers in baseline"
+    // and should successfully merge, keeping the item from the ours (HEAD) side.
+    const result = resolveBaselineConflict(conflictContent);
+
+    expect(result.checks["typescript > noImplicitAny"]?.items).toHaveLength(1);
+    expect(result.checks["typescript > noImplicitAny"]?.items[0]?.id).toBe(
+      item1.id,
+    );
+    expect(result.version).toBe(BASELINE_VERSION);
+  });
+
+  it("should handle conflict where ours side is completely empty", () => {
+    const item1 = {
+      column: 1,
+      file: "src/a.ts",
+      id: "error1-id",
+      line: 10,
+      message: "error1",
+      rule: "no-unused-vars",
+    };
+
+    // ours is empty, theirs has content
+    const conflictContent = [
+      "<<<<<<< HEAD",
+      "=======",
+      '  "checks": {',
+      '    "eslint": {',
+      '      "type": "items",',
+      `      "items": [${JSON.stringify(item1)}]`,
+      "    }",
+      "  }",
+      ">>>>>>> feature",
+    ].join("\n");
+
+    const result = resolveBaselineConflict(conflictContent);
+
+    expect(result.checks.eslint?.items).toHaveLength(1);
+    expect(result.checks.eslint?.items[0]?.id).toBe("error1-id");
+    expect(result.version).toBe(BASELINE_VERSION);
+  });
+
+  it("should handle conflict where both sides are completely empty", () => {
+    const conflictContent = ["<<<<<<< HEAD", "=======", ">>>>>>> feature"].join(
+      "\n",
+    );
+
+    const result = resolveBaselineConflict(conflictContent);
+
+    expect(result.checks).toStrictEqual({});
+    expect(result.version).toBe(BASELINE_VERSION);
+  });
+
+  it("should handle conflict where theirs is empty with a full baseline on ours side", () => {
+    const item1 = {
+      column: 1,
+      file: "src/a.ts",
+      id: "error1-id",
+      line: 10,
+      message: "error1",
+      rule: "no-unused-vars",
+    };
+
+    const oursBaseline = JSON.stringify(
+      {
+        checks: {
+          eslint: {
+            items: [item1],
+            type: "items",
+          },
+        },
+        version: BASELINE_VERSION,
+      },
+      null,
+      2,
+    );
+
+    // theirs is empty — no newline between ======= and >>>>>>>
+    const conflictContent = [
+      `<<<<<<< HEAD`,
+      oursBaseline,
+      `=======>>>>>>> feature`,
+    ].join("\n");
+
+    const result = resolveBaselineConflict(conflictContent);
+
+    expect(result.checks.eslint?.items).toHaveLength(1);
+    expect(result.checks.eslint?.items[0]?.id).toBe("error1-id");
+    expect(result.version).toBe(BASELINE_VERSION);
+  });
+
+  it("should handle conflict where ======= and >>>>>>> appear on the same line (no newline between them)", () => {
+    // Edge case: the theirs side is absent and `=======` is directly concatenated
+    // with `>>>>>>> branch` — i.e. `=======>>>>>>> feature` on a single line.
+    // This can happen with certain merge tool outputs or hand-edited conflict markers.
+    const item1 = {
+      column: 1,
+      file: "src/a.ts",
+      id: "error1-id",
+      line: 10,
+      message: "error1",
+      rule: "no-unused-vars",
+    };
+
+    const oursBaseline = JSON.stringify(
+      {
+        checks: {
+          eslint: {
+            items: [item1],
+            type: "items",
+          },
+        },
+        version: BASELINE_VERSION,
+      },
+      null,
+      2,
+    );
+
+    // `=======` and `>>>>>>> feature` share the same line — no newline separating them.
+    const conflictContent = `<<<<<<< HEAD\n${oursBaseline}\n=======>>>>>>> feature`;
+
+    const result = resolveBaselineConflict(conflictContent);
+
+    expect(result.checks.eslint?.items).toHaveLength(1);
+    expect(result.checks.eslint?.items[0]?.id).toBe("error1-id");
+    expect(result.version).toBe(BASELINE_VERSION);
+  });
+
+  describe("adjacent marker (=======>>>>>>> with no newline between them)", () => {
+    it("should resolve when ======= and >>>>>>> are on the same line with ours content", () => {
+      // Regression: the fixture previously used separate array entries for "=======" and
+      // ">>>>>>> ..." which joined with "\n" — inserting a newline and exercising the
+      // normal path instead of the adjacent-marker path.  This fixture explicitly uses
+      // the concatenated form to confirm the adjacent-marker alternate is exercised.
+      const item1 = {
+        column: 57,
+        file: "src/client/app/movement/scheduled-inventory-transfer/iep/search/use-emergency-relief-edit-rows-form.ts",
+        id: "f3724935091d61e20f15c44819805fd91855a3b09f854aaf3244bf20da58ae57",
+        line: 25,
+        message: "Parameter 'result' implicitly has an 'any' type.",
+        rule: "TS7006",
+      };
+
+      // "=======>>>>>>> branch" — no newline; tests the unanchored fallback alternate.
+      const conflictContent = [
+        "{",
+        `  "version": ${BASELINE_VERSION},`,
+        "<<<<<<< HEAD",
+        '  "checks": {',
+        '    "typescript > noImplicitAny": {',
+        '      "type": "items",',
+        `      "items": [${JSON.stringify(item1)}]`,
+        "    }",
+        "  }",
+        "=======>>>>>>> 60c0dca3ac (feat(deps): bump react-hook-form to v7.71.0)",
+        "}",
+      ].join("\n");
+
+      const result = resolveBaselineConflict(conflictContent);
+
+      expect(result.checks["typescript > noImplicitAny"]?.items).toHaveLength(
+        1,
+      );
+      expect(result.checks["typescript > noImplicitAny"]?.items[0]?.id).toBe(
+        item1.id,
+      );
+      expect(result.version).toBe(BASELINE_VERSION);
+    });
+
+    it("should resolve when ======= and >>>>>>> are on the same line with a full ours baseline", () => {
+      // Regression: the fixture previously split "=======" and ">>>>>>> feature" into
+      // two array entries, so ".join('\n')" produced a newline between them — meaning
+      // the test never actually exercised the adjacent-marker path.
+      const item1 = {
+        column: 1,
+        file: "src/a.ts",
+        id: "error1-id",
+        line: 10,
+        message: "error1",
+        rule: "no-unused-vars",
+      };
+
+      const oursBaseline = JSON.stringify(
+        {
+          checks: { eslint: { items: [item1], type: "items" } },
+          version: BASELINE_VERSION,
+        },
+        null,
+        2,
+      );
+
+      // No newline between ======= and >>>>>>> — adjacent-marker form.
+      const conflictContent = [
+        "<<<<<<< HEAD",
+        oursBaseline,
+        "=======>>>>>>> feature",
+      ].join("\n");
+
+      const result = resolveBaselineConflict(conflictContent);
+
+      expect(result.checks.eslint?.items).toHaveLength(1);
+      expect(result.checks.eslint?.items[0]?.id).toBe("error1-id");
+      expect(result.version).toBe(BASELINE_VERSION);
+    });
+  });
+
+  describe("CRLF line endings", () => {
+    it("should resolve a normal conflict block with CRLF line endings", () => {
+      const item1 = {
+        column: 1,
+        file: "src/a.ts",
+        id: "a-id",
+        line: 1,
+        message: "error",
+        rule: "no-unused-vars",
+      };
+      const item2 = {
+        column: 1,
+        file: "src/b.ts",
+        id: "b-id",
+        line: 2,
+        message: "error",
+        rule: "no-undef",
+      };
+
+      // Build the conflict string with CRLF (\r\n) instead of LF (\n).
+      const conflictContent = [
+        "<<<<<<< HEAD",
+        `  "eslint": { "type": "items", "items": [${JSON.stringify(item1)}] }`,
+        "=======",
+        `  "eslint": { "type": "items", "items": [${JSON.stringify(item2)}] }`,
+        ">>>>>>> feature",
+      ].join("\r\n");
+
+      const result = resolveBaselineConflict(conflictContent);
+
+      expect(result.checks.eslint?.items).toHaveLength(2);
+
+      const ids = result.checks.eslint?.items.map((i) => i.id).toSorted();
+
+      expect(ids).toStrictEqual(["a-id", "b-id"]);
+    });
+
+    it("should resolve an empty-theirs conflict block with CRLF line endings", () => {
+      const item1 = {
+        column: 1,
+        file: "src/a.ts",
+        id: "a-id",
+        line: 1,
+        message: "error",
+        rule: "no-unused-vars",
+      };
+
+      const conflictContent = [
+        "<<<<<<< HEAD",
+        `  "eslint": { "type": "items", "items": [${JSON.stringify(item1)}] }`,
+        "=======",
+        ">>>>>>> feature",
+      ].join("\r\n");
+
+      const result = resolveBaselineConflict(conflictContent);
+
+      expect(result.checks.eslint?.items).toHaveLength(1);
+      expect(result.checks.eslint?.items[0]?.id).toBe("a-id");
+    });
+  });
+
+  describe("closing marker anchoring (regression: mid-line >>>>>>> must not match)", () => {
+    it("should not treat a >>>>>>> string inside a JSON value as a closing marker", () => {
+      // The `theirs` side contains a message string that looks like a closing marker
+      // mid-line.  Before the anchor fix the regex matched early, truncating the value.
+      const item = {
+        column: 1,
+        file: "src/a.ts",
+        id: "a-id",
+        line: 1,
+        message: ">>>>>>> looks-like-a-branch-name but is not",
+        rule: "r",
+      };
+
+      const conflictContent = [
+        "<<<<<<< HEAD",
+        `  "eslint": { "type": "items", "items": [] }`,
+        "=======",
+        `  "eslint": { "type": "items", "items": [${JSON.stringify(item)}] }`,
+        ">>>>>>> feature",
+      ].join("\n");
+
+      const result = resolveBaselineConflict(conflictContent);
+
+      // The item should be present and its message must not be truncated at the
+      // embedded >>>>>>> sequence.
+      expect(result.checks.eslint?.items).toHaveLength(1);
+      expect(result.checks.eslint?.items[0]?.id).toBe("a-id");
+      expect(result.checks.eslint?.items[0]?.message).toBe(item.message);
+    });
+
+    it("should not produce a false-positive match when >>>>>>> only appears mid-line with no real closing marker", () => {
+      // There is no real `>>>>>>> …` line — the only occurrence is inside a string
+      // value.  The regex must NOT match, so resolveBaselineConflict must throw.
+      const conflictContent = [
+        "<<<<<<< HEAD",
+        `  "eslint": { "type": "items", "items": [] }`,
+        "=======",
+        `  "note": "prefix >>>>>>> fake-branch inside string"`,
+      ].join("\n");
+
+      expect(() => resolveBaselineConflict(conflictContent)).toThrowError(
+        "Could not parse conflict markers in baseline",
+      );
+    });
+
+    it("should not truncate the theirs section when its content contains a >>>>>>> substring", () => {
+      // Both sides are full baselines.  The `theirs` baseline includes a message
+      // containing `>>>>>>> branch` — before the fix the parser would stop at
+      // that substring and misinterpret the section.
+      const oursItem = {
+        column: 1,
+        file: "src/a.ts",
+        id: "a-id",
+        line: 1,
+        message: "clean message",
+        rule: "r",
+      };
+      const theirsItem = {
+        column: 1,
+        file: "src/b.ts",
+        id: "b-id",
+        line: 2,
+        message: "see commit >>>>>>> main for details",
+        rule: "r",
+      };
+
+      const conflictContent = [
+        "<<<<<<< HEAD",
+        `  "eslint": { "type": "items", "items": [${JSON.stringify(oursItem)}] }`,
+        "=======",
+        `  "eslint": { "type": "items", "items": [${JSON.stringify(theirsItem)}] }`,
+        ">>>>>>> feature",
+      ].join("\n");
+
+      const result = resolveBaselineConflict(conflictContent);
+
+      expect(result.checks.eslint?.items).toHaveLength(2);
+
+      const ids = result.checks.eslint?.items.map((i) => i.id).toSorted();
+
+      expect(ids).toStrictEqual(["a-id", "b-id"]);
+
+      // Crucially the message must be intact — not truncated at the embedded >>>>>>>.
+      const bItem = result.checks.eslint?.items.find((i) => i.id === "b-id");
+
+      expect(bItem?.message).toBe(theirsItem.message);
+    });
+  });
+
   it("should skip checks with empty items during merge", () => {
     const start = `${"<".repeat(7)} ours`;
     const mid = "=".repeat(7);
@@ -1263,5 +1647,65 @@ describe("resolveBaselineConflict", () => {
 
     expect(result.checks.eslint?.items).toHaveLength(1);
     expect(result.checks.eslint?.items[0]?.id).toBe("eslint-1");
+  });
+
+  describe("removeTrailingComma (via fragment-parsing path)", () => {
+    const item = {
+      column: 1,
+      file: "src/a.ts",
+      id: "a-id",
+      line: 1,
+      message: "m",
+      rule: "r",
+    };
+
+    it("should parse a fragment that ends with a trailing comma", () => {
+      // The ours side is a raw fragment ending with `,` — exercising removeTrailingComma
+      // stripping the comma before wrapping and parsing.
+      const conflictContent = [
+        "<<<<<<< HEAD",
+        `  "eslint": { "type": "items", "items": [${JSON.stringify(item)}] },`,
+        "=======",
+        `  "eslint": { "type": "items", "items": [${JSON.stringify(item)}] }`,
+        ">>>>>>> feature",
+      ].join("\n");
+
+      const result = resolveBaselineConflict(conflictContent);
+
+      expect(result.checks.eslint?.items).toHaveLength(1);
+      expect(result.checks.eslint?.items[0]?.id).toBe("a-id");
+    });
+
+    it("should parse a fragment that does not end with a trailing comma", () => {
+      // Exercises the removeTrailingComma no-op branch (no comma to strip).
+      const conflictContent = [
+        "<<<<<<< HEAD",
+        `  "eslint": { "type": "items", "items": [${JSON.stringify(item)}] }`,
+        "=======",
+        `  "eslint": { "type": "items", "items": [${JSON.stringify(item)}] }`,
+        ">>>>>>> feature",
+      ].join("\n");
+
+      const result = resolveBaselineConflict(conflictContent);
+
+      expect(result.checks.eslint?.items).toHaveLength(1);
+      expect(result.checks.eslint?.items[0]?.id).toBe("a-id");
+    });
+
+    it("should parse a fragment with trailing whitespace after the comma", () => {
+      // removeTrailingComma trims before checking, so `  ,  ` → `,` → stripped.
+      const conflictContent = [
+        "<<<<<<< HEAD",
+        `  "eslint": { "type": "items", "items": [${JSON.stringify(item)}] },   `,
+        "=======",
+        `  "eslint": { "type": "items", "items": [${JSON.stringify(item)}] }`,
+        ">>>>>>> feature",
+      ].join("\n");
+
+      const result = resolveBaselineConflict(conflictContent);
+
+      expect(result.checks.eslint?.items).toHaveLength(1);
+      expect(result.checks.eslint?.items[0]?.id).toBe("a-id");
+    });
   });
 });
