@@ -1,7 +1,5 @@
-export { defineConfig, loadConfig } from "./core/config";
+export { defineConfig } from "./core/config";
 export { defineCheck } from "./core/define-check";
-export { buildRunOutput } from "./outputs/json";
-export type { RunOutput } from "./outputs/json";
 export { run } from "./run";
 export { eslint } from "./runners/eslint";
 export { regex } from "./runners/regex";

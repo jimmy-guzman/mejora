@@ -119,26 +119,8 @@ pnpm mejora --skip typescript
 import { run } from "mejora";
 
 const result = await run();
-// or pass options / a pre-built config
-const result = await run({ force: true }, config);
-```
-
-`run(options?, config?)` returns a `RunResult`:
-
-| Field            | Type            | Description                         |
-| ---------------- | --------------- | ----------------------------------- |
-| `exitCode`       | `number`        | `0` pass, `1` regression, `2` error |
-| `hasImprovement` | `boolean`       | At least one check improved         |
-| `hasRegression`  | `boolean`       | At least one check regressed        |
-| `results`        | `CheckResult[]` | Per-check details                   |
-
-To get structured output without serialising to JSON yourself, use `buildRunOutput`:
-
-```ts
-import { run, buildRunOutput } from "mejora";
-
-const output = buildRunOutput(await run());
-console.log(output.summary.regressions); // number
+// with a config and options
+const result = await run(config, { force: true });
 ```
 
 ## Configuration

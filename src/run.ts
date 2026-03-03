@@ -5,8 +5,8 @@ import { loadConfig } from "./core/config";
 import { Runner } from "./core/runner";
 
 export async function run(
-  options: RunOptions = {},
   config?: Config,
+  options: RunOptions = {},
 ): Promise<RunResult> {
   const resolvedConfig = config ?? (await loadConfig());
   const registry = new CheckRegistry();
