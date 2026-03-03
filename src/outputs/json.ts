@@ -13,7 +13,7 @@ interface Check {
   totalIssues: number;
 }
 
-export interface RunOutput {
+interface RunOutput {
   checks: Check[];
   exitCode: number;
   hasImprovement: boolean;
