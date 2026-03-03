@@ -1,3 +1,10 @@
+## [3.1.1](https://github.com/jimmy-guzman/mejora/compare/v3.1.0...v3.1.1) (2026-03-03)
+
+
+### Bug Fixes
+
+* 🐛 should prune stale checks ([#79](https://github.com/jimmy-guzman/mejora/issues/79)) ([7a37e35](https://github.com/jimmy-guzman/mejora/commit/7a37e354f5f5c3b89c0708e76206b795a4c5cdbc))
+
 # [3.1.0](https://github.com/jimmy-guzman/mejora/compare/v3.0.4...v3.1.0) (2026-03-03)
 
 
