@@ -1252,4 +1252,43 @@ describe("Runner", () => {
     expect(BaselineManager.batchUpdate).not.toHaveBeenCalled();
     expect(result.exitCode).toBe(0);
   });
+
+  it("should prune stale baseline entries when config has no checks", async () => {
+    const staleItem = {
+      column: 1,
+      file: "old.js",
+      id: "old.js-1-no-unused-vars",
+      line: 1,
+      message: "error",
+      rule: "no-unused-vars",
+      signature: "old.js - no-unused-vars: error" as const,
+    };
+
+    const existingBaseline = {
+      checks: {
+        "removed-check": { items: [staleItem], type: "items" as const },
+      },
+      version: 2,
+    };
+
+    mockLoad.mockResolvedValue(existingBaseline);
+
+    const config: Config = { checks: [] };
+
+    mockConfig = config;
+
+    const runner = new Runner(registry);
+    const result = await runner.run(config);
+
+    expect(BaselineManager.prune).toHaveBeenCalledWith(existingBaseline, []);
+    expect(mockSave).toHaveBeenCalledWith(
+      expect.objectContaining({
+        checks: expect.not.objectContaining({
+          "removed-check": expect.anything(),
+        }),
+      }),
+      undefined,
+    );
+    expect(result.exitCode).toBe(0);
+  });
 });

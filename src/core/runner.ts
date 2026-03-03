@@ -167,30 +167,23 @@ export class Runner {
       }
     }
 
-    if (results.length === 0) {
-      return {
-        exitCode: 0,
-        hasImprovement: false,
-        hasRegression: false,
-        results,
-        totalDuration: performance.now() - startTime,
-      };
-    }
-
     const updatedBaseline =
       updates.length > 0
         ? BaselineManager.batchUpdate(baseline, updates)
-        : (baseline ?? BaselineManager.create({}));
+        : (baseline ??
+          (results.length > 0 ? BaselineManager.create({}) : null));
 
     const isFiltered = Boolean(options.only ?? options.skip);
-    const { baseline: finalBaseline, prunedIds } = isFiltered
-      ? { baseline: updatedBaseline, prunedIds: [] as string[] }
-      : BaselineManager.prune(
-          updatedBaseline,
-          config.checks.map((c) => c.id),
-        );
+    const { baseline: finalBaseline, prunedIds } =
+      updatedBaseline !== null && !isFiltered
+        ? BaselineManager.prune(
+            updatedBaseline,
+            config.checks.map((c) => c.id),
+          )
+        : { baseline: updatedBaseline, prunedIds: [] as string[] };
 
     const shouldSave =
+      finalBaseline !== null &&
       finalBaseline !== baseline &&
       (!hasAnyRegression ||
         (options.force ?? false) ||
