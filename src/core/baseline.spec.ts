@@ -171,6 +171,115 @@ describe("BaselineManager", () => {
     });
   });
 
+  describe("static prune", () => {
+    const baselineWithThreeChecks = {
+      checks: {
+        eslint: {
+          items: [
+            {
+              column: 1,
+              file: "src/a.ts",
+              id: "abc123def456",
+              line: 10,
+              message: "error1",
+              rule: "no-unused-vars",
+            },
+          ],
+          type: "items" as const,
+        },
+        prettier: {
+          items: [],
+          type: "items" as const,
+        },
+        typescript: {
+          items: [
+            {
+              column: 1,
+              file: "src/b.ts",
+              id: "789xyz012tuv",
+              line: 20,
+              message: "error2",
+              rule: "TS2304",
+            },
+          ],
+          type: "items" as const,
+        },
+      },
+      version: 2,
+    };
+
+    it("should remove a check that is not in activeCheckIds", () => {
+      const { baseline, prunedIds } = BaselineManager.prune(
+        baselineWithThreeChecks,
+        ["eslint", "typescript"],
+      );
+
+      expect(prunedIds).toStrictEqual(["prettier"]);
+      expect(baseline.checks).not.toHaveProperty("prettier");
+      expect(baseline.checks).toHaveProperty("eslint");
+      expect(baseline.checks).toHaveProperty("typescript");
+    });
+
+    it("should remove multiple stale checks at once", () => {
+      const { baseline, prunedIds } = BaselineManager.prune(
+        baselineWithThreeChecks,
+        ["typescript"],
+      );
+
+      expect(prunedIds).toStrictEqual(["eslint", "prettier"]);
+      expect(Object.keys(baseline.checks)).toStrictEqual(["typescript"]);
+    });
+
+    it("should return the original baseline reference when nothing is pruned", () => {
+      const { baseline, prunedIds } = BaselineManager.prune(
+        baselineWithThreeChecks,
+        ["eslint", "prettier", "typescript"],
+      );
+
+      expect(prunedIds).toStrictEqual([]);
+      expect(baseline).toBe(baselineWithThreeChecks);
+    });
+
+    it("should return empty prunedIds when nothing is pruned", () => {
+      const { prunedIds } = BaselineManager.prune(baselineWithThreeChecks, [
+        "eslint",
+        "prettier",
+        "typescript",
+      ]);
+
+      expect(prunedIds).toHaveLength(0);
+    });
+
+    it("should prune everything when activeCheckIds is empty", () => {
+      const { baseline, prunedIds } = BaselineManager.prune(
+        baselineWithThreeChecks,
+        [],
+      );
+
+      expect(prunedIds).toStrictEqual(["eslint", "prettier", "typescript"]);
+      expect(Object.keys(baseline.checks)).toHaveLength(0);
+    });
+
+    it("should be a no-op when the baseline has no checks", () => {
+      const emptyBaseline = { checks: {}, version: 2 };
+
+      const { baseline, prunedIds } = BaselineManager.prune(emptyBaseline, [
+        "eslint",
+      ]);
+
+      expect(prunedIds).toHaveLength(0);
+      expect(baseline).toBe(emptyBaseline);
+    });
+
+    it("should preserve version when pruning", () => {
+      const { baseline } = BaselineManager.prune(baselineWithThreeChecks, [
+        "eslint",
+      ]);
+
+      expect(baseline.version).toBe(2);
+    });
+  });
+
   describe("static update", () => {
     it("should add new entry to existing baseline", () => {
       const baseline = {

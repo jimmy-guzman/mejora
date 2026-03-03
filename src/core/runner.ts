@@ -167,15 +167,31 @@ export class Runner {
       }
     }
 
-    if (updates.length > 0) {
-      const updatedBaseline = BaselineManager.batchUpdate(baseline, updates);
+    const updatedBaseline =
+      updates.length > 0
+        ? BaselineManager.batchUpdate(baseline, updates)
+        : (baseline ??
+          (results.length > 0 ? BaselineManager.create({}) : null));
 
-      if (
-        updatedBaseline !== baseline &&
-        (!hasAnyRegression || options.force || hasAnyInitial)
-      ) {
-        await this.baselineManager.save(updatedBaseline, options.force);
-      }
+    const isFiltered = Boolean(options.only ?? options.skip);
+    const { baseline: finalBaseline, prunedIds } =
+      updatedBaseline !== null && !isFiltered
+        ? BaselineManager.prune(
+            updatedBaseline,
+            config.checks.map((c) => c.id),
+          )
+        : { baseline: updatedBaseline, prunedIds: [] as string[] };
+
+    const shouldSave =
+      finalBaseline !== null &&
+      finalBaseline !== baseline &&
+      (!hasAnyRegression ||
+        (options.force ?? false) ||
+        hasAnyInitial ||
+        prunedIds.length > 0);
+
+    if (shouldSave) {
+      await this.baselineManager.save(finalBaseline, options.force);
     }
 
     const exitCode = hasAnyRegression && !options.force ? 1 : 0;
