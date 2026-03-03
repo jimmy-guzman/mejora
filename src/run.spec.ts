@@ -1,4 +1,4 @@
-import type { Config, RunOptions, RunResult } from "@/types";
+import type { Config, RunResult } from "@/types";
 
 const mockLoadConfig = vi.fn();
 const mockRegistryInit = vi.fn();
@@ -53,35 +53,37 @@ describe("run()", () => {
   });
 
   it("should skip loadConfig() when config is provided", async () => {
-    await run(mockConfig);
+    await run({ config: mockConfig });
 
     expect(mockLoadConfig).not.toHaveBeenCalled();
   });
 
-  it("should initialise registry with the resolved config", async () => {
+  it("should initialize registry with the resolved config", async () => {
     await run();
 
     expect(mockRegistryInit).toHaveBeenCalledWith(mockConfig);
   });
 
-  it("should initialise registry with the provided config", async () => {
+  it("should initialize registry with the provided config", async () => {
     const customConfig: Config = { checks: [], runners: [] };
 
-    await run(customConfig);
+    await run({ config: customConfig });
 
     expect(mockRegistryInit).toHaveBeenCalledWith(customConfig);
   });
 
   it("should pass options through to runner.run()", async () => {
-    const options: RunOptions = { force: true, only: "eslint.*", skip: "ts.*" };
+    await run({ force: true, only: "eslint.*", skip: "ts.*" });
 
-    await run(undefined, options);
-
-    expect(mockRunnerRun).toHaveBeenCalledWith(mockConfig, options);
+    expect(mockRunnerRun).toHaveBeenCalledWith(mockConfig, {
+      force: true,
+      only: "eslint.*",
+      skip: "ts.*",
+    });
   });
 
   it("should return the RunResult from runner.run()", async () => {
-    const result = await run(mockConfig);
+    const result = await run({ config: mockConfig });
 
     expect(result).toBe(mockResult);
   });

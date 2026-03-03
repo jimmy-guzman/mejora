@@ -515,7 +515,7 @@ describe("buildRunOutput", () => {
       newIssues: [issue],
       totalIssues: 1,
     });
-    // Verify the newIssues reference is the same object (no serialisation)
+    // Verify the newIssues reference is the same object (no serialization)
     expect(result.checks[0]?.newIssues[0]).toBe(issue);
   });
 

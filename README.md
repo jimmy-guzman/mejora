@@ -120,7 +120,7 @@ import { run } from "mejora";
 
 const result = await run();
 // with a config and options
-const result = await run(config, { force: true });
+const resultWithOptions = await run({ config, force: true });
 ```
 
 ## Configuration

@@ -1,41 +1,40 @@
 #!/usr/bin/env node
 import { parseArgs } from "node:util";
 
-import { CheckRegistry } from "./core/check-registry";
-import { loadConfig } from "./core/config";
-import { Runner } from "./core/runner";
 import { formatJsonOutput } from "./outputs/json";
 import { formatTextOutput } from "./outputs/text";
+import { run } from "./run";
 import { logger } from "./utils/logger";
 
-const { values } = parseArgs({
-  allowPositionals: false,
-  options: {
-    force: {
-      default: false,
-      short: "f",
-      type: "boolean",
+try {
+  const { values } = parseArgs({
+    allowPositionals: false,
+    options: {
+      force: {
+        default: false,
+        short: "f",
+        type: "boolean",
+      },
+      help: {
+        short: "h",
+        type: "boolean",
+      },
+      json: {
+        default: false,
+        type: "boolean",
+      },
+      only: {
+        type: "string",
+      },
+      skip: {
+        type: "string",
+      },
     },
-    help: {
-      short: "h",
-      type: "boolean",
-    },
-    json: {
-      default: false,
-      type: "boolean",
-    },
-    only: {
-      type: "string",
-    },
-    skip: {
-      type: "string",
-    },
-  },
-  strict: true,
-});
+    strict: true,
+  });
 
-if (values.help) {
-  logger.log(`
+  if (values.help) {
+    logger.log(`
 mejora - Prevent regressions by allowing only improvement
 
 Usage:
@@ -55,19 +54,10 @@ Examples:
   mejora --only "eslint > *"
   mejora --skip typescript
 `);
-  process.exit(0);
-}
+    process.exit(0);
+  }
 
-try {
-  const registry = new CheckRegistry();
-
-  const config = await loadConfig();
-
-  registry.init(config);
-
-  const runner = new Runner(registry);
-
-  const result = await runner.run(config, {
+  const result = await run({
     force: values.force,
     only: values.only,
     skip: values.skip,
