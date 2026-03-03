@@ -119,8 +119,8 @@ pnpm mejora --skip typescript
 import { run } from "mejora";
 
 const result = await run();
-// with a config and options
-const resultWithOptions = await run({ config, force: true });
+// with options (config is loaded from disk by default)
+const resultWithOptions = await run({ force: true });
 ```
 
 ## Configuration
