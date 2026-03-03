@@ -155,14 +155,16 @@ function formatChangeBaseline(check: CheckResult, isFirst: boolean) {
 function formatUnchanged(check: CheckResult, isFirst: boolean) {
   const prefix = isFirst ? "" : "\n";
   const count = check.snapshot.items.length;
+  const symbol = count === 0 ? green("✔") : gray("ℹ");
+  const formattedCount = count === 0 ? green(count) : bold(count);
 
   if (check.duration !== undefined) {
     return [
-      `${prefix}${gray("ℹ")} ${check.checkId} (${bold(count)}) ${dim(duration(check.duration))}`,
+      `${prefix}${symbol} ${check.checkId} (${formattedCount}) ${dim(duration(check.duration))}`,
     ];
   }
 
-  return [`${prefix}${gray("ℹ")} ${check.checkId} (${bold(count)})`];
+  return [`${prefix}${symbol} ${check.checkId} (${formattedCount})`];
 }
 
 function formatCheckResult(check: CheckResult, isFirst: boolean) {
