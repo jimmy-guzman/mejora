@@ -1505,7 +1505,7 @@ describe("formatTextOutput", () => {
     expect(output).not.toContain("src/a.ts:10:0");
   });
 
-  it("should use green checkmark symbol instead of gray info symbol", () => {
+  it("should use green check mark symbol instead of gray info symbol", () => {
     const result = {
       exitCode: 0,
       hasImprovement: false,
