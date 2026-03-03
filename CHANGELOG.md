@@ -1,3 +1,10 @@
+# [3.1.0](https://github.com/jimmy-guzman/mejora/compare/v3.0.4...v3.1.0) (2026-03-03)
+
+
+### Features
+
+* ✨ 0 issues are now more apparent ([#78](https://github.com/jimmy-guzman/mejora/issues/78)) ([7ba69bd](https://github.com/jimmy-guzman/mejora/commit/7ba69bd03c27bbd49740922f94a8c6c1c61c20df))
+
 ## [3.0.4](https://github.com/jimmy-guzman/mejora/compare/v3.0.3...v3.0.4) (2026-03-02)
 
 
