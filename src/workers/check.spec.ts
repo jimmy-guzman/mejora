@@ -59,6 +59,14 @@ describe("worker", () => {
     expect(loadConfig).toHaveBeenCalledOnce();
   });
 
+  it("should pass cwd to loadConfig", async () => {
+    const { checkWorker } = await import("./check");
+
+    await checkWorker({ checkId: "check-1", cwd: "/mock/cwd" });
+
+    expect(loadConfig).toHaveBeenCalledWith("/mock/cwd");
+  });
+
   it("should throw when check not found", async () => {
     const { checkWorker } = await import("./check");
 
