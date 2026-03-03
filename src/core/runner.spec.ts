@@ -68,6 +68,29 @@ BaselineManager.batchUpdate = vi.fn(
   },
 );
 
+BaselineManager.create = vi.fn((checks: Record<string, BaselineEntry>) => {
+  return { checks, version: 2 };
+});
+
+BaselineManager.prune = vi.fn(
+  (baseline: Baseline, activeCheckIds: string[]) => {
+    const activeSet = new Set(activeCheckIds);
+    const prunedIds = Object.keys(baseline.checks).filter(
+      (id) => !activeSet.has(id),
+    );
+
+    if (prunedIds.length === 0) {
+      return { baseline, prunedIds };
+    }
+
+    const newChecks = Object.fromEntries(
+      Object.entries(baseline.checks).filter(([id]) => activeSet.has(id)),
+    );
+
+    return { baseline: { ...baseline, checks: newChecks }, prunedIds };
+  },
+);
+
 vi.mock("./comparison", () => ({
   compareSnapshots: vi.fn(),
 }));
@@ -991,6 +1014,225 @@ describe("Runner", () => {
     await runner.run(config);
 
     expect(mockSave).not.toHaveBeenCalled();
+  });
+
+  describe("stale check pruning", () => {
+    it("should prune stale check from baseline when running without filters", async () => {
+      const staleItem = {
+        column: 1,
+        file: "old.js",
+        id: "old.js-1-no-unused-vars",
+        line: 1,
+        message: "error",
+        rule: "no-unused-vars",
+        signature: "old.js - no-unused-vars: error" as const,
+      };
+
+      const existingBaseline = {
+        checks: {
+          "active-check": { items: [], type: "items" as const },
+          "stale-check": { items: [staleItem], type: "items" as const },
+        },
+        version: 2,
+      };
+
+      mockLoad.mockResolvedValue(existingBaseline);
+
+      vi.mocked(compareSnapshots).mockReturnValue({
+        hasImprovement: false,
+        hasRegression: false,
+        hasRelocation: false,
+        isInitial: false,
+        newIssues: [],
+        removedIssues: [],
+      });
+
+      const config: Config = {
+        checks: [
+          {
+            config: { files: ["*.js"], type: "eslint" as const },
+            id: "active-check",
+          },
+        ],
+      };
+
+      mockConfig = config;
+
+      const runner = new Runner(registry);
+
+      await runner.run(config);
+
+      expect(BaselineManager.prune).toHaveBeenCalledWith(
+        expect.objectContaining({ checks: expect.any(Object) }),
+        ["active-check"],
+      );
+
+      expect(mockSave).toHaveBeenCalledWith(
+        expect.objectContaining({
+          checks: expect.not.objectContaining({
+            "stale-check": expect.anything(),
+          }),
+        }),
+        undefined,
+      );
+    });
+
+    it("should NOT prune when --only filter is active", async () => {
+      const existingBaseline = {
+        checks: {
+          "eslint-check": { items: [], type: "items" as const },
+          "typescript-check": { items: [], type: "items" as const },
+        },
+        version: 2,
+      };
+
+      mockLoad.mockResolvedValue(existingBaseline);
+
+      vi.mocked(compareSnapshots).mockReturnValue({
+        hasImprovement: false,
+        hasRegression: false,
+        hasRelocation: false,
+        isInitial: false,
+        newIssues: [],
+        removedIssues: [],
+      });
+
+      const config: Config = {
+        checks: [
+          {
+            config: { files: ["*.js"], type: "eslint" as const },
+            id: "eslint-check",
+          },
+          {
+            config: { tsconfig: "tsconfig.json", type: "typescript" as const },
+            id: "typescript-check",
+          },
+        ],
+      };
+
+      mockConfig = config;
+
+      const runner = new Runner(registry);
+
+      await runner.run(config, { only: "eslint" });
+
+      expect(BaselineManager.prune).not.toHaveBeenCalled();
+    });
+
+    it("should NOT prune when --skip filter is active", async () => {
+      const existingBaseline = {
+        checks: {
+          "eslint-check": { items: [], type: "items" as const },
+          "typescript-check": { items: [], type: "items" as const },
+        },
+        version: 2,
+      };
+
+      mockLoad.mockResolvedValue(existingBaseline);
+
+      vi.mocked(compareSnapshots).mockReturnValue({
+        hasImprovement: false,
+        hasRegression: false,
+        hasRelocation: false,
+        isInitial: false,
+        newIssues: [],
+        removedIssues: [],
+      });
+
+      const config: Config = {
+        checks: [
+          {
+            config: { files: ["*.js"], type: "eslint" as const },
+            id: "eslint-check",
+          },
+          {
+            config: { tsconfig: "tsconfig.json", type: "typescript" as const },
+            id: "typescript-check",
+          },
+        ],
+      };
+
+      mockConfig = config;
+
+      const runner = new Runner(registry);
+
+      await runner.run(config, { skip: "typescript" });
+
+      expect(BaselineManager.prune).not.toHaveBeenCalled();
+    });
+
+    it("should save pruned baseline even when there are regressions (no --force)", async () => {
+      const staleItem = {
+        column: 1,
+        file: "old.js",
+        id: "old.js-1-no-unused-vars",
+        line: 1,
+        message: "error",
+        rule: "no-unused-vars",
+        signature: "old.js - no-unused-vars: error" as const,
+      };
+
+      const newItem = {
+        column: 1,
+        file: "new.js",
+        id: "new.js-1-no-undef",
+        line: 1,
+        message: "error",
+        rule: "no-undef",
+        signature: "new.js - no-undef: error" as const,
+      };
+
+      const existingBaseline = {
+        checks: {
+          "active-check": { items: [], type: "items" as const },
+          "stale-check": { items: [staleItem], type: "items" as const },
+        },
+        version: 2,
+      };
+
+      mockLoad.mockResolvedValue(existingBaseline);
+
+      vi.mocked(eslintRunner.run).mockResolvedValue({
+        items: [newItem],
+        type: "items",
+      });
+
+      vi.mocked(compareSnapshots).mockReturnValue({
+        hasImprovement: false,
+        hasRegression: true,
+        hasRelocation: false,
+        isInitial: false,
+        newIssues: [newItem],
+        removedIssues: [],
+      });
+
+      const config: Config = {
+        checks: [
+          {
+            config: { files: ["*.js"], type: "eslint" as const },
+            id: "active-check",
+          },
+        ],
+      };
+
+      mockConfig = config;
+
+      const runner = new Runner(registry);
+      const result = await runner.run(config);
+
+      // regression means exit code 1
+      expect(result.exitCode).toBe(1);
+
+      // but baseline should still be saved because stale check was pruned
+      expect(mockSave).toHaveBeenCalledWith(
+        expect.objectContaining({
+          checks: expect.not.objectContaining({
+            "stale-check": expect.anything(),
+          }),
+        }),
+        undefined,
+      );
+    });
   });
 
   it("should not create empty baseline when all checks are filtered out", async () => {

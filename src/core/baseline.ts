@@ -56,6 +56,28 @@ export class BaselineManager {
     return baseline?.checks[checkId];
   }
 
+  /**
+   * Remove checks from the baseline that are no longer present in the active
+   * check IDs. Returns the (possibly unchanged) baseline and the list of IDs
+   * that were removed.
+   */
+  static prune(baseline: Baseline, activeCheckIds: string[]) {
+    const activeSet = new Set(activeCheckIds);
+    const prunedIds = Object.keys(baseline.checks).filter(
+      (id) => !activeSet.has(id),
+    );
+
+    if (prunedIds.length === 0) {
+      return { baseline, prunedIds };
+    }
+
+    const newChecks = Object.fromEntries(
+      Object.entries(baseline.checks).filter(([id]) => activeSet.has(id)),
+    );
+
+    return { baseline: { ...baseline, checks: newChecks }, prunedIds };
+  }
+
   static update(
     baseline: Baseline | null,
     checkId: string,
