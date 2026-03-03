@@ -605,7 +605,7 @@ describe("formatTextOutput", () => {
     const output = stripAnsi(formatTextOutput(result, false));
 
     expect(output).toMatchInlineSnapshot(`
-      "ℹ eslint (0) 1s
+      "✔ eslint (0) 1s
 
       ℹ typescript (1) 1.5s
 
@@ -666,7 +666,7 @@ describe("formatTextOutput", () => {
     const output = stripAnsi(formatTextOutput(result, false));
 
     expect(output).toMatchInlineSnapshot(`
-      "ℹ eslint (0) 1.5s
+      "✔ eslint (0) 1.5s
 
         Improvements  0
          Regressions  0
@@ -994,7 +994,7 @@ describe("formatTextOutput", () => {
 
     const output = stripAnsi(formatTextOutput(result, false));
 
-    expect(output).toMatch(/^ℹ eslint \(0\)/);
+    expect(output).toMatch(/^✔ eslint \(0\)/);
   });
 
   it("should format multiple initial baselines with newline between them", () => {
@@ -1505,21 +1505,191 @@ describe("formatTextOutput", () => {
     expect(output).not.toContain("src/a.ts:10:0");
   });
 
-  it("should format regressions with force flag", () => {
+  it("should use green check mark symbol instead of gray info symbol", () => {
     const result = {
       exitCode: 0,
       hasImprovement: false,
-      hasRegression: true,
+      hasRegression: false,
       results: [
         {
           baseline: { items: [], type: "items" as const },
           checkId: "eslint",
           duration: 1500,
           hasImprovement: false,
-          hasRegression: true,
+          hasRegression: false,
           hasRelocation: false,
           isInitial: false,
-          newIssues: [
+          newIssues: [],
+          removedIssues: [],
+          snapshot: { items: [], type: "items" as const },
+        },
+      ],
+    };
+
+    const output = stripAnsi(formatTextOutput(result, false));
+
+    expect(output).toMatch(/^✔ eslint \(0\)/);
+    expect(output).not.toMatch(/^ℹ eslint/);
+  });
+
+  it("should use gray info symbol when issues > 0", () => {
+    const result = {
+      exitCode: 0,
+      hasImprovement: false,
+      hasRegression: false,
+      results: [
+        {
+          baseline: {
+            items: [
+              {
+                column: 1,
+                file: "src/a.ts",
+                id: "abc123def456",
+                line: 10,
+                message: "error1",
+                rule: "no-unused-vars",
+              },
+            ],
+            type: "items" as const,
+          },
+          checkId: "eslint",
+          duration: 1500,
+          hasImprovement: false,
+          hasRegression: false,
+          hasRelocation: false,
+          isInitial: false,
+          newIssues: [],
+          removedIssues: [],
+          snapshot: {
+            items: [
+              {
+                column: 1,
+                file: "src/a.ts",
+                id: "abc123def456",
+                line: 10,
+                message: "error1",
+                rule: "no-unused-vars",
+              },
+            ],
+            type: "items" as const,
+          },
+        },
+      ],
+    };
+
+    const output = stripAnsi(formatTextOutput(result, false));
+
+    expect(output).toMatch(/^ℹ eslint \(1\)/);
+    expect(output).not.toMatch(/^✔ eslint/);
+  });
+
+  it("should render correct text when 0 issues with duration", () => {
+    const result = {
+      exitCode: 0,
+      hasImprovement: false,
+      hasRegression: false,
+      results: [
+        {
+          baseline: { items: [], type: "items" as const },
+          checkId: "eslint > no-unused-vars",
+          duration: 2200,
+          hasImprovement: false,
+          hasRegression: false,
+          hasRelocation: false,
+          isInitial: false,
+          newIssues: [],
+          removedIssues: [],
+          snapshot: { items: [], type: "items" as const },
+        },
+      ],
+    };
+
+    const output = stripAnsi(formatTextOutput(result, false));
+
+    expect(output).toMatchInlineSnapshot(`
+        "✔ eslint > no-unused-vars (0) 2.2s
+
+          Improvements  0
+           Regressions  0
+               Initial  0
+                Checks  1
+                Issues  0
+
+        ✔ All checks passed"
+      `);
+  });
+
+  it("should render correct text when 0 issues without duration", () => {
+    const result = {
+      exitCode: 0,
+      hasImprovement: false,
+      hasRegression: false,
+      results: [
+        {
+          baseline: { items: [], type: "items" as const },
+          checkId: "eslint",
+          hasImprovement: false,
+          hasRegression: false,
+          hasRelocation: false,
+          isInitial: false,
+          newIssues: [],
+          removedIssues: [],
+          snapshot: { items: [], type: "items" as const },
+        },
+      ],
+    };
+
+    const output = stripAnsi(formatTextOutput(result, false));
+
+    expect(output).toMatchInlineSnapshot(`
+        "✔ eslint (0)
+
+          Improvements  0
+           Regressions  0
+               Initial  0
+                Checks  1
+                Issues  0
+
+        ✔ All checks passed"
+      `);
+  });
+});
+
+test("should format regressions with force flag", () => {
+  const result = {
+    exitCode: 0,
+    hasImprovement: false,
+    hasRegression: true,
+    results: [
+      {
+        baseline: { items: [], type: "items" as const },
+        checkId: "eslint",
+        duration: 1500,
+        hasImprovement: false,
+        hasRegression: true,
+        hasRelocation: false,
+        isInitial: false,
+        newIssues: [
+          {
+            column: 1,
+            file: "src/a.ts",
+            id: "abc123def456",
+            line: 10,
+            message: "error1",
+            rule: "no-unused-vars",
+          },
+          {
+            column: 1,
+            file: "src/b.ts",
+            id: "111aaa222bbb",
+            line: 20,
+            message: "error2",
+            rule: "no-undef",
+          },
+        ],
+        removedIssues: [],
+        snapshot: {
+          items: [
             {
               column: 1,
               file: "src/a.ts",
@@ -1537,35 +1707,15 @@ describe("formatTextOutput", () => {
               rule: "no-undef",
             },
           ],
-          removedIssues: [],
-          snapshot: {
-            items: [
-              {
-                column: 1,
-                file: "src/a.ts",
-                id: "abc123def456",
-                line: 10,
-                message: "error1",
-                rule: "no-unused-vars",
-              },
-              {
-                column: 1,
-                file: "src/b.ts",
-                id: "111aaa222bbb",
-                line: 20,
-                message: "error2",
-                rule: "no-undef",
-              },
-            ],
-            type: "items" as const,
-          },
+          type: "items" as const,
         },
-      ],
-    };
+      },
+    ],
+  };
 
-    const output = stripAnsi(formatTextOutput(result, true));
+  const output = stripAnsi(formatTextOutput(result, true));
 
-    expect(output).toMatchInlineSnapshot(`
+  expect(output).toMatchInlineSnapshot(`
     "✖ eslint:
       2 new issues (regressions):
          ↓ src/a.ts:10:1  no-unused-vars
@@ -1584,5 +1734,4 @@ describe("formatTextOutput", () => {
 
     ⚠ Regressions detected (forced)"
   `);
-  });
 });
