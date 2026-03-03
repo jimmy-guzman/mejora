@@ -93,7 +93,7 @@ describe("logger", () => {
     it("should log success message in green with check mark", () => {
       logger.success("operation successful");
 
-      expect(consoleLogSpy).toHaveBeenCalledWith(
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
         expect.stringContaining("✔"),
         "operation successful",
       );
@@ -104,7 +104,7 @@ describe("logger", () => {
     it("should log start message in cyan with spinner", () => {
       logger.start("operation started");
 
-      expect(consoleLogSpy).toHaveBeenCalledWith(
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
         expect.stringContaining("◐"),
         "operation started",
       );

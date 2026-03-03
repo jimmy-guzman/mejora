@@ -41,10 +41,10 @@ export const logger = {
   },
   start: (...args: unknown[]) => {
     // eslint-disable-next-line no-console -- logger utility
-    console.log(c.cyan("◐"), format(...args));
+    console.error(c.cyan("◐"), format(...args));
   },
   success: (...args: unknown[]) => {
     // eslint-disable-next-line no-console -- logger utility
-    console.log(c.green("✔"), format(...args));
+    console.error(c.green("✔"), format(...args));
   },
 };
