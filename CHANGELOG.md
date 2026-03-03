@@ -1,3 +1,10 @@
+## [3.1.2](https://github.com/jimmy-guzman/mejora/compare/v3.1.1...v3.1.2) (2026-03-03)
+
+
+### Bug Fixes
+
+* 🐛 redirect start and success to stderr ([#80](https://github.com/jimmy-guzman/mejora/issues/80)) ([2f35ad4](https://github.com/jimmy-guzman/mejora/commit/2f35ad4e345392ff6ce6b7b586c9c3c1b232f21b))
+
 ## [3.1.1](https://github.com/jimmy-guzman/mejora/compare/v3.1.0...v3.1.1) (2026-03-03)
 
 
