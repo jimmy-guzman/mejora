@@ -31,7 +31,7 @@
   "main": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
   "bin": {
-    "mejora": "./dist/run.mjs"
+    "mejora": "./dist/cli.mjs"
   },
   "files": [
     "dist"
