@@ -124,5 +124,23 @@ describe("config", () => {
         "No configuration file found.",
       );
     });
+
+    it("should accept an explicit cwd parameter", async () => {
+      writeFileSync(
+        join(testDir, "mejora.config.ts"),
+        `import { defineConfig, eslint } from "${originalCwd}/src/index.ts";
+         export default defineConfig({
+           checks: [
+             eslint({ name: "from-cwd", files: [], rules: {} })
+           ]
+         });`,
+      );
+
+      process.chdir(originalCwd);
+
+      const config = await loadConfig(testDir);
+
+      expect(config.checks[0]?.id).toBe("from-cwd");
+    });
   });
 });

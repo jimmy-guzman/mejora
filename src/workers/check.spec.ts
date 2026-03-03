@@ -54,31 +54,39 @@ describe("worker", () => {
   it("should load config on first call", async () => {
     const { checkWorker } = await import("./check");
 
-    await checkWorker({ checkId: "check-1" });
+    await checkWorker({ checkId: "check-1", cwd: "/mock/cwd" });
 
     expect(loadConfig).toHaveBeenCalledOnce();
+  });
+
+  it("should pass cwd to loadConfig", async () => {
+    const { checkWorker } = await import("./check");
+
+    await checkWorker({ checkId: "check-1", cwd: "/mock/cwd" });
+
+    expect(loadConfig).toHaveBeenCalledWith("/mock/cwd");
   });
 
   it("should throw when check not found", async () => {
     const { checkWorker } = await import("./check");
 
-    await expect(checkWorker({ checkId: "nonexistent" })).rejects.toThrowError(
-      "Check not found in config: nonexistent",
-    );
+    await expect(
+      checkWorker({ checkId: "nonexistent", cwd: "/mock/cwd" }),
+    ).rejects.toThrowError("Check not found in config: nonexistent");
   });
 
   it("should reuse registry for same check type", async () => {
     const { checkWorker } = await import("./check");
 
-    await checkWorker({ checkId: "check-1" });
+    await checkWorker({ checkId: "check-1", cwd: "/mock/cwd" });
 
     expect(mockInit).toHaveBeenCalledOnce();
 
-    await checkWorker({ checkId: "check-1" });
+    await checkWorker({ checkId: "check-1", cwd: "/mock/cwd" });
 
     expect(mockInit).toHaveBeenCalledOnce();
 
-    await checkWorker({ checkId: "check-2" });
+    await checkWorker({ checkId: "check-2", cwd: "/mock/cwd" });
 
     expect(mockInit).toHaveBeenCalledTimes(2);
   });
@@ -86,7 +94,7 @@ describe("worker", () => {
   it("should run check and return duration and snapshot", async () => {
     const { checkWorker } = await import("./check");
 
-    const result = await checkWorker({ checkId: "check-1" });
+    const result = await checkWorker({ checkId: "check-1", cwd: "/mock/cwd" });
 
     expect(result).toMatchObject({
       duration: expect.any(Number),
@@ -98,7 +106,7 @@ describe("worker", () => {
   it("should call runner with check config", async () => {
     const { checkWorker } = await import("./check");
 
-    await checkWorker({ checkId: "check-1" });
+    await checkWorker({ checkId: "check-1", cwd: "/mock/cwd" });
 
     expect(mockHttpRunner.run).toHaveBeenCalledWith(
       mockConfig.checks[0]?.config,

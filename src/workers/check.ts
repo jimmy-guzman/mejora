@@ -8,10 +8,16 @@ let configPromise: null | Promise<void> = null;
 
 const registries = new Map<string, CheckRegistry>();
 
-export async function checkWorker({ checkId }: { checkId: string }) {
+export async function checkWorker({
+  checkId,
+  cwd,
+}: {
+  checkId: string;
+  cwd: string;
+}) {
   if (!config) {
     configPromise ??= (async () => {
-      config = await loadConfig();
+      config = await loadConfig(cwd);
     })();
 
     await configPromise;
@@ -51,7 +57,9 @@ export async function checkWorker({ checkId }: { checkId: string }) {
 }
 
 if (parentPort) {
-  const result = await checkWorker(workerData as { checkId: string });
+  const result = await checkWorker(
+    workerData as { checkId: string; cwd: string },
+  );
 
   parentPort.postMessage(result);
 }

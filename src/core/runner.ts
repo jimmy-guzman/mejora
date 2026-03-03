@@ -24,20 +24,27 @@ const workerPath = fileURLToPath(new URL("workers/check.mjs", import.meta.url));
  */
 export class Runner {
   private baselineManager: BaselineManager;
+  private cwd: string;
   private registry: CheckRegistry;
 
-  constructor(registry: CheckRegistry, baselinePath?: string) {
+  constructor(
+    registry: CheckRegistry,
+    baselinePath?: string,
+    cwd = process.cwd(),
+  ) {
     this.registry = registry;
     this.baselineManager = new BaselineManager(baselinePath);
+    this.cwd = cwd;
   }
 
   private static async executeChecksParallel(
     checks: Config["checks"],
     baseline: Baseline | null,
+    cwd: string,
   ) {
     try {
       const workerPromises = checks.map(async (check) => {
-        const workerResult = await Runner.executeWorker(check.id);
+        const workerResult = await Runner.executeWorker(check.id, cwd);
 
         const snapshot = normalizeSnapshot(workerResult.snapshot);
         const baselineEntry = BaselineManager.getEntry(baseline, check.id);
@@ -65,10 +72,13 @@ export class Runner {
     }
   }
 
-  private static async executeWorker(checkId: string): Promise<WorkerResult> {
+  private static async executeWorker(
+    checkId: string,
+    cwd: string,
+  ): Promise<WorkerResult> {
     return new Promise((resolve, reject) => {
       const worker = new Worker(workerPath, {
-        workerData: { checkId },
+        workerData: { checkId, cwd },
       });
 
       worker.on("message", resolve);
@@ -125,7 +135,7 @@ export class Runner {
 
     const results =
       checkCount > 1
-        ? await Runner.executeChecksParallel(checksToRun, baseline)
+        ? await Runner.executeChecksParallel(checksToRun, baseline, this.cwd)
         : await this.executeChecksSequential(checksToRun, baseline);
 
     if (!results) {
