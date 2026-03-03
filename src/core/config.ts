@@ -68,7 +68,7 @@ export function defineConfig(config: { checks: Check[] }) {
   };
 }
 
-export const loadConfig = async () => {
+export const loadConfig = async (cwd = process.cwd()) => {
   const explorer = lilconfig("mejora", {
     loaders: {
       ".js": loader,
@@ -84,7 +84,7 @@ export const loadConfig = async () => {
     ],
   });
 
-  const result = await explorer.search(process.cwd());
+  const result = await explorer.search(cwd);
 
   if (!result?.config) {
     throw new Error("No configuration file found.");
