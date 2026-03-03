@@ -319,6 +319,7 @@ export interface RunResult {
 }
 
 export interface RunOptions {
+  config?: Config | undefined;
   force?: boolean | undefined;
   only?: string | undefined;
   skip?: string | undefined;
