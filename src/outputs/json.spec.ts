@@ -1,4 +1,4 @@
-import { formatJsonOutput } from "./json";
+import { buildRunOutput, formatJsonOutput } from "./json";
 
 describe("formatJsonOutput", () => {
   it("should format result with regressions", () => {
@@ -426,5 +426,180 @@ describe("formatJsonOutput", () => {
         unchangedChecks: [],
       }),
     });
+  });
+});
+
+describe("buildRunOutput", () => {
+  const issue = {
+    column: 1,
+    file: "src/a.ts",
+    id: "abc123def456",
+    line: 10,
+    message: "oops",
+    rule: "no-unused-vars",
+  };
+
+  it("should return a typed object (not a string)", () => {
+    const result = buildRunOutput({
+      exitCode: 0,
+      hasImprovement: false,
+      hasRegression: false,
+      results: [],
+    });
+
+    expectTypeOf(result).toBeObject();
+
+    expect(result).not.toBeNull();
+  });
+
+  it("should include top-level exitCode, hasImprovement, hasRegression fields", () => {
+    const result = buildRunOutput({
+      exitCode: 1,
+      hasImprovement: true,
+      hasRegression: true,
+      results: [],
+    });
+
+    expect(result.exitCode).toBe(1);
+    expect(result.hasImprovement).toBe(true);
+    expect(result.hasRegression).toBe(true);
+  });
+
+  it("should populate summary.checksRun from results length", () => {
+    const result = buildRunOutput({
+      exitCode: 0,
+      hasImprovement: false,
+      hasRegression: false,
+      results: [
+        {
+          baseline: { items: [], type: "items" as const },
+          checkId: "eslint",
+          hasImprovement: false,
+          hasRegression: false,
+          hasRelocation: false,
+          isInitial: false,
+          newIssues: [],
+          removedIssues: [],
+          snapshot: { items: [], type: "items" as const },
+        },
+      ],
+    });
+
+    expect(result.summary.checksRun).toBe(1);
+  });
+
+  it("should populate checks array with per-check data directly (no JSON roundtrip)", () => {
+    const result = buildRunOutput({
+      exitCode: 1,
+      hasImprovement: false,
+      hasRegression: true,
+      results: [
+        {
+          baseline: { items: [], type: "items" as const },
+          checkId: "eslint",
+          hasImprovement: false,
+          hasRegression: true,
+          hasRelocation: false,
+          isInitial: false,
+          newIssues: [issue],
+          removedIssues: [],
+          snapshot: { items: [issue], type: "items" as const },
+        },
+      ],
+    });
+
+    expect(result.checks).toHaveLength(1);
+    expect(result.checks[0]).toMatchObject({
+      checkId: "eslint",
+      hasRegression: true,
+      newIssues: [issue],
+      totalIssues: 1,
+    });
+    // Verify the newIssues reference is the same object (no serialisation)
+    expect(result.checks[0]?.newIssues[0]).toBe(issue);
+  });
+
+  it("should set summary.regressions and regressionChecks for regressing checks", () => {
+    const result = buildRunOutput({
+      exitCode: 1,
+      hasImprovement: false,
+      hasRegression: true,
+      results: [
+        {
+          baseline: { items: [], type: "items" as const },
+          checkId: "eslint",
+          hasImprovement: false,
+          hasRegression: true,
+          hasRelocation: false,
+          isInitial: false,
+          newIssues: [issue],
+          removedIssues: [],
+          snapshot: { items: [issue], type: "items" as const },
+        },
+      ],
+    });
+
+    expect(result.summary.regressions).toBe(1);
+    expect(result.summary.regressionChecks).toStrictEqual(["eslint"]);
+  });
+
+  it("should set summary.improvements and improvementChecks for improving checks", () => {
+    const result = buildRunOutput({
+      exitCode: 0,
+      hasImprovement: true,
+      hasRegression: false,
+      results: [
+        {
+          baseline: { items: [issue], type: "items" as const },
+          checkId: "eslint",
+          hasImprovement: true,
+          hasRegression: false,
+          hasRelocation: false,
+          isInitial: false,
+          newIssues: [],
+          removedIssues: [issue],
+          snapshot: { items: [], type: "items" as const },
+        },
+      ],
+    });
+
+    expect(result.summary.improvements).toBe(1);
+    expect(result.summary.improvementChecks).toStrictEqual(["eslint"]);
+  });
+
+  it("should set summary.initial and initialChecks for initial checks", () => {
+    const result = buildRunOutput({
+      exitCode: 0,
+      hasImprovement: false,
+      hasRegression: false,
+      results: [
+        {
+          baseline: undefined,
+          checkId: "eslint",
+          hasImprovement: false,
+          hasRegression: false,
+          hasRelocation: false,
+          isInitial: true,
+          newIssues: [],
+          removedIssues: [],
+          snapshot: { items: [issue], type: "items" as const },
+        },
+      ],
+    });
+
+    expect(result.summary.initial).toBe(1);
+    expect(result.summary.initialChecks).toStrictEqual(["eslint"]);
+  });
+
+  it("should pass through totalDuration", () => {
+    const result = buildRunOutput({
+      exitCode: 0,
+      hasImprovement: false,
+      hasRegression: false,
+      results: [],
+      totalDuration: 99,
+    });
+
+    expect(result.totalDuration).toBe(99);
   });
 });
