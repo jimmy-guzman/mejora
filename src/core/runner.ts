@@ -5,8 +5,8 @@ import type {
   Baseline,
   BaselineEntry,
   CheckResult,
-  CliOptions,
   Config,
+  RunOptions,
   WorkerResult,
 } from "@/types";
 
@@ -93,7 +93,7 @@ export class Runner {
 
   private static filterChecks = (
     checks: Config["checks"],
-    options: CliOptions,
+    options: RunOptions,
   ) => {
     const only = options.only
       ? Runner.resolveRegex(options.only, "--only")
@@ -123,7 +123,7 @@ export class Runner {
     }
   }
 
-  async run(config: Config, options: CliOptions = {}) {
+  async run(config: Config, options: RunOptions = {}) {
     const startTime = performance.now();
     const baseline = await this.baselineManager.load();
     const checksToRun = Runner.filterChecks(config.checks, options);

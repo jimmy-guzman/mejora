@@ -69,7 +69,6 @@ try {
 
   const result = await runner.run(config, {
     force: values.force,
-    json: values.json,
     only: values.only,
     skip: values.skip,
   });

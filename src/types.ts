@@ -318,9 +318,8 @@ export interface RunResult {
   totalDuration?: number;
 }
 
-export interface CliOptions {
+export interface RunOptions {
   force?: boolean | undefined;
-  json?: boolean | undefined;
   only?: string | undefined;
   skip?: string | undefined;
 }
