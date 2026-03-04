@@ -113,6 +113,16 @@ Skip checks:
 pnpm mejora --skip typescript
 ```
 
+## Programmatic API
+
+```ts
+import { run } from "mejora";
+
+const result = await run();
+// with options (config is loaded from disk by default)
+const resultWithOptions = await run({ force: true });
+```
+
 ## Configuration
 
 Create one of:

@@ -13,7 +13,28 @@ interface Check {
   totalIssues: number;
 }
 
-export function formatJsonOutput(result: RunResult) {
+interface RunOutput {
+  checks: Check[];
+  exitCode: number;
+  hasImprovement: boolean;
+  hasRegression: boolean;
+  summary: {
+    avgDuration: number | undefined;
+    checksRun: number;
+    improvementChecks: string[];
+    improvements: number;
+    initial: number;
+    initialChecks: string[];
+    regressionChecks: string[];
+    regressions: number;
+    totalIssues: number;
+    unchanged: number;
+    unchangedChecks: string[];
+  };
+  totalDuration: number | undefined;
+}
+
+export function buildRunOutput(result: RunResult): RunOutput {
   const { results, totalDuration } = result;
   const checksRun = results.length;
   const improvementChecks: string[] = [];
@@ -66,7 +87,7 @@ export function formatJsonOutput(result: RunResult) {
     });
   }
 
-  const output = {
+  return {
     checks,
     exitCode: result.exitCode,
     hasImprovement: result.hasImprovement,
@@ -86,6 +107,8 @@ export function formatJsonOutput(result: RunResult) {
     },
     totalDuration,
   };
+}
 
-  return JSON.stringify(output, null, 2);
+export function formatJsonOutput(result: RunResult) {
+  return JSON.stringify(buildRunOutput(result), null, 2);
 }
