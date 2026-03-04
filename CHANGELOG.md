@@ -1,3 +1,10 @@
+# [3.2.0](https://github.com/jimmy-guzman/mejora/compare/v3.1.2...v3.2.0) (2026-03-04)
+
+
+### Features
+
+* ✨ expose programmatic API ([#82](https://github.com/jimmy-guzman/mejora/issues/82)) ([db40b21](https://github.com/jimmy-guzman/mejora/commit/db40b212ae7612224012b0ea29337e0bb2f3b565))
+
 ## [3.1.2](https://github.com/jimmy-guzman/mejora/compare/v3.1.1...v3.1.2) (2026-03-03)
 
 
