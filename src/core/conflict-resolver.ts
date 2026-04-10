@@ -103,8 +103,8 @@ function tryResolveInlineConflicts(content: string) {
 
   if (matches.length === 0) return undefined;
 
-  for (const [, ours = ""] of matches) {
-    if (ours.includes("{")) return undefined;
+  for (const [, ours = "", theirs = ""] of matches) {
+    if (ours.includes("{") || theirs.includes("{")) return undefined;
   }
 
   let resolved = content;

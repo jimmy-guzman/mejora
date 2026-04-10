@@ -1743,6 +1743,7 @@ describe("resolveBaselineConflict", () => {
 
       expect(result.checks.typescript?.items).toHaveLength(1);
       expect(result.checks.typescript?.items[0]?.id).toBe(id);
+      expect(result.checks.typescript?.items[0]?.line).toBe(205);
     });
 
     it("should resolve multiple conflicts each wrapping a line field in different items", () => {
@@ -1795,6 +1796,12 @@ describe("resolveBaselineConflict", () => {
       const ids = result.checks.typescript?.items.map((i) => i.id).toSorted();
 
       expect(ids).toStrictEqual([id1, id2].toSorted());
+
+      const item1 = result.checks.typescript?.items.find((i) => i.id === id1);
+      const item2 = result.checks.typescript?.items.find((i) => i.id === id2);
+
+      expect(item1?.line).toBe(205);
+      expect(item2?.line).toBe(207);
     });
   });
 });
