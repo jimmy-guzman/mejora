@@ -68,7 +68,7 @@ describe("CheckRegistry", () => {
     it("should throw error for unregistered type", () => {
       const registry = new CheckRegistry();
 
-      expect(() => registry.get("nonexistent")).toThrowError(
+      expect(() => registry.get("nonexistent")).toThrow(
         "Unknown check type: nonexistent",
       );
     });
@@ -230,7 +230,7 @@ describe("CheckRegistry", () => {
 
       registry.register(eslintRunner);
 
-      await expect(registry.setup(new Set(["eslint"]))).rejects.toThrowError(
+      await expect(registry.setup(new Set(["eslint"]))).rejects.toThrow(
         "Setup failed",
       );
     });
@@ -238,9 +238,9 @@ describe("CheckRegistry", () => {
     it("should throw error for unregistered type", async () => {
       const registry = new CheckRegistry();
 
-      await expect(
-        registry.setup(new Set(["nonexistent"])),
-      ).rejects.toThrowError("Unknown check type: nonexistent");
+      await expect(registry.setup(new Set(["nonexistent"]))).rejects.toThrow(
+        "Unknown check type: nonexistent",
+      );
     });
 
     it("should maintain runner context when calling setup", async () => {
@@ -407,7 +407,7 @@ describe("CheckRegistry", () => {
 
       registry.register(eslintRunner);
 
-      await expect(registry.validate(new Set(["eslint"]))).rejects.toThrowError(
+      await expect(registry.validate(new Set(["eslint"]))).rejects.toThrow(
         "ESLint not installed",
       );
     });
@@ -415,9 +415,9 @@ describe("CheckRegistry", () => {
     it("should throw error for unregistered type", async () => {
       const registry = new CheckRegistry();
 
-      await expect(
-        registry.validate(new Set(["nonexistent"])),
-      ).rejects.toThrowError("Unknown check type: nonexistent");
+      await expect(registry.validate(new Set(["nonexistent"]))).rejects.toThrow(
+        "Unknown check type: nonexistent",
+      );
     });
 
     it("should maintain runner context when calling validate", async () => {

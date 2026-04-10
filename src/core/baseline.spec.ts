@@ -745,7 +745,7 @@ describe("BaselineManager", () => {
 
       const manager = new BaselineManager(".mejora/baseline.json");
 
-      await expect(manager.load()).rejects.toThrowError("Permission denied");
+      await expect(manager.load()).rejects.toThrow("Permission denied");
     });
 
     it("should use custom baseline path", async () => {
@@ -1049,7 +1049,7 @@ describe("BaselineManager", () => {
 
       const manager = new BaselineManager(".mejora/baseline.json");
 
-      await expect(manager.load()).rejects.toThrowError(
+      await expect(manager.load()).rejects.toThrow(
         "Could not parse conflict markers in baseline",
       );
     });
@@ -1070,7 +1070,7 @@ describe("BaselineManager", () => {
 
       const manager = new BaselineManager(".mejora/baseline.json");
 
-      await expect(manager.load()).rejects.toThrowError(
+      await expect(manager.load()).rejects.toThrow(
         "Failed to parse baseline during conflict resolution",
       );
     });

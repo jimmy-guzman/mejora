@@ -72,7 +72,7 @@ describe("worker", () => {
 
     await expect(
       checkWorker({ checkId: "nonexistent", cwd: "/mock/cwd" }),
-    ).rejects.toThrowError("Check not found in config: nonexistent");
+    ).rejects.toThrow("Check not found in config: nonexistent");
   });
 
   it("should reuse registry for same check type", async () => {

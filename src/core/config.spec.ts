@@ -120,7 +120,7 @@ describe("config", () => {
     });
 
     it("should throw when no config file exists", async () => {
-      await expect(loadConfig()).rejects.toThrowError(
+      await expect(loadConfig()).rejects.toThrow(
         "No configuration file found.",
       );
     });

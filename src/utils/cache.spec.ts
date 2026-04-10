@@ -82,7 +82,7 @@ describe("createCacheKey", () => {
 
     plugin.configs = configs;
 
-    expect(() => createCacheKey(plugin)).not.toThrowError();
+    expect(() => createCacheKey(plugin)).not.toThrow();
 
     const key1 = createCacheKey(plugin);
     const key2 = createCacheKey(plugin);
