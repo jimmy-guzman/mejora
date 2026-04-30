@@ -300,7 +300,7 @@ describe("typescript runner", () => {
   it("should throw when tsconfig not found", async () => {
     mockFindConfigFile.mockReturnValue(undefined);
 
-    await expect(runner.run({})).rejects.toThrowError(
+    await expect(runner.run({})).rejects.toThrow(
       "TypeScript config file not found",
     );
   });
@@ -311,9 +311,7 @@ describe("typescript runner", () => {
       error: { messageText: "Syntax error in config" },
     });
 
-    await expect(
-      runner.run({ tsconfig: "tsconfig.json" }),
-    ).rejects.toThrowError(
+    await expect(runner.run({ tsconfig: "tsconfig.json" })).rejects.toThrow(
       "Failed to read TypeScript config: Syntax error in config",
     );
   });
@@ -406,9 +404,7 @@ describe("typescript runner", () => {
     });
     mockFlattenDiagnosticMessageText.mockReturnValue("Flattened complex error");
 
-    await expect(
-      runner.run({ tsconfig: "tsconfig.json" }),
-    ).rejects.toThrowError(
+    await expect(runner.run({ tsconfig: "tsconfig.json" })).rejects.toThrow(
       "Failed to read TypeScript config: Flattened complex error",
     );
   });
@@ -649,7 +645,7 @@ describe("typescript runner", () => {
 
       expect(freshRunner.validate).toBeDefined();
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- checked above
-      await expect(freshRunner.validate!()).rejects.toThrowError(
+      await expect(freshRunner.validate!()).rejects.toThrow(
         'typescript check requires "typescript" package to be installed. Run: npm install typescript',
       );
     });

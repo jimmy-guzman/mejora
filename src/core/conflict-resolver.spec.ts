@@ -392,7 +392,7 @@ describe("resolveBaselineConflict", () => {
       "}",
     ].join("\n");
 
-    expect(() => resolveBaselineConflict(conflictContent)).toThrowError(
+    expect(() => resolveBaselineConflict(conflictContent)).toThrow(
       "Could not parse conflict markers in baseline",
     );
   });
@@ -405,7 +405,7 @@ describe("resolveBaselineConflict", () => {
       "}",
     ].join("\n");
 
-    expect(() => resolveBaselineConflict(conflictContent)).toThrowError(
+    expect(() => resolveBaselineConflict(conflictContent)).toThrow(
       "Could not parse conflict markers in baseline",
     );
   });
@@ -422,7 +422,7 @@ describe("resolveBaselineConflict", () => {
       "}",
     ].join("\n");
 
-    expect(() => resolveBaselineConflict(conflictContent)).toThrowError(
+    expect(() => resolveBaselineConflict(conflictContent)).toThrow(
       "Failed to parse baseline during conflict resolution",
     );
   });
@@ -439,7 +439,7 @@ describe("resolveBaselineConflict", () => {
       "}",
     ].join("\n");
 
-    expect(() => resolveBaselineConflict(conflictContent)).toThrowError(
+    expect(() => resolveBaselineConflict(conflictContent)).toThrow(
       "Failed to parse baseline during conflict resolution",
     );
   });
@@ -544,7 +544,7 @@ describe("resolveBaselineConflict", () => {
       "}",
     ].join("\n");
 
-    expect(() => resolveBaselineConflict(conflictContent)).toThrowError(
+    expect(() => resolveBaselineConflict(conflictContent)).toThrow(
       /Failed to parse baseline during conflict resolution:/,
     );
   });
@@ -569,7 +569,7 @@ describe("resolveBaselineConflict", () => {
     ].join("\n");
 
     try {
-      expect(() => resolveBaselineConflict(conflictContent)).toThrowError(
+      expect(() => resolveBaselineConflict(conflictContent)).toThrow(
         "Failed to parse baseline during conflict resolution: string error",
       );
     } finally {
@@ -1059,7 +1059,7 @@ describe("resolveBaselineConflict", () => {
       ">>>>>>> feature",
     ].join("\n");
 
-    expect(() => resolveBaselineConflict(conflictContent)).toThrowError(
+    expect(() => resolveBaselineConflict(conflictContent)).toThrow(
       /Failed to parse baseline during conflict resolution/,
     );
   });
@@ -1168,7 +1168,7 @@ describe("resolveBaselineConflict", () => {
       "",
     ].join("\n");
 
-    expect(() => resolveBaselineConflict(content)).toThrowError(
+    expect(() => resolveBaselineConflict(content)).toThrow(
       /Failed to parse baseline during conflict resolution: Baseline must be an object/,
     );
   });
@@ -1194,7 +1194,7 @@ describe("resolveBaselineConflict", () => {
       "",
     ].join("\n");
 
-    expect(() => resolveBaselineConflict(content)).toThrowError(
+    expect(() => resolveBaselineConflict(content)).toThrow(
       /Failed to parse baseline during conflict resolution:/,
     );
   });
@@ -1221,7 +1221,7 @@ describe("resolveBaselineConflict", () => {
       "",
     ].join("\n");
 
-    expect(() => resolveBaselineConflict(content)).toThrowError(
+    expect(() => resolveBaselineConflict(content)).toThrow(
       /Failed to parse baseline during conflict resolution:/,
     );
   });
@@ -1561,7 +1561,7 @@ describe("resolveBaselineConflict", () => {
         `  "note": "prefix >>>>>>> fake-branch inside string"`,
       ].join("\n");
 
-      expect(() => resolveBaselineConflict(conflictContent)).toThrowError(
+      expect(() => resolveBaselineConflict(conflictContent)).toThrow(
         "Could not parse conflict markers in baseline",
       );
     });
@@ -1706,6 +1706,149 @@ describe("resolveBaselineConflict", () => {
 
       expect(result.checks.eslint?.items).toHaveLength(1);
       expect(result.checks.eslint?.items[0]?.id).toBe("a-id");
+    });
+  });
+
+  describe("when conflicts inside item fields", () => {
+    it("should resolve a conflict wrapping a single item's line field", () => {
+      const id =
+        "8c1238a249e2fa0382bc00c4c4e814547f467234489d0934d56d9bf66a9e730d";
+
+      const conflictContent = [
+        "{",
+        `  "version": ${BASELINE_VERSION},`,
+        '  "checks": {',
+        '    "typescript": {',
+        '      "type": "items",',
+        '      "items": [',
+        "        {",
+        '          "column": 27,',
+        '          "file": "src/client/app/movement/hard-allocation/components/hard-allocation-item-details/hard-allocation-item-details.tsx",',
+        "<<<<<<< HEAD",
+        '          "line": 205,',
+        "=======",
+        '          "line": 201,',
+        `>>>>>>> 058aa24a91 (refactor(client): adios \`HardAllocationProtect\` feature flag)`,
+        "          \"message\": \"Parameter 'results' implicitly has an 'any' type.\",",
+        '          "rule": "TS7006",',
+        `          "id": "${id}"`,
+        "        }",
+        "      ]",
+        "    }",
+        "  }",
+        "}",
+      ].join("\n");
+
+      const result = resolveBaselineConflict(conflictContent);
+
+      expect(result.checks.typescript?.items).toHaveLength(1);
+      expect(result.checks.typescript?.items[0]?.id).toBe(id);
+      expect(result.checks.typescript?.items[0]?.line).toBe(205);
+    });
+
+    it("should resolve multiple conflicts each wrapping a line field in different items", () => {
+      const id1 =
+        "8c1238a249e2fa0382bc00c4c4e814547f467234489d0934d56d9bf66a9e730d";
+      const id2 =
+        "2326ea3c41acf05558e275238297961c429617c418760d575754e5e060d5a443";
+
+      const conflictContent = [
+        "{",
+        `  "version": ${BASELINE_VERSION},`,
+        '  "checks": {',
+        '    "typescript": {',
+        '      "type": "items",',
+        '      "items": [',
+        "        {",
+        '          "column": 27,',
+        '          "file": "src/client/app/movement/hard-allocation/components/hard-allocation-item-details/hard-allocation-item-details.tsx",',
+        "<<<<<<< HEAD",
+        '          "line": 205,',
+        "=======",
+        '          "line": 201,',
+        `>>>>>>> 058aa24a91 (refactor(client): adios \`HardAllocationProtect\` feature flag)`,
+        "          \"message\": \"Parameter 'results' implicitly has an 'any' type.\",",
+        '          "rule": "TS7006",',
+        `          "id": "${id1}"`,
+        "        },",
+        "        {",
+        '          "column": 43,',
+        '          "file": "src/client/app/movement/hard-allocation/components/hard-allocation-item-details/hard-allocation-item-details.tsx",',
+        "<<<<<<< HEAD",
+        '          "line": 207,',
+        "=======",
+        '          "line": 203,',
+        `>>>>>>> 058aa24a91 (refactor(client): adios \`HardAllocationProtect\` feature flag)`,
+        "          \"message\": \"Parameter 'acc' implicitly has an 'any' type.\",",
+        '          "rule": "TS7006",',
+        `          "id": "${id2}"`,
+        "        }",
+        "      ]",
+        "    }",
+        "  }",
+        "}",
+      ].join("\n");
+
+      const result = resolveBaselineConflict(conflictContent);
+
+      expect(result.checks.typescript?.items).toHaveLength(2);
+
+      const ids = result.checks.typescript?.items.map((i) => i.id).toSorted();
+
+      expect(ids).toStrictEqual([id1, id2].toSorted());
+
+      const item1 = result.checks.typescript?.items.find((i) => i.id === id1);
+      const item2 = result.checks.typescript?.items.find((i) => i.id === id2);
+
+      expect(item1?.line).toBe(205);
+      expect(item2?.line).toBe(207);
+    });
+  });
+
+  describe("when conflicts span array items", () => {
+    it("should merge when each side adds different items to the same check", () => {
+      const item1 = {
+        column: 1,
+        file: "src/a.ts",
+        id: "item1-id",
+        line: 10,
+        message: "error1",
+        rule: "no-unused-vars",
+      };
+      const item2 = {
+        column: 1,
+        file: "src/b.ts",
+        id: "item2-id",
+        line: 20,
+        message: "error2",
+        rule: "no-undef",
+      };
+
+      const conflictContent = [
+        "{",
+        `  "version": ${BASELINE_VERSION},`,
+        '  "checks": {',
+        '    "typescript": {',
+        '      "type": "items",',
+        '      "items": [',
+        "<<<<<<< HEAD",
+        `        ${JSON.stringify(item1)}`,
+        "=======",
+        `        ${JSON.stringify(item2)}`,
+        ">>>>>>> feature",
+        "      ]",
+        "    }",
+        "  }",
+        "}",
+      ].join("\n");
+
+      const result = resolveBaselineConflict(conflictContent);
+
+      expect(result.checks.typescript?.items).toHaveLength(2);
+
+      const ids = result.checks.typescript?.items.map((i) => i.id).toSorted();
+
+      expect(ids).toStrictEqual(["item1-id", "item2-id"]);
     });
   });
 });

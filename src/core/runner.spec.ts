@@ -857,7 +857,7 @@ describe("Runner", () => {
 
     const runner = new Runner(registry);
 
-    await expect(runner.run(config, { only: "[invalid" })).rejects.toThrowError(
+    await expect(runner.run(config, { only: "[invalid" })).rejects.toThrow(
       'Invalid regex pattern for --only: "[invalid"',
     );
   });
@@ -876,9 +876,9 @@ describe("Runner", () => {
 
     const runner = new Runner(registry);
 
-    await expect(
-      runner.run(config, { skip: "(unclosed" }),
-    ).rejects.toThrowError('Invalid regex pattern for --skip: "(unclosed"');
+    await expect(runner.run(config, { skip: "(unclosed" })).rejects.toThrow(
+      'Invalid regex pattern for --skip: "(unclosed"',
+    );
   });
 
   it("should accept valid regex pattern in --only", async () => {

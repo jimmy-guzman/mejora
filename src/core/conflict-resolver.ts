@@ -22,25 +22,28 @@ function wrapInBaselineStructure(fragment: string) {
   const body = removeTrailingComma(fragment);
 
   return `{
-  "version": ${BASELINE_VERSION},
+  "version": ${JSON.stringify(BASELINE_VERSION)},
   ${body}
 }`;
 }
 
-function normalizeBaselineStructure(parsed: unknown) {
+function hasChecksProperty(
+  value: object,
+): value is { checks: Baseline["checks"] } {
+  return (
+    "checks" in value &&
+    value.checks !== null &&
+    typeof value.checks === "object"
+  );
+}
+
+function coerceToBaseline(parsed: unknown) {
   if (typeof parsed !== "object" || parsed === null) {
     throw new TypeError("Baseline must be an object");
   }
 
-  if (
-    "checks" in parsed &&
-    parsed.checks &&
-    typeof parsed.checks === "object"
-  ) {
-    return {
-      checks: parsed.checks as Baseline["checks"],
-      version: BASELINE_VERSION,
-    } satisfies Baseline;
+  if (hasChecksProperty(parsed)) {
+    return { checks: parsed.checks, version: BASELINE_VERSION };
   }
 
   const checks: Record<string, unknown> = {};
@@ -51,33 +54,32 @@ function normalizeBaselineStructure(parsed: unknown) {
     }
   }
 
-  return {
-    checks: checks as Baseline["checks"],
-    version: BASELINE_VERSION,
-  } satisfies Baseline;
+  return { checks: checks as Baseline["checks"], version: BASELINE_VERSION };
 }
+
+const EMPTY_BASELINE: Baseline = {
+  checks: {},
+  version: BASELINE_VERSION,
+};
 
 function parseConflictSide(side: string) {
   try {
     const trimmed = side.trim();
 
     if (trimmed === "") {
-      return {
-        checks: {},
-        version: BASELINE_VERSION,
-      } satisfies Baseline;
+      return EMPTY_BASELINE;
     }
 
     const direct = tryParseJson(trimmed);
 
-    if (direct) {
-      return normalizeBaselineStructure(direct);
+    if (direct !== undefined) {
+      return coerceToBaseline(direct);
     }
 
     const cleaned = balanceBraces(removeTrailingComma(trimmed));
     const wrapped = wrapInBaselineStructure(cleaned);
 
-    return normalizeBaselineStructure(JSON.parse(wrapped) as unknown);
+    return coerceToBaseline(JSON.parse(wrapped) as unknown);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
 
@@ -88,15 +90,95 @@ function parseConflictSide(side: string) {
   }
 }
 
+// Two alternates after `=======` handle:
+//   1. Normal/empty theirs:  `=======\n<content>\n^>>>>>>> branch`
+//   2. Adjacent (no `\n`):   `=======>>>>>>> branch`
+// `\r?` before each `\n` handles both LF and CRLF line endings.
+// `^` anchors prevent false matches on those sequences inside JSON strings.
+const CONFLICT_REGEX =
+  /^<<<<<<< .+\r?\n([\s\S]*?)^=======(?:\r?\n([\s\S]*?)\r?\n?^>>>>>>> .+$|>>>>>>> .+$)/gm;
+
+function tryResolveInlineConflictsByMerging(
+  content: string,
+  matches: RegExpExecArray[],
+) {
+  let resolved = content;
+
+  for (let i = matches.length - 1; i >= 0; i--) {
+    const match = matches[i];
+
+    if (!match) continue;
+
+    const ours = (match[1] ?? "").trim();
+    const theirs = (match[2] ?? "").trim();
+    const start = match.index;
+    const end = start + match[0].length;
+
+    const combined = ours && theirs ? `${ours},\n${theirs}` : ours || theirs;
+
+    resolved = resolved.slice(0, start) + combined + resolved.slice(end);
+  }
+
+  const parsed = tryParseJson(resolved);
+
+  if (parsed === undefined) return undefined;
+
+  try {
+    const baseline = coerceToBaseline(parsed);
+
+    return mergeBaselines([baseline]);
+  } catch {
+    return undefined;
+  }
+}
+
+function tryResolveInlineConflicts(content: string) {
+  const matches = [...content.matchAll(CONFLICT_REGEX)];
+
+  if (matches.length === 0) return undefined;
+
+  for (const [, ours = "", theirs = ""] of matches) {
+    if (ours.includes("{") || theirs.includes("{")) {
+      const oursArray = tryParseJson(`[${removeTrailingComma(ours.trim())}]`);
+      const theirsArray = tryParseJson(
+        `[${removeTrailingComma(theirs.trim())}]`,
+      );
+
+      if (Array.isArray(oursArray) && Array.isArray(theirsArray)) {
+        return tryResolveInlineConflictsByMerging(content, matches);
+      }
+
+      return undefined;
+    }
+  }
+
+  let resolved = content;
+
+  for (let i = matches.length - 1; i >= 0; i--) {
+    const match = matches[i];
+
+    if (!match) continue;
+
+    const ours = (match[1] ?? "").trimEnd();
+    const start = match.index;
+    const end = start + match[0].length;
+
+    resolved = resolved.slice(0, start) + ours + resolved.slice(end);
+  }
+
+  const parsed = tryParseJson(resolved);
+
+  if (parsed === undefined) return undefined;
+
+  try {
+    return coerceToBaseline(parsed);
+  } catch {
+    return undefined;
+  }
+}
+
 function extractConflictSections(content: string) {
-  // `^` anchors on `<<<<<<<`, `=======`, and `>>>>>>>` prevent matching those
-  // sequences inside content. Two alternates after `=======` handle:
-  //   1. Normal/empty theirs: `=======\n<content>\n^>>>>>>> branch`  (closing marker anchored to line-start)
-  //   2. Adjacent (no `\n`):  `=======>>>>>>> branch`                (no newline, so `^` would fail — unanchored fallback)
-  // `\r?` before each `\n` makes the pattern work on both LF and CRLF line endings.
-  const regex =
-    /^<<<<<<< .+\r?\n([\s\S]*?)^=======(?:\r?\n([\s\S]*?)\r?\n?^>>>>>>> .+$|>>>>>>> .+$)/gm;
-  const matches = [...content.matchAll(regex)];
+  const matches = [...content.matchAll(CONFLICT_REGEX)];
 
   if (matches.length === 0) {
     throw new Error("Could not parse conflict markers in baseline");
@@ -114,7 +196,7 @@ function mergeBaselines(baselines: Baseline[]) {
 
       let itemsById = itemsByCheck.get(checkId);
 
-      if (!itemsById) {
+      if (itemsById === undefined) {
         itemsById = new Map<string, Issue>();
         itemsByCheck.set(checkId, itemsById);
       }
@@ -134,26 +216,26 @@ function mergeBaselines(baselines: Baseline[]) {
     };
   }
 
-  return {
-    checks,
-    version: BASELINE_VERSION,
-  } satisfies Baseline;
+  return { checks, version: BASELINE_VERSION };
 }
 
 /**
  * Resolves Git merge conflicts in a baseline file by performing a union merge.
- * Takes the raw file content containing Git conflict markers and returns a merged baseline.
  *
- * Supports multiple conflict blocks in a single file, merging all sections together.
- * Items are merged by their stable ID, making the merge robust to line number changes.
+ * Supports multiple conflict blocks in a single file. Items are merged by
+ * their stable `id`, making the merge robust to line-number changes.
  *
- * @param content - File content containing Git conflict markers (<<<<<<< ======= >>>>>>>)
+ * @param content - File content containing Git conflict markers
  *
  * @returns Merged baseline containing the union of all items from both sides
  *
  * @throws {Error} If conflict markers cannot be parsed or baselines are invalid
  */
-export function resolveBaselineConflict(content: string) {
+export function resolveBaselineConflict(content: string): Baseline {
+  const inline = tryResolveInlineConflicts(content);
+
+  if (inline !== undefined) return inline;
+
   const sections = extractConflictSections(content);
   const baselines: Baseline[] = [];
 

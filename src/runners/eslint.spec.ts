@@ -379,7 +379,7 @@ describe("eslint runner", () => {
 
     expect(freshRunner.validate).toBeDefined();
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- checked above
-    await expect(freshRunner.validate!()).rejects.toThrowError(
+    await expect(freshRunner.validate!()).rejects.toThrow(
       'eslint check requires "eslint" package to be installed. Run: npm install eslint',
     );
   });
