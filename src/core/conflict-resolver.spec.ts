@@ -1804,4 +1804,51 @@ describe("resolveBaselineConflict", () => {
       expect(item2?.line).toBe(207);
     });
   });
+
+  describe("when conflicts span array items", () => {
+    it("should merge when each side adds different items to the same check", () => {
+      const item1 = {
+        column: 1,
+        file: "src/a.ts",
+        id: "item1-id",
+        line: 10,
+        message: "error1",
+        rule: "no-unused-vars",
+      };
+      const item2 = {
+        column: 1,
+        file: "src/b.ts",
+        id: "item2-id",
+        line: 20,
+        message: "error2",
+        rule: "no-undef",
+      };
+
+      const conflictContent = [
+        "{",
+        `  "version": ${BASELINE_VERSION},`,
+        '  "checks": {',
+        '    "typescript": {',
+        '      "type": "items",',
+        '      "items": [',
+        "<<<<<<< HEAD",
+        `        ${JSON.stringify(item1)}`,
+        "=======",
+        `        ${JSON.stringify(item2)}`,
+        ">>>>>>> feature",
+        "      ]",
+        "    }",
+        "  }",
+        "}",
+      ].join("\n");
+
+      const result = resolveBaselineConflict(conflictContent);
+
+      expect(result.checks.typescript?.items).toHaveLength(2);
+
+      const ids = result.checks.typescript?.items.map((i) => i.id).toSorted();
+
+      expect(ids).toStrictEqual(["item1-id", "item2-id"]);
+    });
+  });
 });

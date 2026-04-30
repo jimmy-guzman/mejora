@@ -98,13 +98,58 @@ function parseConflictSide(side: string) {
 const CONFLICT_REGEX =
   /^<<<<<<< .+\r?\n([\s\S]*?)^=======(?:\r?\n([\s\S]*?)\r?\n?^>>>>>>> .+$|>>>>>>> .+$)/gm;
 
+function tryResolveInlineConflictsByMerging(
+  content: string,
+  matches: RegExpExecArray[],
+) {
+  let resolved = content;
+
+  for (let i = matches.length - 1; i >= 0; i--) {
+    const match = matches[i];
+
+    if (!match) continue;
+
+    const ours = (match[1] ?? "").trim();
+    const theirs = (match[2] ?? "").trim();
+    const start = match.index;
+    const end = start + match[0].length;
+
+    const combined = ours && theirs ? `${ours},\n${theirs}` : ours || theirs;
+
+    resolved = resolved.slice(0, start) + combined + resolved.slice(end);
+  }
+
+  const parsed = tryParseJson(resolved);
+
+  if (parsed === undefined) return undefined;
+
+  try {
+    const baseline = coerceToBaseline(parsed);
+
+    return mergeBaselines([baseline]);
+  } catch {
+    return undefined;
+  }
+}
+
 function tryResolveInlineConflicts(content: string) {
   const matches = [...content.matchAll(CONFLICT_REGEX)];
 
   if (matches.length === 0) return undefined;
 
   for (const [, ours = "", theirs = ""] of matches) {
-    if (ours.includes("{") || theirs.includes("{")) return undefined;
+    if (ours.includes("{") || theirs.includes("{")) {
+      const oursArray = tryParseJson(`[${removeTrailingComma(ours.trim())}]`);
+      const theirsArray = tryParseJson(
+        `[${removeTrailingComma(theirs.trim())}]`,
+      );
+
+      if (Array.isArray(oursArray) && Array.isArray(theirsArray)) {
+        return tryResolveInlineConflictsByMerging(content, matches);
+      }
+
+      return undefined;
+    }
   }
 
   let resolved = content;
