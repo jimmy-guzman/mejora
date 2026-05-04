@@ -151,7 +151,7 @@ export interface TypeScriptCheckConfig {
 /**
  * A regex pattern configuration.
  */
-export interface RegexPattern {
+interface RegexPattern {
   /**
    * Human-readable message for matches.
    *
@@ -216,7 +216,7 @@ export interface RegexCheckConfig {
 
 type CustomCheckConfig = Record<string, unknown> & { type: string };
 
-export type CheckConfig =
+type CheckConfig =
   | (ESLintCheckConfig & { type: "eslint" })
   | (TypeScriptCheckConfig & { type: "typescript" })
   // eslint-disable-next-line perfectionist/sort-union-types -- keep related types together for better hover UX
