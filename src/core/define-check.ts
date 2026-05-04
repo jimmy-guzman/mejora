@@ -86,7 +86,7 @@ export function defineCheck<
     const config = {
       ...defaults,
       ...(rest as unknown as TConfig),
-    } as TConfig;
+    };
 
     return {
       __runnerFactory: createRunner,
