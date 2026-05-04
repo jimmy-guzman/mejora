@@ -1,3 +1,10 @@
+## [3.2.1](https://github.com/jimmy-guzman/mejora/compare/v3.2.0...v3.2.1) (2026-05-04)
+
+
+### Bug Fixes
+
+* 🐛 handle more edge cases when resolving conflitcs ([#83](https://github.com/jimmy-guzman/mejora/issues/83)) ([5fe14ce](https://github.com/jimmy-guzman/mejora/commit/5fe14ced6f2e2485fc944072a06a57b0aafcd2f9))
+
 # [3.2.0](https://github.com/jimmy-guzman/mejora/compare/v3.1.2...v3.2.0) (2026-03-04)
 
 
