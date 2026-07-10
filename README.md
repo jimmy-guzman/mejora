@@ -193,7 +193,7 @@ Each check’s `name` is used as its ID in the baseline and output.
 - Uses the nearest `tsconfig.json` by default, or an explicit one if provided
 
 > [!NOTE]
-> `typescript` (^5.0.0) is required as a peer dependency when using the TypeScript check
+> `typescript` (^5.0.0 || ^6.0.0) is required as a peer dependency when using the TypeScript check
 
 ### Regex
 
