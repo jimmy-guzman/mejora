@@ -69,12 +69,12 @@
     "prettier": "3.9.5",
     "publint": "0.3.21",
     "tsdown": "0.22.4",
-    "typescript": "5.9.3",
+    "typescript": "6.0.3",
     "vitest": "4.1.10"
   },
   "peerDependencies": {
     "eslint": "^9.34.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0 || ^6.0.0"
   },
   "peerDependenciesMeta": {
     "eslint": {
