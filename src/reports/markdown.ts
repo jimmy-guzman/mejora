@@ -14,8 +14,10 @@ const ESCAPE_MAP: Record<string, string> = {
 const ESCAPE_RE = /[<>[\]]/g;
 
 function escapeHtml(text: string) {
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- the regex ensures only characters in the map are replaced
-  return text.replaceAll(ESCAPE_RE, (ch) => ESCAPE_MAP[ch]!);
+  return text.replaceAll(ESCAPE_RE, (ch) => {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- the regex ensures only characters in the map are replaced
+    return ESCAPE_MAP[ch]!;
+  });
 }
 
 function createHref(filePath: string, baselineDir: string, line?: number) {
@@ -38,10 +40,14 @@ function formatItemLine(item: Issue, baselineDir: string) {
 }
 
 function groupItemsByFile(items: Issue[]) {
-  const grouped = Object.groupBy(items, (item) => item.file || UNPARSABLE);
+  const grouped = Object.groupBy(items, (item) => {
+    return item.file || UNPARSABLE;
+  });
 
   return Object.entries(grouped)
-    .map(([filePath, items = []]) => ({ filePath, items }))
+    .map(([filePath, items = []]) => {
+      return { filePath, items };
+    })
     .toSorted((a, b) => {
       if (a.filePath === UNPARSABLE) return 1;
 

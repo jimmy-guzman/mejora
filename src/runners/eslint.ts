@@ -56,7 +56,9 @@ export const eslint = defineCheck<ESLintCheckConfig>({
         concurrency: concurrency ?? "auto",
       }),
       ...(hasRuleFilter && {
-        ruleFilter: ({ ruleId }) => rulesToTrack.has(ruleId),
+        ruleFilter: ({ ruleId }) => {
+          return rulesToTrack.has(ruleId);
+        },
       }),
     });
 

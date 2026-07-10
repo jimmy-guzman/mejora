@@ -188,7 +188,9 @@ export class Runner {
       updatedBaseline !== null && !isFiltered
         ? BaselineManager.prune(
             updatedBaseline,
-            config.checks.map((c) => c.id),
+            config.checks.map((c) => {
+              return c.id;
+            }),
           )
         : { baseline: updatedBaseline, prunedIds: [] as string[] };
 

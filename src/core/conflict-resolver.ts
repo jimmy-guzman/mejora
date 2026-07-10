@@ -184,7 +184,9 @@ function extractConflictSections(content: string) {
     throw new Error("Could not parse conflict markers in baseline");
   }
 
-  return matches.map(([, ours = "", theirs = ""]) => ({ ours, theirs }));
+  return matches.map(([, ours = "", theirs = ""]) => {
+    return { ours, theirs };
+  });
 }
 
 function mergeBaselines(baselines: Baseline[]) {

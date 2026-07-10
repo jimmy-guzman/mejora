@@ -1,8 +1,9 @@
+allowBuilds:
+  lefthook: true
+  unrs-resolver: true
 autoInstallPeers: false
 color: always
 engineStrict: true
-onlyBuiltDependencies:
-  - esbuild
-  - lefthook
-  - unrs-resolver
+minimumReleaseAgeExclude:
+  - knip
 savePrefix: ""

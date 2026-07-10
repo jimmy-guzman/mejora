@@ -23,7 +23,9 @@ export async function checkWorker({
     await configPromise;
   }
 
-  const check = config?.checks.find((c) => c.id === checkId);
+  const check = config?.checks.find((c) => {
+    return c.id === checkId;
+  });
 
   if (!check) {
     throw new Error(`Check not found in config: ${checkId}`);

@@ -63,16 +63,18 @@ export class BaselineManager {
    */
   static prune(baseline: Baseline, activeCheckIds: string[]) {
     const activeSet = new Set(activeCheckIds);
-    const prunedIds = Object.keys(baseline.checks).filter(
-      (id) => !activeSet.has(id),
-    );
+    const prunedIds = Object.keys(baseline.checks).filter((id) => {
+      return !activeSet.has(id);
+    });
 
     if (prunedIds.length === 0) {
       return { baseline, prunedIds };
     }
 
     const newChecks = Object.fromEntries(
-      Object.entries(baseline.checks).filter(([id]) => activeSet.has(id)),
+      Object.entries(baseline.checks).filter(([id]) => {
+        return activeSet.has(id);
+      }),
     );
 
     return { baseline: { ...baseline, checks: newChecks }, prunedIds };
