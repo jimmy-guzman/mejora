@@ -56,7 +56,7 @@ describe("worker", () => {
 
     await checkWorker({ checkId: "check-1", cwd: "/mock/cwd" });
 
-    expect(loadConfig).toHaveBeenCalledOnce();
+    expect(loadConfig).toHaveBeenCalledExactlyOnceWith("/mock/cwd");
   });
 
   it("should pass cwd to loadConfig", async () => {
@@ -80,11 +80,11 @@ describe("worker", () => {
 
     await checkWorker({ checkId: "check-1", cwd: "/mock/cwd" });
 
-    expect(mockInit).toHaveBeenCalledOnce();
+    expect(mockInit).toHaveBeenCalledExactlyOnceWith(mockConfig);
 
     await checkWorker({ checkId: "check-1", cwd: "/mock/cwd" });
 
-    expect(mockInit).toHaveBeenCalledOnce();
+    expect(mockInit).toHaveBeenCalledExactlyOnceWith(mockConfig);
 
     await checkWorker({ checkId: "check-2", cwd: "/mock/cwd" });
 

@@ -22,8 +22,12 @@ vi.mock("eslint", () => {
   };
 });
 
-const mockCreateCacheKey = vi.fn(() => "abc123def456");
-const mockGetCacheDir = vi.fn(() => "node_modules/.cache/mejora/eslint");
+const mockCreateCacheKey = vi.fn(() => {
+  return "abc123def456";
+});
+const mockGetCacheDir = vi.fn(() => {
+  return "node_modules/.cache/mejora/eslint";
+});
 
 vi.mock("@/utils/cache", () => {
   return {
@@ -34,7 +38,9 @@ vi.mock("@/utils/cache", () => {
 
 const mockMkdir = vi.fn();
 
-vi.mock("node:fs/promises", () => ({ mkdir: mockMkdir }));
+vi.mock("node:fs/promises", () => {
+  return { mkdir: mockMkdir };
+});
 
 const { eslint } = await import("./eslint");
 const { ESLint } = await import("eslint");
@@ -233,8 +239,7 @@ describe("eslint runner", () => {
 
     const mockESLintConstructor = vi.mocked(ESLint);
     const callArgs = mockESLintConstructor.mock.calls[0]?.[0] as
-      | MockESLintOptions
-      | undefined;
+      MockESLintOptions | undefined;
 
     expect(callArgs).toHaveProperty("ruleFilter");
 
@@ -258,8 +263,7 @@ describe("eslint runner", () => {
 
     const mockESLintConstructor = vi.mocked(ESLint);
     const callArgs = mockESLintConstructor.mock.calls[0]?.[0] as
-      | MockESLintOptions
-      | undefined;
+      MockESLintOptions | undefined;
 
     expect(callArgs).not.toHaveProperty("ruleFilter");
   });
@@ -277,8 +281,7 @@ describe("eslint runner", () => {
 
     const mockESLintConstructor = vi.mocked(ESLint);
     const callArgs = mockESLintConstructor.mock.calls[0]?.[0] as
-      | MockESLintOptions
-      | undefined;
+      MockESLintOptions | undefined;
 
     expect(callArgs).not.toHaveProperty("concurrency");
     expect(callArgs).toHaveProperty("ruleFilter");

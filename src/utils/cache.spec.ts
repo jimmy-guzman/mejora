@@ -82,7 +82,9 @@ describe("createCacheKey", () => {
 
     plugin.configs = configs;
 
-    expect(() => createCacheKey(plugin)).not.toThrow();
+    expect(() => {
+      return createCacheKey(plugin);
+    }).not.toThrow();
 
     const key1 = createCacheKey(plugin);
     const key2 = createCacheKey(plugin);
@@ -132,7 +134,9 @@ describe("getCacheDir", () => {
   });
 
   it("should handle different check types", () => {
-    vi.mocked(resolve).mockImplementation((...args) => args.join("/"));
+    vi.mocked(resolve).mockImplementation((...args) => {
+      return args.join("/");
+    });
 
     const eslintDir = getCacheDir("eslint", "/project");
     const tsDir = getCacheDir("typescript", "/project");

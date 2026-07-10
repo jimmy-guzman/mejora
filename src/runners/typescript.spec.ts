@@ -27,7 +27,9 @@ vi.mock("typescript", () => {
 });
 
 const mockCreateCacheKey = vi.fn().mockReturnValue("abc123def456");
-const mockGetCacheDir = vi.fn(() => "node_modules/.cache/mejora/typescript");
+const mockGetCacheDir = vi.fn(() => {
+  return "node_modules/.cache/mejora/typescript";
+});
 
 vi.mock("@/utils/cache", () => {
   return {
@@ -38,7 +40,9 @@ vi.mock("@/utils/cache", () => {
 
 const mockMkdir = vi.fn();
 
-vi.mock("node:fs/promises", () => ({ mkdir: mockMkdir }));
+vi.mock("node:fs/promises", () => {
+  return { mkdir: mockMkdir };
+});
 
 const { typescript } = await import("./typescript");
 
@@ -525,7 +529,7 @@ describe("typescript runner", () => {
 
     await runner.run({ tsconfig: "tsconfig.json" });
 
-    expect(emit).toHaveBeenCalledOnce();
+    expect(emit).toHaveBeenCalledExactlyOnceWith();
   });
 
   it("should filter host.writeFile to only allow tsBuildInfoFile writes", async () => {

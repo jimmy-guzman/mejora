@@ -13,9 +13,11 @@ import { logger } from "@/utils/logger";
 import type { BaselineManager as BaselineManagerType } from "./baseline";
 import type { CheckRegistry as CheckRegistryType } from "./check-registry";
 
-vi.mock("node:fs/promises", () => ({
-  mkdir: vi.fn(),
-}));
+vi.mock("node:fs/promises", () => {
+  return {
+    mkdir: vi.fn(),
+  };
+});
 
 const mockLoad = vi.fn();
 const mockSave = vi.fn();
@@ -32,7 +34,9 @@ vi.mock("./baseline", () => {
 const { BaselineManager } = await import("./baseline");
 
 BaselineManager.getEntry = vi.fn(
-  (baseline: Baseline | null, checkId: string) => baseline?.checks[checkId],
+  (baseline: Baseline | null, checkId: string) => {
+    return baseline?.checks[checkId];
+  },
 );
 
 BaselineManager.update = vi.fn(
@@ -75,25 +79,29 @@ BaselineManager.create = vi.fn((checks: Record<string, BaselineEntry>) => {
 BaselineManager.prune = vi.fn(
   (baseline: Baseline, activeCheckIds: string[]) => {
     const activeSet = new Set(activeCheckIds);
-    const prunedIds = Object.keys(baseline.checks).filter(
-      (id) => !activeSet.has(id),
-    );
+    const prunedIds = Object.keys(baseline.checks).filter((id) => {
+      return !activeSet.has(id);
+    });
 
     if (prunedIds.length === 0) {
       return { baseline, prunedIds };
     }
 
     const newChecks = Object.fromEntries(
-      Object.entries(baseline.checks).filter(([id]) => activeSet.has(id)),
+      Object.entries(baseline.checks).filter(([id]) => {
+        return activeSet.has(id);
+      }),
     );
 
     return { baseline: { ...baseline, checks: newChecks }, prunedIds };
   },
 );
 
-vi.mock("./comparison", () => ({
-  compareSnapshots: vi.fn(),
-}));
+vi.mock("./comparison", () => {
+  return {
+    compareSnapshots: vi.fn(),
+  };
+});
 
 vi.mock("./utils/logger");
 
@@ -140,7 +148,9 @@ vi.mock("node:worker_threads", async () => {
         }
 
         const { checkId } = workerData;
-        const check = mockConfig.checks.find((c) => c.id === checkId);
+        const check = mockConfig.checks.find((c) => {
+          return c.id === checkId;
+        });
 
         if (!check) {
           throw new Error(`Check not found in config: ${checkId}`);
@@ -557,7 +567,9 @@ describe("Runner", () => {
     await runner.run(config, { skip: "eslint" });
 
     expect(eslintRunner.run).not.toHaveBeenCalled();
-    expect(typescriptRunner.run).toHaveBeenCalledOnce();
+    expect(typescriptRunner.run).toHaveBeenCalledExactlyOnceWith(
+      config.checks[1]?.config,
+    );
   });
 
   it("should return exit code 2 on check error", async () => {
@@ -960,7 +972,9 @@ describe("Runner", () => {
 
     await runner.run(config, { skip: "typescript-.*" });
 
-    expect(eslintRunner.run).toHaveBeenCalledOnce();
+    expect(eslintRunner.run).toHaveBeenCalledExactlyOnceWith(
+      config.checks[0]?.config,
+    );
     expect(typescriptRunner.run).not.toHaveBeenCalled();
   });
 

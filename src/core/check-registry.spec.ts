@@ -68,9 +68,9 @@ describe("CheckRegistry", () => {
     it("should throw error for unregistered type", () => {
       const registry = new CheckRegistry();
 
-      expect(() => registry.get("nonexistent")).toThrow(
-        "Unknown check type: nonexistent",
-      );
+      expect(() => {
+        return registry.get("nonexistent");
+      }).toThrow("Unknown check type: nonexistent");
     });
   });
 
@@ -143,8 +143,8 @@ describe("CheckRegistry", () => {
       registry.register(typescriptRunner);
       await registry.setup(new Set(["eslint", "typescript"]));
 
-      expect(eslintSetup).toHaveBeenCalledOnce();
-      expect(typescriptSetup).toHaveBeenCalledOnce();
+      expect(eslintSetup).toHaveBeenCalledExactlyOnceWith();
+      expect(typescriptSetup).toHaveBeenCalledExactlyOnceWith();
     });
 
     it("should skip setup for runners without setup method", async () => {
@@ -180,7 +180,7 @@ describe("CheckRegistry", () => {
       registry.register(typescriptRunner);
       await registry.setup(new Set(["eslint"]));
 
-      expect(eslintSetup).toHaveBeenCalledOnce();
+      expect(eslintSetup).toHaveBeenCalledExactlyOnceWith();
       expect(typescriptSetup).not.toHaveBeenCalled();
     });
 
@@ -214,8 +214,8 @@ describe("CheckRegistry", () => {
       registry.register(typescriptRunner);
       await registry.setup(new Set(["eslint", "typescript"]));
 
-      expect(eslintSetup).toHaveBeenCalledOnce();
-      expect(typescriptSetup).toHaveBeenCalledOnce();
+      expect(eslintSetup).toHaveBeenCalledExactlyOnceWith();
+      expect(typescriptSetup).toHaveBeenCalledExactlyOnceWith();
       expect(setupOrder).toHaveLength(2);
     });
 
@@ -318,8 +318,8 @@ describe("CheckRegistry", () => {
       registry.register(typescriptRunner);
       await registry.validate(new Set(["eslint", "typescript"]));
 
-      expect(eslintValidate).toHaveBeenCalledOnce();
-      expect(typescriptValidate).toHaveBeenCalledOnce();
+      expect(eslintValidate).toHaveBeenCalledExactlyOnceWith();
+      expect(typescriptValidate).toHaveBeenCalledExactlyOnceWith();
     });
 
     it("should skip validation for runners without validate method", async () => {
@@ -355,7 +355,7 @@ describe("CheckRegistry", () => {
       registry.register(typescriptRunner);
       await registry.validate(new Set(["eslint"]));
 
-      expect(eslintValidate).toHaveBeenCalledOnce();
+      expect(eslintValidate).toHaveBeenCalledExactlyOnceWith();
       expect(typescriptValidate).not.toHaveBeenCalled();
     });
 
@@ -389,8 +389,8 @@ describe("CheckRegistry", () => {
       registry.register(typescriptRunner);
       await registry.validate(new Set(["eslint", "typescript"]));
 
-      expect(eslintValidate).toHaveBeenCalledOnce();
-      expect(typescriptValidate).toHaveBeenCalledOnce();
+      expect(eslintValidate).toHaveBeenCalledExactlyOnceWith();
+      expect(typescriptValidate).toHaveBeenCalledExactlyOnceWith();
       expect(validateOrder).toHaveLength(2);
     });
 

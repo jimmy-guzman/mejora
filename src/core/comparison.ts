@@ -35,7 +35,11 @@ function createComparisonResult(
  * Duplicate IDs will be overwritten (last issue wins).
  */
 function indexIssues(issues: Issue[] = []) {
-  return new Map(issues.map((issue) => [issue.id, issue]));
+  return new Map(
+    issues.map((issue) => {
+      return [issue.id, issue];
+    }),
+  );
 }
 
 function idsOf(issues: Map<string, Issue>) {

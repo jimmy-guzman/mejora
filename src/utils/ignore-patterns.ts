@@ -23,8 +23,12 @@ export function resolveIgnorePatterns(
   }
 
   const prefixes = filePatterns
-    .map((pattern) => PREFIX_RE.exec(pattern)?.[1])
-    .filter((pattern): pattern is string => pattern !== undefined);
+    .map((pattern) => {
+      return PREFIX_RE.exec(pattern)?.[1];
+    })
+    .filter((pattern): pattern is string => {
+      return pattern !== undefined;
+    });
 
   return [
     ...DEFAULT_IGNORE_PATTERNS,

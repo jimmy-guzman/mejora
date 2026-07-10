@@ -9,7 +9,9 @@ function formatError(error: Error) {
     const stack = error.stack
       .split("\n")
       .slice(1)
-      .map((line) => c.dim(line.trim()))
+      .map((line) => {
+        return c.dim(line.trim());
+      })
       .join("\n");
 
     lines.push(stack);

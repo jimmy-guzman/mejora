@@ -16,7 +16,11 @@ export class CheckRegistry {
    * @returns Set of unique check types used in the checks
    */
   static getRequiredTypes(checks: { config: { type: string }; id: string }[]) {
-    return new Set(checks.map((c) => c.config.type));
+    return new Set(
+      checks.map((c) => {
+        return c.config.type;
+      }),
+    );
   }
 
   /**

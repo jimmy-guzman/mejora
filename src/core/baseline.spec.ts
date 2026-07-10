@@ -5,9 +5,11 @@ import { logger } from "@/utils/logger";
 import { BaselineManager } from "./baseline";
 
 vi.mock("node:fs/promises");
-vi.mock("@/utils/is-in-ci", () => ({
-  default: false,
-}));
+vi.mock("@/utils/is-in-ci", () => {
+  return {
+    default: false,
+  };
+});
 vi.mock("@/utils/logger");
 
 const mockReadFile = vi.mocked(readFile);
@@ -1029,7 +1031,9 @@ describe("BaselineManager", () => {
       const manager = new BaselineManager(".mejora/baseline.json");
       const result = await manager.load();
 
-      const ids = result?.checks.eslint?.items.map((i) => i.id);
+      const ids = result?.checks.eslint?.items.map((i) => {
+        return i.id;
+      });
 
       expect(ids).toStrictEqual(["aaa111", "bbb222", "mmm555", "zzz999"]);
     });
@@ -1327,9 +1331,11 @@ describe("BaselineManager", () => {
     });
 
     it("should not save when in CI without force flag", async () => {
-      vi.doMock("@/utils/is-in-ci", () => ({
-        default: true,
-      }));
+      vi.doMock("@/utils/is-in-ci", () => {
+        return {
+          default: true,
+        };
+      });
       vi.resetModules();
 
       const { BaselineManager: CIBaselineManager } = await import("./baseline");
@@ -1362,9 +1368,11 @@ describe("BaselineManager", () => {
     });
 
     it("should save when in CI with force flag", async () => {
-      vi.doMock("is-in-ci", () => ({
-        default: true,
-      }));
+      vi.doMock("is-in-ci", () => {
+        return {
+          default: true,
+        };
+      });
       vi.resetModules();
 
       const { BaselineManager: CIBaselineManager } = await import("./baseline");

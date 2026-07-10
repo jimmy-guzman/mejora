@@ -154,8 +154,12 @@ describe("normalizeSnapshot", () => {
     const result1 = normalizeSnapshot(snapshot);
     const result2 = normalizeSnapshot(snapshot);
 
-    const ids1 = result1.items.map((item) => item.id);
-    const ids2 = result2.items.map((item) => item.id);
+    const ids1 = result1.items.map((item) => {
+      return item.id;
+    });
+    const ids2 = result2.items.map((item) => {
+      return item.id;
+    });
 
     expect(new Set(ids1).size).toBe(3);
     expect(ids1).toStrictEqual(ids2);
@@ -236,7 +240,9 @@ describe("normalizeSnapshot", () => {
 
     const result = normalizeSnapshot(snapshot);
 
-    const ids = result.items.map((item) => item.id);
+    const ids = result.items.map((item) => {
+      return item.id;
+    });
 
     expect(new Set(ids).size).toBe(3);
   });
@@ -254,11 +260,23 @@ describe("normalizeSnapshot", () => {
     const result2 = normalizeSnapshot(snapshot);
     const result3 = normalizeSnapshot(snapshot);
 
-    expect(result1.items.map((i) => i.id)).toStrictEqual(
-      result2.items.map((i) => i.id),
+    expect(
+      result1.items.map((i) => {
+        return i.id;
+      }),
+    ).toStrictEqual(
+      result2.items.map((i) => {
+        return i.id;
+      }),
     );
-    expect(result2.items.map((i) => i.id)).toStrictEqual(
-      result3.items.map((i) => i.id),
+    expect(
+      result2.items.map((i) => {
+        return i.id;
+      }),
+    ).toStrictEqual(
+      result3.items.map((i) => {
+        return i.id;
+      }),
     );
   });
 
@@ -323,7 +341,9 @@ describe("normalizeSnapshot", () => {
       type: "items",
     });
 
-    const ids = result.items.map((item) => item.id);
+    const ids = result.items.map((item) => {
+      return item.id;
+    });
 
     expect(new Set(ids).size).toBe(3);
   });

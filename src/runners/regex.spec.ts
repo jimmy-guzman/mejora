@@ -127,7 +127,9 @@ const bar = 1;
     expect(result.type).toBe("items");
     expect(result.items).toHaveLength(2);
 
-    const todoItem = result.items.find((item) => item.rule === "no-todos");
+    const todoItem = result.items.find((item) => {
+      return item.rule === "no-todos";
+    });
 
     expect(todoItem).toMatchObject({
       column: 1,
@@ -137,7 +139,9 @@ const bar = 1;
       rule: "no-todos",
     });
 
-    const consoleItem = result.items.find((item) => item.rule === "no-console");
+    const consoleItem = result.items.find((item) => {
+      return item.rule === "no-console";
+    });
 
     expect(consoleItem).toMatchObject({
       file: expect.stringContaining("example.ts"),
@@ -166,7 +170,11 @@ const bar = 1;
     });
 
     expect(result.items).toHaveLength(3);
-    expect(result.items.every((item) => item.line === 1)).toBe(true);
+    expect(
+      result.items.every((item) => {
+        return item.line === 1;
+      }),
+    ).toBe(true);
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- test assertion
     expect(result.items[0]?.column).toBeLessThan(result.items[1]!.column);
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- test assertion
@@ -508,12 +516,12 @@ console.warn("warning");
 
     expect(result.items).toHaveLength(4);
 
-    const jimmyTodo = result.items.find((item) =>
-      item.message.includes("jimmy"),
-    );
-    const aliceTodo = result.items.find((item) =>
-      item.message.includes("alice"),
-    );
+    const jimmyTodo = result.items.find((item) => {
+      return item.message.includes("jimmy");
+    });
+    const aliceTodo = result.items.find((item) => {
+      return item.message.includes("alice");
+    });
     const logStatement = result.items.find((item) => {
       return item.message.includes("console.log()");
     });

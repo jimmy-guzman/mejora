@@ -4,9 +4,11 @@ const mockLoadConfig = vi.fn();
 const mockRegistryInit = vi.fn();
 const mockRunnerRun = vi.fn();
 
-vi.mock("./core/config", () => ({
-  loadConfig: mockLoadConfig,
-}));
+vi.mock("./core/config", () => {
+  return {
+    loadConfig: mockLoadConfig,
+  };
+});
 
 vi.mock("./core/check-registry", () => {
   return {
@@ -49,7 +51,7 @@ describe("run()", () => {
   it("should call loadConfig() when no config is provided", async () => {
     await run();
 
-    expect(mockLoadConfig).toHaveBeenCalledOnce();
+    expect(mockLoadConfig).toHaveBeenCalledExactlyOnceWith();
   });
 
   it("should skip loadConfig() when config is provided", async () => {
